@@ -74,7 +74,14 @@ def snapshot(rows, source='measured', asset_id='BENCH-001', c=None):
     fresh=bool(latest) and (source!='measured' or age<=5)
     connection='replay' if source!='measured' else 'live' if fresh else 'stale' if latest else 'disconnected'
     calibration=store.get('calibration',latest.get('calibration_id','')) if latest else None
-    calibrated = simulated or bool(calibration and calibration.get('secondary_v_per_mv') and calibration.get('current_a_per_mv'))
+    calibration = calibration or {}
+    channel_calibration = {
+        key: simulated or bool(calibration.get(field))
+        for key, field in [('primary_v','primary_v_per_mv'), ('secondary_v','secondary_v_per_mv'),
+                           ('current_a','current_a_per_mv'), ('surface_c','surface_reference'),
+                           ('ambient_c','ambient_reference')]
+    }
+    calibrated = all(channel_calibration[k] for k in ('secondary_v','current_a','surface_c'))
     alerts=[]; evidence=[]
     def warn(code,title,detail,severity='warning',component='transformer'):
         alerts.append({'code':code,'title':title,'evidence':detail,'severity':severity,'component':component})
@@ -84,7 +91,9 @@ def snapshot(rows, source='measured', asset_id='BENCH-001', c=None):
         evidence.append({'id':f'{latest["evidence_id"]}:{key}' if latest else f'NO-DATA:{key}',
                          'channel':key,'value':value,'unit':unit,'timestamp':latest.get('timestamp') if latest else None,
                          'source':source if key!='ambient_c' or not latest else ('manual observation' if latest.get('ambient_source')=='manual' else source),
-                         'calibrated':calibrated,'available':value is not None})
+                         'calibrated':channel_calibration[key],
+                         'verification': 'synthetic fixture' if simulated else 'reference recorded' if channel_calibration[key] else 'manual observation' if key=='ambient_c' and latest and latest.get('ambient_source')=='manual' else 'unverified',
+                         'available':value is not None})
     values=latest or {}
     if latest and not calibrated: warn('calibration','Calibration not recorded','Physical units require a recorded reference check before interpreting magnitudes.')
     if latest and values.get('quality_flags'): warn('quality','Acquisition quality warning',', '.join(values['quality_flags']),'warning','controller')
@@ -93,21 +102,21 @@ def snapshot(rows, source='measured', asset_id='BENCH-001', c=None):
     v=values.get('secondary_v'); current=values.get('current_a'); surface=values.get('surface_c')
     load=100*current/c.current_limit_a if current is not None and c.current_limit_a else None
     margin=c.surface_limit_c-surface if surface is not None and c.surface_limit_c else None
-    if fresh and calibrated and current is not None and c.current_limit_a and current>c.current_limit_a:
+    if fresh and channel_calibration['current_a'] and current is not None and c.current_limit_a and current>c.current_limit_a:
         warn('overcurrent','Current exceeds configured limit',f'{current:.3f} A > {c.current_limit_a:.3f} A. Request all loads off; independent protection is required.','critical','current')
-    if fresh and calibrated and margin is not None and margin<=0:
+    if fresh and channel_calibration['surface_c'] and margin is not None and margin<=0:
         warn('surface_limit','Surface temperature exceeds configured limit',f'{surface:.1f} °C surface; limit {c.surface_limit_c:.1f} °C. This is not winding temperature.','critical','surface')
     temperatures=[r for r in rows[-60:] if r.get('surface_c') is not None]
     slope=None
     if len(temperatures)>2:
         dt=(timestamp(temperatures[-1]['timestamp'])-timestamp(temperatures[0]['timestamp'])).total_seconds()/60
         if dt>=.25: slope=(temperatures[-1]['surface_c']-temperatures[0]['surface_c'])/dt
-    if fresh and calibrated and slope is not None and slope>2:
+    if fresh and channel_calibration['surface_c'] and slope is not None and slope>2:
         warn('temperature_change','Rapid surface-reading change',f'{slope:.2f} °C/min in the visible window. Compare with an independent probe before attributing a fault.','warning','surface')
     branches=values.get('relay_states',[False]*4)
     expected=sum(v/r for on,r in zip(branches,c.resistor_ohms) if on) if v is not None and (source!='measured' or values.get('relay_output_configured')) else None
     mismatch=current-expected if expected is not None and current is not None else None
-    if fresh and calibrated and mismatch is not None and abs(mismatch)>.12:
+    if fresh and channel_calibration['current_a'] and channel_calibration['secondary_v'] and mismatch is not None and abs(mismatch)>.12:
         warn('load_mismatch','Load-bank current differs from expected',f'Observed minus ideal resistor-bank current: {mismatch:+.3f} A. GPIO states do not prove contact closure.','warning','relay')
     if branches[3] and source=='measured':
         warn('k4','K4 reported active','K4 is prohibited in physical control. Disconnect the load source through the approved procedure.','critical','relay')
@@ -162,8 +171,9 @@ def fit_surface(rows, asset_id):
             'validation_rmse_c':rmse,'persistence_rmse_c':baseline,'beats_persistence':rmse<baseline,
             'method':'bounded first-order surface model; chronological 70/30 split; free-running validation',
             'validation_span_s':(timestamp(testing[-1]['timestamp'])-timestamp(testing[0]['timestamp'])).total_seconds(),
-            'current_range_a':[min(r['current_a'] for r in valid),max(r['current_a'] for r in valid)],
-            'ambient_range_c':[min(r['ambient_c'] for r in valid),max(r['ambient_c'] for r in valid)],
+            'current_range_a':[min(r['current_a'] for r in training),max(r['current_a'] for r in training)],
+            'ambient_range_c':[min(r['ambient_c'] for r in training),max(r['ambient_c'] for r in training)],
+            'data_end_at':valid[-1]['timestamp'], 'training_end_at':training[-1]['timestamp'],
             'training_evidence':[valid[0]['evidence_id'],valid[-1]['evidence_id']]}
 
 
@@ -171,6 +181,10 @@ def surface_step(temp,ambient,current,seconds,coeff):
     a,b,c=coeff
     target=ambient+(a+b*current**2)/c
     return target+(temp-target)*math.exp(-c*seconds)
+
+
+def ambient_qualified(snap):
+    return snap['source']=='simulated' or any(e['channel']=='ambient_c' and e['available'] and e.get('verification') in ('reference recorded','manual observation') for e in snap['evidence'])
 
 
 def futures(snap,reduction=25,delay=0,horizon=10,ambient=None):
@@ -181,6 +195,8 @@ def futures(snap,reduction=25,delay=0,horizon=10,ambient=None):
         return {'available':False,'reason':'The current calibration must match the reviewed model training data. Refit after changing calibration.','baseline':[],'alternative':[]}
     if snap['connection'] in ('stale','disconnected') or row.get('quality_flags'):
         return {'available':False,'reason':'Restore fresh, valid measurements first.','baseline':[],'alternative':[]}
+    if not ambient_qualified(snap):
+        return {'available':False,'reason':'Verify the ambient probe or record an independent ambient observation.','baseline':[],'alternative':[]}
     if any(row.get(k) is None for k in ('surface_c','ambient_c','current_a')):
         return {'available':False,'reason':'Surface, current and an explicit ambient reference are required.','baseline':[],'alternative':[]}
     ambient=row['ambient_c'] if ambient is None else ambient

@@ -1,0 +1,58 @@
+{
+  "generated_at": "2026-10-06T19:00:20.602878+00:00",
+  "application": "NeuraTwin Halo / Evidence Lab",
+  "automated_tests": {
+    "tests": 65,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0
+  },
+  "test_duration_seconds": 10.135,
+  "browser_checks": [
+    "1440 px desktop layout",
+    "390 px phone viewport: all six tools fit the available 375 px content width",
+    "Distribution planner: 44 candidates, conditional 30 percent reduction at frame 148",
+    "Frozen distribution forecast: no future observations at origin; three later samples at frame 151",
+    "Frozen bench forecast with 36 later samples; model underperformance retained",
+    "Five-origin rolling benchmark at three horizons",
+    "12 CPRI reference examples: measurement checks separate from threshold observations",
+    "Deliberately failing acceptance fixture persisted as demonstration data",
+    "Two clearly labelled laboratory fixtures persisted and trended separately",
+    "Explicit conditional ageing scenario; actual RUL unavailable",
+    "Disconnected physical bench withheld intervention",
+    "Browser ZIP export downloaded and SHA-256 manifest verified"
+  ],
+  "demo_observations": {
+    "distribution_15_min": {
+      "samples": 3,
+      "model_mae_c": 0.156,
+      "persistence_mae_c": 4.125,
+      "source": "synthetic overload replay; not field accuracy"
+    },
+    "bench_3_min": {
+      "samples": 36,
+      "model_mae_c": 1.454,
+      "persistence_mae_c": 0.351,
+      "source": "synthetic normal replay; model underperforms persistence in this window"
+    }
+  },
+  "checks": [
+    "JavaScript syntax",
+    "Python compilation",
+    "HTML escaping",
+    "UTF-8 labels and units",
+    "ZIP contents and file hashes"
+  ],
+  "report_preview": "Browser download verified; local file rendering was blocked by the browser URL policy. Printable HTML content and escaping verified programmatically.",
+  "physical_verification": "Not performed. No serial port opened, firmware uploaded, mains energised, relay command issued or Telegram message sent.",
+  "screenshots": [
+    "halo-evidence-forecast.png",
+    "halo-evidence-mobile.png"
+  ],
+  "remaining_limitations": [
+    "Bench reference still needs physical calibration and independently reviewed healthy training data",
+    "Conditional parameter sensitivity is not a calibrated prediction interval",
+    "Ageing assumptions are hypothetical; actual remaining useful life is unavailable",
+    "Hardware identity, conditioning, isolation and protection holds remain in force"
+  ]
+}

@@ -106,6 +106,8 @@ class Calibration(Contract):
     current_a_per_mv: float | None = Field(default=None, gt=0, le=1)
     current_noise_mv: float = Field(default=0, ge=0, le=1000)
     surface_offset_c: float = Field(default=0, ge=-10, le=10)
+    surface_reference: str | None = Field(default=None, min_length=5, max_length=300)
+    ambient_reference: str | None = Field(default=None, min_length=5, max_length=300)
     references: list[str] = Field(min_length=1, max_length=12)
 
 

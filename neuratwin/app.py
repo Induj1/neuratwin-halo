@@ -21,6 +21,8 @@ app = FastAPI(title='NeuraTwin Halo', version='2.0.0', description='Bench eviden
 from .halo_api import router as halo_router
 from . import halo_telegram
 app.include_router(halo_router)
+from .halo_evidence_api import router as evidence_router
+app.include_router(evidence_router)
 
 
 def asset_config(asset_id):
@@ -197,7 +199,7 @@ def evidence():
     for name in ['synthetic_evaluation', 'forecast_benchmark', 'test_summary']:
         path = ROOT/f'reports/{name}.json'
         reports[name] = json.loads(path.read_text()) if path.exists() else None
-    reports['boundaries'] = ['No organizer Round 2 data has been provided.', 'Synthetic tests are engineering checks, not field validation.',
+    reports['boundaries'] = ['Organizer material supplies example checks, not longitudinal fault-labelled field data.', 'Synthetic tests are engineering checks, not field validation.',
                              'Public oil-temperature forecasting does not validate fault diagnosis, hot-spot states or intervention effects.',
                              'The prototype does not estimate absolute remaining life or execute grid controls.']
     return reports
@@ -222,7 +224,8 @@ def index():
 @app.get('/app')
 def operations_console():
     """Serve the functional Round 2 operator console behind the product story."""
-    return FileResponse(ROOT/'web/halo.html')
+    page=(ROOT/'web/halo.html').read_text(encoding='utf-8').replace('<!-- HALO_EVIDENCE -->',(ROOT/'web/halo-evidence.html').read_text(encoding='utf-8'))
+    return Response(page,media_type='text/html')
 
 
 @app.get('/legacy')

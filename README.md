@@ -45,6 +45,38 @@ For a forecast immediately without fitting a bench model, use **Distribution tra
 
 ## Implemented scope
 
+### Evidence Lab · October 2026 upgrade
+
+Open **07 Evidence Lab** at `/app#evidence`. Its six tools share the selected asset, source and replay frame:
+
+| Tool | What is implemented |
+| --- | --- |
+| Investigate | Frozen expected/observed temperature response, persistent residual screening, competing explanations and the next reference check; no invented fault probabilities |
+| Plan an action | Discrete removal-only K1–K3 options on the bench, protected branches, compulsory K4 removal in simulated candidates; distribution demand-reduction search, delay, rejected constraints and sensitivity-envelope limits |
+| Prove a forecast | Timestamped predictions with copied model/inputs and SHA-256, later observations scored without rewriting predictions, persistence baseline, changed-input and missing-data accounting; up to five chronological benchmark origins |
+| Acceptance checks | The 12 supplied CPRI examples, absolute measurement errors, explicit zero-reference handling, reviewer-entered tests, separate software acknowledgment and independently observed contact timing |
+| Condition & ageing | Separate operating-stress index and evidence coverage; explicit hypothetical Arrhenius scenarios for the distribution study. Bench surface readings never produce oil-paper ageing or actual RUL |
+| Lab evidence | Reviewed DGA, 2-FAL, moisture, breakdown-voltage and acidity entries; fixed units, provenance, laboratory flags and separate real/fixture trends; JSON templates and imports |
+
+**Download case** produces a ZIP containing `report.html` (printable to PDF), `case.json` and `manifest.json`. Reports retain assumptions and the maintenance trail. File hashes detect changes against the manifest; they are not signatures or verification of measurement truth. Evidence records are local SQLite data; they are not included in Git.
+
+Calibration now records voltage, current, surface and ambient references independently. An electrical calibration does not verify the temperature probe. Physical modelling needs verified ambient-probe evidence or an explicit independent ambient observation. Imported model fitting stops at the selected replay frame; it cannot consume later frames. Older model versions without fitting timestamps must be refitted before freezing predictions.
+
+**Repeatable Evidence Lab demonstration:**
+
+1. Choose **Distribution transformer study / Evening overload**, open Evidence Lab, enter frame **148** and choose **Go to frame**.
+2. Review the investigation. In **Plan an action**, enter a **60-minute** horizon and **3-minute** maximum delay. The current synthetic fixture returns a **30% reduction**, conditional on the declared model and constraints. Expand the rejected candidates.
+3. In **Prove a forecast**, freeze **15 minutes**. Score immediately: it awaits future observations. Move to frame **151** and score the same record. This reveals three later simulated oil readings; it does not establish field accuracy. Run the rolling benchmark separately.
+4. Load the supplied examples in **Acceptance checks**. Demonstrate a deliberately failing fixture: 12 V reference versus 11.5 V software reading, 1% tolerance. Select **Demonstration fixture**, and label the instrument and notes accordingly.
+5. Inspect **Condition & ageing** and **Lab evidence**. Any demonstration laboratory values must be explicitly marked as fixtures. Actual remaining life stays unavailable.
+6. Download the case. Open the HTML report and use its print/save-PDF button.
+
+For a bench forecast: qualify the **normal synthetic** run at frame **360** in Action Lab, fit a new model, then freeze at frame **400**. The built-in bench replay now reaches frame **720**, allowing subsequent observations to be revealed without changing the source. A discrete bench planner may return no qualifying candidate when current or ambient leave the training range or the horizon exceeds validation; this is intentional.
+
+**Validation:** 65 automated tests passed for this revision, including per-channel calibration, future-frame exclusion, frozen-record integrity, changed inputs, missing observations, conservative load planning, response-timing semantics, unit validation and export escaping. See `reports/halo-evidence-tests.xml` and `reports/halo-evidence-validation.json`. Browser checks cover desktop and phone widths, planning, freeze/reveal/score, acceptance, reviewed lab fixtures, ageing and export. Hardware commissioning has not been performed by these software tests.
+
+### Existing connected workspace
+
 | Area | Current behaviour |
 | --- | --- |
 | Physical / replay / distribution data | Separate sources, units, clocks, asset identities and evidence references |

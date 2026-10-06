@@ -360,7 +360,8 @@ def fit(payload:Fit,actor=Depends(operator)):
     if not payload.qualified_healthy: raise HTTPException(422,'Explicitly qualify the training period as healthy first.')
     snap=obtain(**payload.model_dump(include=set(Context.model_fields)))
     if snap['source']!='simulated' and snap['quality']['calibration']!='reference recorded': raise HTTPException(422,'Record sensor calibration first; unverified imported units cannot qualify a surface model.')
-    rows=store.frames(engine.config().device_id,3600) if payload.mode=='bench' else engine.demonstration(payload.scenario,payload.cursor) if not payload.dataset_id else store.get('bench_dataset',payload.dataset_id)['rows']
+    if not engine.ambient_qualified(snap): raise HTTPException(422,'Verify the ambient probe or record an independent ambient observation before fitting.')
+    rows=store.frames(engine.config().device_id,3600) if payload.mode=='bench' else engine.demonstration(payload.scenario,payload.cursor) if not payload.dataset_id else store.get('bench_dataset',payload.dataset_id)['rows'][:payload.cursor+1]
     calibration_id=(snap.get('current') or {}).get('calibration_id') if snap['source']!='simulated' else None
     if calibration_id: rows=[r for r in rows if r.get('calibration_id')==calibration_id]
     try: result=engine.fit_surface(rows,snap['asset_id'])

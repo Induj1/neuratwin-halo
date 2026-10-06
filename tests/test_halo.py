@@ -31,7 +31,7 @@ def frame(**changes):
             'secondary_v':12.,'current_a':.3,'surface_c':30.,'relay_states':[True,False,False,False],'relay_output_configured':True,**changes}
 def calibration(c):
     assert post(c,'/calibrations',{'id':'CAL-TEST','reviewer':'Tester','note':'Synthetic test fixture only','references':['fixture reference'],
-                                 'secondary_v_per_mv':.01,'current_a_per_mv':.001}).status_code==200
+                                 'secondary_v_per_mv':.01,'current_a_per_mv':.001,'surface_reference':'Synthetic reference fixture','ambient_reference':'Synthetic ambient fixture'}).status_code==200
 def configure(c):
     config=BenchConfig(board='ESP32',primary_adc_pin=32,secondary_adc_pin=33,current_adc_pin=34,temperature_pin=25,
                        active_low=True,nominal_secondary_v=12,current_limit_a=.95,surface_limit_c=55,
