@@ -1,0 +1,11 @@
+Function,ESP32-S3,Electrical connection,Notes
+PT100 oil / tank,"SPI SCK 12, MISO 13, MOSI 11, CS 10",MAX31865 #1,3-wire RTD; route away from fan PWM.
+PT100 ambient,"SPI shared, CS 14",MAX31865 #2,Use a second chip select.
+PN532 NFC,"I2C SDA 8, SCL 9",PN532 module,"Antenna on plastic face, away from metal."
+OLED status,"I2C SDA 8, SCL 9",0.96 inch OLED,Typical address 0x3C; confirm variant.
+Accelerometer,"I2C SDA 8, SCL 9",ADXL345,Typical address 0x53; one set of pull-ups.
+RS485 meter,"UART2 TX 17, RX 18, DE/RE 16",Isolated RS485 A/B,Read meter manual before changing baud/parity.
+Leak / float,GPIO 4,Dry contact to GND,Use INPUT_PULLUP; debounce and require persistence.
+Fan / cooling,GPIO 6 -> MOSFET gate,12 V fan on fused rail,SELV common ground; diode across inductive loads.
+Alarm LED,GPIO 7,RGB LED driver,"Amber warning, red critical, green trusted."
+Load injection knob,ADC GPIO 1 through divider,10 k pot,Software control only; never drive a mains switch.

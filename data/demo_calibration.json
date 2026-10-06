@@ -1,0 +1,15 @@
+{
+  "parameters": {
+    "rated_oil_rise_c": 49.757866636973006,
+    "oil_tau_min": 155.61595449094304,
+    "oil_exponent": 1.1891500750367225
+  },
+  "training_seeds": [
+    11,
+    23,
+    37
+  ],
+  "origin": "Fitted on separate healthy episodes from the independently implemented three-node synthetic plant.",
+  "limits": "Synthetic calibration only. Winding-gradient parameters are assumed and not fitted from oil measurements.",
+  "train_oil_rmse_c": 1.5168288829412122
+}

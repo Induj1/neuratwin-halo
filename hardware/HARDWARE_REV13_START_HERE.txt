@@ -1,0 +1,93 @@
+NEURATWIN / HARDWARE ASSEMBLY ATLAS / REVISION 1.3
+2 October 2026 - reviewed AC-transformer concept based on Atri's sketch
+
+OPEN THE GUIDE
+Extract the entire ZIP, then open index.html in a browser with WebGL.
+If local-file restrictions prevent the viewer from loading, open a terminal
+in this folder and run: python -m http.server 8770 --bind 127.0.0.1
+Visit http://127.0.0.1:8770 . Viewer assets are local; reference links need internet.
+The console link requires the separate prototype app on port 8765.
+
+WHAT CHANGED
+The DC boost/resistor rig from Rev1.2 is replaced by a proposed small AC
+transformer bench. The selected Electronic Spices 100 W inverter is EXCLUDED:
+its manufacturer's matching product page says it cannot operate electromagnetic
+transformer devices. No replacement inverter has been selected or verified.
+Preferred source: the college's technician-prepared, enclosed and protected
+transformer test source. The battery route is conditional and separately shown.
+
+Source restriction:
+https://electronicspices.com/product/12v-dc-to-220v-ac-100-watt-convertor-circuit-board-124mm-x-74mm-x-35mm-dc-to-ac-convertor
+
+CURRENT DESIGN
+- Laptop USB powers the ESP32-S3 through its USB socket. Do not also feed its
+  external 5 V / 3.3 V power pins from a buck or other supply.
+- A separately reviewed AC source supplies the enclosed transformer primary.
+- Proposed transformer: 230 V AC to 12-0-12 V AC, listed 1.5 A, 50-60 Hz.
+  Verify the actual winding and VA ratings. The planner uses ONE 12 V section,
+  not 24 V end-to-end. The centre tap is not protective earth.
+- Three relays switch three parallel secondary-side resistor branches.
+  At nominal 12 V RMS, 68 ohm branches draw 0.176 / 0.353 / 0.529 A and
+  dissipate 2.12 / 4.24 / 6.35 W. The alternative 33 ohm planner gives
+  0.364 / 0.727 / 1.091 A and 4.36 / 8.73 / 13.09 W.
+  These are calculations, not measurements or transformer losses.
+- Chassis resistors retain the 50 W capacity proposal with specified heatsink
+  mounting and a guard. Load values, fusing and thermal cutoff need verification.
+- Voltage sensors connect across the measured circuit; current sensors are in
+  series. Primary and secondary sensing are separate, reviewed interfaces.
+- ACS712 5 A is a secondary candidate; reconsider the small primary-current
+  measurement. ZMPT101B needs calibration and signal-range checks at 12 V AC.
+- Four electrical measurement inputs and three relay-control pins are pending.
+  There is no new build-ready ADC/relay pin map. Signal conditioning must suit
+  the ESP32 range; no raw mains divider or primary return connects to the MCU.
+- PT100 A measures transformer EXTERIOR temperature; PT100 B measures ambient.
+  Neither directly measures oil or winding hot-spot temperature.
+- NFC, OLED and the established low-voltage SPI/I2C/control pin assignments
+  remain in the connection table. Check the exact purchased boards.
+- The proposed 12 V ~7 Ah battery and buck are unconfirmed and optional.
+  A buck takes DC input, never direct AC. Relay/sensor auxiliary supplies and
+  the separate 12 V DC fan branch remain to be selected and budgeted.
+
+USING THE VIEWER
+Select the lab or conditional battery architecture. Drag the 3D model, use
+Top/Front, explode the assembly, and select one of the 22 components.
+Wiring mode shows functional harness routes, not individual terminal wiring.
+Dashed primary/grey routes are unresolved concepts. Filter the connection table.
+Build sequence gives seven stages with checks. Load toggles are illustrations;
+they do not operate physical relays. The 3D resistors represent generic loads;
+the planner shows the selected resistance value. The original sketch is included
+for context and is not a reviewed wiring schematic.
+
+Save view PNG exports the current model; Print build sheets prepares the current
+revision's instructions and load choice for the browser print dialog.
+Canvas keyboard: arrow keys orbit, + / - zoom, 0 resets. Controls support Tab.
+
+FILES
+components-rev1.3.csv: component status, selection notes and references.
+connections-rev1.3.csv: 34 connection groups, including pending interfaces.
+load-stages-rev1.3.csv: both resistor candidates, calculated at 12 V AC RMS.
+assets/hardware-schematic-atri.png: original user-supplied concept sketch.
+assembly-preview.png / assembly-exploded.png: current views, when included.
+vendor/: local Three.js distribution and its MIT licence.
+
+BUILD BOUNDARIES
+This is a design handoff, not dimensionally accurate CAD or an electrically
+tested circuit. A qualified lab technician must prepare the enclosed primary
+section and review source, fusing, disconnect, clearances, strain relief,
+thermal cutoff, sensor isolation and grounding before energising.
+An inverter creates hazardous high voltage even from a 12 V battery.
+Do not reverse-feed the transformer or connect to a distribution transformer.
+Do not attempt intentional shorts or operate beyond verified component ratings.
+
+Firmware, physical NFC integration, relay feedback and a live telemetry adapter
+still need implementation. Fit a separate BENCH-001 thermal model; keep the
+NR-104 distribution-transformer replay separate. Surface readings and bench
+results do not validate field winding hot-spot, oil temperature or remaining life.
+Real watts require valid time-aligned AC voltage/current processing; RMS voltage
+times RMS current gives apparent power. Record actual heating response; do not
+promise an instant temperature change during a short demonstration.
+
+REVISION PRECEDENCE
+Use Rev1.3 for this proposed AC design. Rev1.2, Rev1.1 and the original PDF kit
+describe earlier designs. Do not mix their power wiring or 24 V load assumptions.
+The research ZIP dated 1 October is historical and still contains Rev1.2.

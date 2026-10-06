@@ -1,0 +1,112 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#0b0b0a">
+  <meta name="description" content="NeuraTwin operations console for evidence-aware transformer health monitoring.">
+  <title>NeuraTwin Ops — Command Center</title>
+  <link rel="stylesheet" href="/static/app-console.css?v=7">
+</head>
+<body><aside style="padding:16px;background:#fff0d4;color:#402912;font:16px Arial;position:relative;z-index:100">Archived simulation console. Use <a href="/app">NeuraTwin Halo</a> for the current hardware profile, evidence controls and calibrated interpretation. Earlier display confidence percentages are not calibrated probabilities.</aside>
+  <div class="console-shell">
+    <aside class="console-rail" id="console-rail">
+      <a class="console-brand" href="/" aria-label="Back to NeuraTwin product story"><b>NEURATWIN</b><small>OPERATIONS CONSOLE</small></a>
+      <div class="rail-status"><i></i><span>EDGE NODE ONLINE</span><b>TX-014</b></div>
+      <div class="rail-label">WORKSPACE</div>
+      <nav class="rail-nav" aria-label="Operations views">
+        <button class="rail-link active" data-view="overview"><span>01</span><b>Live operations</b><em id="rail-alert-count">3</em></button>
+        <button class="rail-link" data-view="incident"><span>02</span><b>Incident lab</b><em>↗</em></button>
+        <button class="rail-link" data-view="passport"><span>03</span><b>Asset passport</b><em>⌁</em></button>
+        <button class="rail-link" data-view="work"><span>04</span><b>Maintenance queue</b><em id="rail-order-count">0</em></button>
+      </nav>
+      <div class="rail-bottom">
+        <a href="/static/hardware-guide.html" class="back-link">3D hardware assembly ↗</a>
+        <div class="replay-badge"><span>DEMO REPLAY</span><b>Synthetic telemetry</b><small>5 min cadence · no equipment control</small></div>
+        <a href="/" class="back-link">← Product story</a>
+      </div>
+    </aside>
+
+    <main class="console-main">
+      <header class="console-topbar">
+        <div class="breadcrumb"><span>NEURATWIN OPS</span><i>·</i><b id="top-asset">NR-104 / NORTH INDUSTRIAL FEEDER</b></div>
+        <div class="top-actions">
+          <label class="top-select"><span>REPLAY</span><select id="scenario-select" aria-label="Replay scenario"></select></label>
+          <label class="top-select asset-select"><span>ASSET</span><select id="asset-select" aria-label="Active asset"></select></label>
+          <span class="top-clock" id="live-clock">—</span>
+          <button class="judge-button" id="judge-mode-btn">Judge mode ↗</button><button class="icon-button" id="refresh-btn" title="Refresh telemetry">↻</button>
+          <button class="mobile-menu" id="mobile-menu" aria-label="Open navigation">☰</button>
+        </div>
+      </header>
+
+      <section class="console-view active" id="view-overview">
+        <div class="view-intro">
+          <div><p class="eyebrow">01 / LIVE OPERATIONS</p><h1>Command center <span id="overview-asset-id">NR-104</span></h1><p class="intro-copy">A decision surface for transformer health: measured telemetry, inferred hot-spot, forecast exposure and the evidence behind every recommendation.</p></div>
+          <div class="intro-status"><span class="status-dot" id="status-dot"></span><div><small id="status-label">WARNING</small><b id="status-detail">Loading current model state…</b><em id="status-time">—</em></div></div>
+        </div>
+
+        <div class="metric-ribbon" aria-label="Current transformer metrics">
+          <article class="metric"><span>CONDITION INDEX</span><strong id="metric-health">—</strong><em>/ 100</em><small id="metric-health-note">model health heuristic</small></article>
+          <article class="metric"><span>EST. HOT-SPOT</span><strong id="metric-hotspot">—</strong><em>°C</em><small id="metric-hotspot-note">limit —</small></article>
+          <article class="metric"><span>LOAD</span><strong id="metric-load">—</strong><em>%</em><small id="metric-load-note">nameplate — kVA</small></article>
+          <article class="metric"><span>THERMAL MARGIN</span><strong id="metric-margin">—</strong><em>°C</em><small id="metric-margin-note">to configured limit</small></article>
+          <article class="metric metric-confidence"><span>MODEL CONFIDENCE</span><strong id="metric-confidence">—</strong><em>%</em><small id="metric-source">—</small></article>
+        </div>
+
+        <section class="timeline-strip console-panel"><div class="timeline-copy"><p class="eyebrow">07 / TWIN TIME MACHINE</p><h2>Scrub the asset through time.</h2><span id="timeline-caption">Healthy baseline → evening overload → predicted breach</span></div><div class="timeline-control"><div class="timeline-rail"><i id="timeline-progress"></i><button data-cursor="72" title="06:00 baseline"></button><button data-cursor="120" title="10:00 rising load"></button><button class="active" data-cursor="148" title="12:20 current frame"></button><button data-cursor="172" title="14:20 forecast window"></button><button data-cursor="220" title="18:20 late replay"></button></div><div class="timeline-labels"><span>06:00</span><span>10:00</span><span>NOW</span><span>14:20</span><span>18:20</span></div></div><div class="bench-simulator"><small>EDGE BENCH</small><b id="bench-value">LIVE</b><button id="bench-toggle">Simulate sensor box</button></div></section>
+
+        <div class="overview-grid">
+          <section class="console-panel twin-panel">
+            <header class="panel-head"><div><p class="eyebrow">03 / DIGITAL TWIN</p><h2 id="twin-heading">NR-104 · North industrial feeder</h2></div><div class="layer-switch"><button class="active" data-twin-mode="thermal">Thermal</button><button data-twin-mode="electrical">Electrical</button></div></header>
+            <div class="console-twin-stage twin-canvas"><div class="stage-grid"></div><canvas id="twin-3d" aria-label="Interactive 3D transformer digital twin"></canvas><span class="stage-label">LIVE ASSET MODEL <b>03 NODES</b></span><span class="stage-live"><i></i> SYNCHRONISED</span><div class="stage-readout"><span>LOAD <b id="stage-load">—</b></span><span>TOP OIL <b id="stage-oil">—</b></span><span>HOT-SPOT <b id="stage-hotspot">—</b></span></div></div>
+            <footer class="twin-footer"><span>Drag to inspect the asset</span><span>Model state <b id="stage-model">Synchronised</b></span><span>Next limit <b id="stage-limit">—</b></span><button data-view-jump="incident">Inspect evidence →</button></footer>
+          </section>
+
+          <section class="console-panel telemetry-panel">
+            <header class="panel-head"><div><p class="eyebrow">04 / TELEMETRY HISTORY</p><h2>Measured versus inferred</h2></div><span class="panel-meta" id="telemetry-meta">—</span></header>
+            <div class="chart-legend"><span><i class="legend-hotspot"></i>Winding estimate</span><span><i class="legend-oil"></i>Oil</span><span><i class="legend-expected"></i>Reference</span><span><i class="legend-limit"></i>Limit</span></div>
+            <div class="chart-wrap"><svg id="telemetry-chart" viewBox="0 0 820 285" preserveAspectRatio="none" aria-label="Temperature telemetry history"></svg><div class="chart-tooltip" id="telemetry-tooltip"></div></div>
+            <div class="chart-axis"><span>−6h</span><span>−4h</span><span>−2h</span><span>NOW</span></div>
+            <div class="sensor-strip"><span><small>AMBIENT</small><b id="sensor-ambient">—</b>°C</span><span><small>VOLTAGE</small><b id="sensor-voltage">—</b> pu</span><span><small>THD</small><b id="sensor-thd">—</b>%</span><span><small>SOURCE</small><b id="sensor-source">—</b></span></div>
+          </section>
+        </div>
+
+        <div class="lower-grid">
+          <section class="console-panel alerts-panel"><header class="panel-head"><div><p class="eyebrow">05 / ACTIVE ALERTS</p><h2><span id="alert-count">—</span> evidence-linked signals</h2></div><button class="text-button" data-view-jump="incident">Open incident lab →</button></header><div class="alert-list" id="alert-list"><div class="skeleton-row"></div><div class="skeleton-row"></div></div></section>
+          <section class="console-panel fleet-panel"><header class="panel-head"><div><p class="eyebrow">06 / FLEET STATUS</p><h2>Distribution assets</h2></div><span class="panel-meta">3 assets · replay</span></header><div class="fleet-map" id="fleet-map" aria-label="Fleet risk map"><div class="map-line line-1"></div><div class="map-line line-2"></div><div class="map-node node-a" data-map-asset="NR-104"><i></i><b>NR-104</b></div><div class="map-node node-b" data-map-asset="NR-207"><i></i><b>NR-207</b></div><div class="map-node node-c" data-map-asset="NR-312"><i></i><b>NR-312</b></div><span class="map-caption">FEEDER RISK TOPOLOGY / LIVE REPLAY</span></div><div class="fleet-head"><span>ASSET</span><span>STATE</span><span>LOAD</span><span>HOT-SPOT</span><span>MARGIN</span></div><div id="fleet-list" class="fleet-list"><div class="skeleton-row"></div></div></section>
+        </div>
+      </section>
+
+      <section class="console-view" id="view-incident">
+        <div class="view-title"><p class="eyebrow">02 / INCIDENT LAB</p><h1>Explain the next failure<br><em>before it arrives.</em></h1><p>Move from an alert to a defensible maintenance decision. Every number below comes from the same replay window as the command center.</p></div>
+        <section class="fault-theatre console-panel"><header class="panel-head"><div><p class="eyebrow">FAULT INJECTION THEATRE</p><h2>Stress the twin with a known disturbance.</h2></div><span class="panel-meta" id="fault-chip">Current: Evening overload</span></header><div class="fault-buttons"><button data-scenario="overload">↑ Overload</button><button data-scenario="cooling">♨ Cooling loss</button><button data-scenario="sensor">⌁ Sensor drift</button><button data-scenario="ambiguous">? Uncertain cause</button><button data-scenario="dropout">∿ Telemetry dropout</button><button data-scenario="normal">✓ Normal baseline</button></div><p class="fault-note" id="fault-note">Select a disturbance to replay it through the same inference engine. Scenario labels are for the demonstration only; the model does not receive them.</p></section>
+
+        <div class="incident-layout">
+          <section class="console-panel incident-summary"><header class="panel-head"><div><p class="eyebrow">CURRENT SIGNAL</p><h2 id="incident-title">Loading incident…</h2></div><span class="severity-chip" id="incident-severity">—</span></header><p class="incident-evidence" id="incident-evidence">—</p><div class="evidence-list" id="evidence-list"></div><div class="panel-note" id="incident-provenance">Synthetic replay · 5 minute telemetry · inference clearly labelled</div></section>
+          <section class="console-panel forecast-panel"><header class="panel-head"><div><p class="eyebrow">CONDITIONAL FORECAST</p><h2>Two possible futures</h2></div><div class="panel-head-actions"><button class="text-button" id="brief-btn">Export incident brief ↓</button><span class="panel-meta" id="forecast-note">120 minute horizon</span></div></header><div class="duel-labels"><span><i></i>CONTINUE OPERATING <b id="duel-baseline-label">145.2°C peak</b></span><span><i></i>TAKE RECOMMENDED ACTION <b id="duel-alt-label">114.4°C peak</b></span></div><div class="forecast-legend"><span><i class="legend-baseline"></i>Current trajectory</span><span><i class="legend-alternative"></i>With recommended action</span><span><i class="legend-band"></i>Parameter range</span></div><div class="chart-wrap forecast-wrap"><svg id="forecast-chart" viewBox="0 0 820 260" preserveAspectRatio="none" aria-label="Baseline and action forecast"></svg></div><div class="forecast-stats"><div><small>BASELINE PEAK</small><b id="baseline-peak">—</b></div><div><small>WITH ACTION</small><b id="alt-peak">—</b></div><div><small>EXPOSURE AVOIDED</small><b id="delta-exposure">—</b></div></div></section>
+        </div>
+        <section class="causal-panel console-panel"><header class="panel-head"><div><p class="eyebrow">CAUSAL EVIDENCE CHAIN</p><h2>From signal to accountable action.</h2></div><span class="panel-meta">same replay window</span></header><div class="causal-chain"><div class="causal-node"><span>01 / SIGNAL</span><b id="causal-signal">138% load</b><small>measured</small></div><i>→</i><div class="causal-node"><span>02 / STATE</span><b id="causal-state">109.5°C hot-spot</b><small>model estimate</small></div><i>→</i><div class="causal-node"><span>03 / RISK</span><b id="causal-risk">limit in 25 min</b><small>conditional forecast</small></div><i>→</i><div class="causal-node"><span>04 / ACTION</span><b id="causal-action">reduce load 20%</b><small>operator decision</small></div></div></section>
+        <section class="console-panel action-lab"><header class="panel-head"><div><p class="eyebrow">ACTION LAB</p><h2>Test the intervention before dispatch.</h2></div><button class="primary-button" id="create-order-btn">Create recommended work order →</button></header><div class="control-row"><label><span>LOAD REDUCTION <b id="reduction-value">20</b>%</span><input type="range" id="reduction-slider" min="0" max="50" step="1" value="20"></label><label><span>ACTION DELAY <b id="delay-value">10</b> min</span><input type="range" id="delay-slider" min="0" max="120" step="5" value="10"></label><button class="secondary-button" id="recalculate-btn">Recalculate ↻</button></div><div class="action-result"><span>RECOMMENDATION</span><strong id="rec-order">Reduce feeder load ~20% and inspect the independent probe.</strong><small id="diagnostic-note">No physical switching is performed. This is a conditional model comparison.</small></div></section>
+      </section>
+
+      <section class="console-view" id="view-passport">
+        <div class="view-title compact"><p class="eyebrow">03 / ASSET PASSPORT</p><h1>One identity for<br><em>every field decision.</em></h1><p>Resolve a transformer’s operating context at the edge, then carry the same evidence trail into inspection and maintenance.</p></div>
+        <div class="passport-layout"><section class="passport-card"><div class="passport-visual"><div class="nfc-rings">)))</div><b>NFC</b><small>NR-104</small></div><div class="passport-copy"><p class="eyebrow">DIGITAL ASSET IDENTITY</p><h2 id="passport-title">North industrial feeder</h2><p id="passport-location">Demonstration site A</p><div class="passport-meta"><span>ASSET ID <b id="passport-id">NR-104</b></span><span>RATING <b id="passport-rating">630 kVA</b></span><span>COOLING <b id="passport-cooling">ONAN</b></span><span>VOLTAGE <b id="passport-voltage">415 V</b></span></div><div class="passport-actions"><button class="primary-button" id="nfc-scan-btn">Simulate NFC tap ↗</button><button class="secondary-button" id="download-json-btn">Export evidence JSON</button></div><small class="passport-note" id="last-tap">No field tap in this session.</small></div></section><section class="console-panel provenance-panel"><header class="panel-head"><div><p class="eyebrow">MODEL PROVENANCE</p><h2>What the twin knows</h2></div><span class="verified-mark">✓ TRACEABLE</span></header><div class="provenance-list"><div><span>01</span><p><b>Measured</b> Load, ambient, oil temperature, voltage and THD arrive as timestamped readings.</p></div><div><span>02</span><p><b>Inferred</b> Winding hot-spot and condition index are model outputs, marked with confidence.</p></div><div><span>03</span><p><b>Conditional</b> The action comparison holds current conditions and tests an operational response.</p></div></div><div class="panel-note">The demonstration is synthetic and does not execute physical grid control.</div></section></div>
+        <section class="console-panel import-panel"><header class="panel-head"><div><p class="eyebrow">OPTIONAL / REAL TELEMETRY</p><h2>Bring your own CSV replay</h2></div><a href="/api/template.csv" class="text-button">Download template ↓</a></header><div class="import-row"><input id="dataset-name" placeholder="Dataset name" value="CPRI field replay"><input id="dataset-file" type="file" accept=".csv,text/csv"><button class="secondary-button" id="import-btn">Import dataset</button><span id="import-status">Required: timestamp, load_pu, ambient_c, oil_c</span></div></section>
+      </section>
+
+      <section class="console-view" id="view-work">
+        <div class="view-title compact"><p class="eyebrow">04 / MAINTENANCE QUEUE</p><h1>Turn evidence into<br><em>an accountable handoff.</em></h1><p>Work orders inherit the alert, model context and action comparison. Status changes are recorded locally for the demo.</p></div>
+        <section class="console-panel work-panel"><header class="panel-head"><div><p class="eyebrow">OPEN WORK ORDERS</p><h2><span id="work-count">0</span> tracked interventions</h2></div><button class="text-button" data-view-jump="incident">Create from incident lab →</button></header><div class="work-list" id="work-list"><div class="empty-state"><b>No work orders yet.</b><span>Create one from an active alert to demonstrate the handoff.</span></div></div></section>
+      </section>
+
+      <footer class="console-footer"><span>NEURATWIN / DECISION SUPPORT PROTOTYPE</span><span>SYNTHETIC REPLAY · NO EQUIPMENT CONTROL</span><a href="/">Return to product story ↗</a></footer>
+    </main>
+  </div>
+  <div class="judge-overlay" id="judge-overlay" aria-hidden="true"><div class="judge-card"><button class="judge-close" id="judge-close" aria-label="Close judge mode">×</button><p class="eyebrow">NEURATWIN / JUDGE MODE</p><h2>See the whole decision loop in 90 seconds.</h2><p class="judge-copy">A guided path through a thermal event: detect → explain → compare → hand off.</p><div class="judge-steps"><div class="judge-step active" data-judge-step="1"><span>01</span><b>Detect</b><small>Open the stressed asset state.</small></div><div class="judge-step" data-judge-step="2"><span>02</span><b>Explain</b><small>Show the evidence chain.</small></div><div class="judge-step" data-judge-step="3"><span>03</span><b>Compare</b><small>Test the safer future.</small></div><div class="judge-step" data-judge-step="4"><span>04</span><b>Handoff</b><small>Create the work order.</small></div></div><button class="primary-button" id="judge-next">Start guided demo →</button></div></div>
+  <div class="toast-stack" id="toast-stack" aria-live="polite"></div>
+  <script src="https://cdn.jsdelivr.net/npm/three@0.149.0/build/three.min.js"></script>
+  <script src="/static/three-twin.js?v=2"></script>
+  <script src="/static/app-console.js?v=5"></script>
+</body>
+</html>

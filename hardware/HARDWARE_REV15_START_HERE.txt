@@ -1,0 +1,114 @@
+NEURATWIN / HARDWARE ASSEMBLY ATLAS / REVISION 1.5
+2 October 2026 - existing college AC, secondary sensing, USB controller
+
+OPEN THE GUIDE
+Extract the whole ZIP and open index.html in a browser with WebGL.
+If local-file restrictions prevent loading, run from the extracted folder:
+  python -m http.server 8770 --bind 127.0.0.1
+Then visit http://127.0.0.1:8770 . All viewer assets are local.
+Reference links need internet; the operations-console link needs the separate
+prototype running on port 8765.
+
+CHOSEN BUILD
+Existing college 230 V / 50 Hz AC supply -> technician-prepared enclosed
+transformer -> one verified nominal 12 V AC secondary section -> three
+relay-switched parallel resistor branches.
+
+Borrow an enclosed college transformer trainer first. If unavailable, have the
+lab technician prepare and check the proposed 230 V to 12-0-12 V AC transformer
+assembly. Confirm output rating and permission to use it at the venue.
+The source block in the 3D view represents the protected supply connection;
+it is NOT another AC converter to buy. Geometry is illustrative, not exact CAD.
+
+Removed from the active model and connection table:
+- Inverter, battery and battery-fed buck branch.
+- Primary hobby voltage/current sensor modules; primary sensing is deferred.
+The previously linked Electronic Spices inverter also excludes transformer loads:
+https://electronicspices.com/product/12v-dc-to-220v-ac-100-watt-convertor-circuit-board-124mm-x-74mm-x-35mm-dc-to-ac-convertor
+
+POWER AND SENSING
+- Laptop USB port -> ESP32-S3 USB socket for power and serial data.
+  Do not add an external 5 V / 3.3 V feed to the USB-powered controller.
+- Separate enclosed regulated DC supply -> compatible relay/sensor modules.
+  Verify its current budget, voltage, polarity, noise and signal grounding /
+  isolation before connecting. A USB cable does not isolate the laptop.
+- 12 V AC IS NOT 12 V DC. Do not feed the secondary into the ESP32, relay
+  power pins, an ordinary DC buck converter.
+- Core electrical sensing: one secondary ACS712 5 A candidate and one
+  secondary ZMPT101B candidate. Calibrate at the actual current and 12 V AC.
+  Voltage sensing is across the winding section; current sensing is in series
+  with the load feed. The functional routes are not terminal-level wiring.
+- TWO analog inputs need module-specific ESP32-compatible conditioning,
+  filtering, protection and pin allocation. Do not directly connect a 5 V
+  module output or raw AC conductor to a GPIO.
+- Three relay command pins/drivers remain pending. Verify logic polarity,
+  3.3 V compatibility, coil supply and default-off states. No GPIO drives a coil.
+- PT100 A + MAX31865 measures transformer EXTERIOR; PT100 B measures ambient.
+  Neither reading is oil temperature or winding hot-spot temperature.
+- Room temperature stays because the problem statement includes ambient
+  conditions. Surface minus room temperature gives temperature rise.
+  Use a small supported probe in room air; no large stand is required.
+- The laptop is the operator interface. Accessory fixtures and their wiring
+  have been removed from the active build. No additional display or panel is
+  needed. Keep the protection and enclosures; they are part of the core build.
+
+LOAD PLAN
+The calculations use ONE 12 V RMS winding section, not 24 V end-to-end.
+Confirm the actual transformer's winding/current/VA rating and terminals.
+The centre tap is not protective earth. Do not reverse-feed the transformer.
+
+68 ohm branches: 1 / 2 / 3 on = 0.176 / 0.353 / 0.529 A RMS;
+resistive load power = 2.12 / 4.24 / 6.35 W at exactly 12 V RMS.
+Alternative 33 ohm candidate: 0.364 / 0.727 / 1.091 A RMS;
+4.36 / 8.73 / 13.09 W. Verify actual component ratings before use.
+The 50 W chassis resistor rating is capacity under specified mounting/cooling,
+not actual consumption. Use the required heatsink/guard and thermal protection.
+The planner toggles do not operate real relays.
+
+COST COMPARISON - ATRI'S QUOTES, NOT VERIFIED CURRENT OFFERS
+Removed inverter INR 369 + primary current sensor INR 79 + primary voltage
+sensor INR 119 = INR 567 avoided. Battery savings are not counted.
+Retained quoted subset: transformer INR 213 + secondary current sensor INR 79
++ secondary voltage sensor INR 119 + 3 relays at INR 69 = INR 618.
+This is NOT a full build budget: ESP32, temperatures, resistors, regulated DC
+supply, analog interfaces, protection, enclosure and delivery
+are additional. Borrowing a trainer may avoid the transformer purchase too.
+
+MEASUREMENT CLAIMS
+Secondary RMS voltage/current, loading and surface/ambient temperature can
+support a live monitoring demonstration after acquisition is implemented.
+Vrms * Irms is apparent power in VA. Output real watts require time-aligned
+waveforms and phase calibration. Do not claim measured transformer efficiency
+or input losses without input and output real-power measurements.
+Fit a separate BENCH-001 thermal model. Keep NR-104 distribution-transformer
+replay separate; this bench does not validate field oil/winding temperatures,
+fault diagnosis or remaining useful life. Record actual heating time and use
+clearly labelled replay if thermal changes are too slow for a short demo.
+
+WHAT STILL NEEDS WORK
+Qualified lab technician: protected mains assembly, enclosure, disconnect,
+fuses, cable retention, earthing/isolation, temperature-probe mounting and
+independent thermal protection. Keep mains terminals inaccessible. Do not
+intentionally short or exceed verified ratings; never connect to an energised
+distribution transformer.
+Hardware team: exact modules, two analog channels, three relay drivers/pins,
+DC supply/current budget, calibrated sampling and commissioning.
+Software team: ESP32 firmware, live ingestion adapter and load-response
+confirmation are still unimplemented. The viewer is a design handoff.
+
+USING THE VIEWER
+Choose borrowed trainer or technician-prepared transformer. Both use existing
+college AC. Drag to orbit, scroll to zoom, use Top/Front or explode the model.
+Select among 14 components; filter the 18 functional connection groups.
+Dashed primary and grey routes are conceptual / pending, not approved wiring.
+Build sequence contains seven stages. Save view PNG exports the current model;
+Print build sheets uses the current source option and resistance selection.
+Canvas keyboard: arrows orbit, + / - zoom, 0 resets.
+
+FILES AND PRECEDENCE
+components-rev1.5.csv - core components and references.
+connections-rev1.5.csv - active connection concepts and pending interfaces.
+load-stages-rev1.5.csv - both load candidates at nominal 12 V RMS.
+vendor/ - local Three.js and licence; preview PNGs show this revision.
+Use Rev1.5. Rev1.4 accessories, Rev1.3 source alternatives and earlier DC guides/PDFs are historical.
+The research ZIP dated 1 October still contains the older Rev1.2 design.

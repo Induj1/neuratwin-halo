@@ -1,0 +1,2 @@
+# Install in .venv-laya with Python 3.12 and CPU PyTorch, isolated from the app.
+laya[serve]==0.3.28

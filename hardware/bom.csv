@@ -1,0 +1,18 @@
+Category,Part,Qty,Priority,Why / substitute,Indicative INR band
+Core,"ESP32-S3 DevKitC-1, 8 MB or larger",1,Required,"Wi-Fi, BLE, USB and enough GPIO for the sensor bus.","700-1,500"
+Core,"IP65 ABS enclosure, DIN rail plate, cable glands",1,Required,Makes the build look like a field gateway.,"1,000-2,000"
+Power,12 V DC 3 A isolated adapter + fuse + 5 V buck,1,Required,SELV power domain for the bench and fan.,"800-1,500"
+Electrical,SDM630-Modbus V2 three-phase meter,1,Preferred,"Certified Modbus source for V, A, kW, PF and frequency. Electrician install only.","4,000-8,000"
+Electrical,Isolated RS485 transceiver module,1,Required with meter,Separates the meter bus from the MCU.,"500-1,500"
+Electrical fallback,"3 split-core CTs, 50 A class + isolated voltage set",1 set,Fallback,Only with a safe low-voltage harness or certified panel.,"1,500-4,000"
+Thermal,"PT100 Class A stainless probes, 3-wire",2,Required,Tank surrogate and ambient channels.,"700-1,500"
+Thermal,MAX31865 PT100 breakout,2,Required,RTD conversion with open/short fault detection.,"500-1,000"
+Condition,ADXL345 or industrial accelerometer breakout,1,Recommended,Adds vibration trend as a supporting health signal.,150-600
+Condition,Float switch or capacitive leak sensor + clear tray,1,Recommended,Tangible level/leak signal without oil in electronics.,250-700
+Interaction,PN532 NFC reader + 3 NTAG213/215 tags,1 + 3,Required,Tap-to-open asset passport and handoff.,"500-1,200"
+Interaction,12 V fan + logic MOSFET + flyback diode,1,Required,Physical cooling intervention on the bench.,400-900
+Interaction,"RGB status LED, buzzer, 0.96 inch OLED",1 each,Recommended,Physical state cue for judges.,300-800
+Bench,12/24 V isolated transformer + fused load bank,1,Required,Safe current and thermal behavior.,"2,000-5,000"
+Bench,10 k potentiometer + two pushbuttons + terminals,1 set,Recommended,Physical overload and sensor-drift controls.,150-400
+Connectivity,SIM7600-H/A-H LTE board + antenna + SIM,1,Stretch,Field-backhaul story; Wi-Fi stays the demo default.,"2,500-5,500"
+Assembly,"Ferrules, JST headers, shielded cable, heat-shrink, labels",1 kit,Required,"Readable, serviceable wiring.","500-1,200"

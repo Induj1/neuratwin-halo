@@ -1,0 +1,198 @@
+{
+  "scope": "Five synthetic integration cases. No field diagnostic accuracy, life prediction or calibration claim.",
+  "model": "convaiinnovations/laya",
+  "cases": [
+    {
+      "case_revealed_after_assessment": "normal",
+      "provider": "laya",
+      "hypothesis": "insufficient_evidence",
+      "inspection": "independent_temperature",
+      "distributions": {
+        "hypothesis": {
+          "expected_load_response": 0.0739,
+          "possible_thermal_deviation": 0.5398,
+          "possible_sensor_discrepancy": 0.2603,
+          "insufficient_evidence": 0.1261
+        },
+        "inspection": {
+          "independent_temperature": 0.9454,
+          "check_load": 0.016,
+          "check_connection": 0.01,
+          "visual_inspection": 0.0287
+        }
+      },
+      "raw_model_choices": {
+        "hypothesis": "possible_thermal_deviation",
+        "inspection": "independent_temperature"
+      },
+      "abstained": true,
+      "policy_override": false,
+      "latency_ms": 1169,
+      "prompt_version": "halo-laya-5",
+      "usage": {
+        "input_tokens": 376,
+        "output_tokens": 0,
+        "state_tokens": 91,
+        "state_tokens_dropped": 0,
+        "truncated": false,
+        "truncated_questions": []
+      },
+      "fallback_reason": null
+    },
+    {
+      "case_revealed_after_assessment": "overload",
+      "provider": "laya",
+      "hypothesis": "insufficient_evidence",
+      "inspection": "independent_temperature",
+      "distributions": {
+        "hypothesis": {
+          "expected_load_response": 0.0794,
+          "possible_thermal_deviation": 0.433,
+          "possible_sensor_discrepancy": 0.3858,
+          "insufficient_evidence": 0.1018
+        },
+        "inspection": {
+          "independent_temperature": 0.859,
+          "check_load": 0.0728,
+          "check_connection": 0.0196,
+          "visual_inspection": 0.0486
+        }
+      },
+      "raw_model_choices": {
+        "hypothesis": "possible_thermal_deviation",
+        "inspection": "independent_temperature"
+      },
+      "abstained": true,
+      "policy_override": false,
+      "latency_ms": 1107,
+      "prompt_version": "halo-laya-5",
+      "usage": {
+        "input_tokens": 394,
+        "output_tokens": 0,
+        "state_tokens": 100,
+        "state_tokens_dropped": 0,
+        "truncated": false,
+        "truncated_questions": []
+      },
+      "fallback_reason": null
+    },
+    {
+      "case_revealed_after_assessment": "heating",
+      "provider": "laya",
+      "hypothesis": "insufficient_evidence",
+      "inspection": "independent_temperature",
+      "distributions": {
+        "hypothesis": {
+          "expected_load_response": 0.0747,
+          "possible_thermal_deviation": 0.54,
+          "possible_sensor_discrepancy": 0.2604,
+          "insufficient_evidence": 0.1249
+        },
+        "inspection": {
+          "independent_temperature": 0.9442,
+          "check_load": 0.0166,
+          "check_connection": 0.0102,
+          "visual_inspection": 0.029
+        }
+      },
+      "raw_model_choices": {
+        "hypothesis": "possible_thermal_deviation",
+        "inspection": "independent_temperature"
+      },
+      "abstained": true,
+      "policy_override": false,
+      "latency_ms": 1060,
+      "prompt_version": "halo-laya-5",
+      "usage": {
+        "input_tokens": 376,
+        "output_tokens": 0,
+        "state_tokens": 91,
+        "state_tokens_dropped": 0,
+        "truncated": false,
+        "truncated_questions": []
+      },
+      "fallback_reason": null
+    },
+    {
+      "case_revealed_after_assessment": "sensor",
+      "provider": "laya",
+      "hypothesis": "insufficient_evidence",
+      "inspection": "independent_temperature",
+      "distributions": {
+        "hypothesis": {
+          "expected_load_response": 0.0753,
+          "possible_thermal_deviation": 0.54,
+          "possible_sensor_discrepancy": 0.2617,
+          "insufficient_evidence": 0.1229
+        },
+        "inspection": {
+          "independent_temperature": 0.945,
+          "check_load": 0.0161,
+          "check_connection": 0.0101,
+          "visual_inspection": 0.0288
+        }
+      },
+      "raw_model_choices": {
+        "hypothesis": "possible_thermal_deviation",
+        "inspection": "independent_temperature"
+      },
+      "abstained": true,
+      "policy_override": false,
+      "latency_ms": 1095,
+      "prompt_version": "halo-laya-5",
+      "usage": {
+        "input_tokens": 376,
+        "output_tokens": 0,
+        "state_tokens": 91,
+        "state_tokens_dropped": 0,
+        "truncated": false,
+        "truncated_questions": []
+      },
+      "fallback_reason": null
+    },
+    {
+      "case_revealed_after_assessment": "dropout",
+      "provider": "laya",
+      "hypothesis": "insufficient_evidence",
+      "inspection": "check_connection",
+      "distributions": {
+        "hypothesis": {
+          "expected_load_response": 0.0658,
+          "possible_thermal_deviation": 0.4864,
+          "possible_sensor_discrepancy": 0.2452,
+          "insufficient_evidence": 0.2026
+        },
+        "inspection": {
+          "independent_temperature": 0.641,
+          "check_load": 0.1198,
+          "check_connection": 0.0752,
+          "visual_inspection": 0.164
+        }
+      },
+      "raw_model_choices": {
+        "hypothesis": "possible_thermal_deviation",
+        "inspection": "independent_temperature"
+      },
+      "abstained": true,
+      "policy_override": true,
+      "latency_ms": 1072,
+      "prompt_version": "halo-laya-5",
+      "usage": {
+        "input_tokens": 362,
+        "output_tokens": 0,
+        "state_tokens": 84,
+        "state_tokens_dropped": 0,
+        "truncated": false,
+        "truncated_questions": []
+      },
+      "fallback_reason": null
+    }
+  ],
+  "all_local_model": true,
+  "all_typed": true,
+  "dropout_withheld": true,
+  "loaded_revisions": {
+    "english": "7b928d828b7b0e022f929d9bd2e44165aa270148"
+  },
+  "runtime": "laya[serve] 0.3.28 / Python 3.12 / CPU"
+}
