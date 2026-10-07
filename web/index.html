@@ -1,91 +1,16 @@
 <!doctype html>
 <html lang="en">
-<head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <meta name="theme-color" content="#0b0b0a">
-  <meta name="description" content="NeuraTwin digital twin systems for critical electrical infrastructure.">
-  <title>NeuraTwin — Digital Twin Systems</title>
-  <link rel="stylesheet" href="/static/experience.css?v=3">
-</head>
-<body>
-  <div class="grain" aria-hidden="true"></div>
-  <header class="site-nav">
-    <a class="wordmark" href="#top" aria-label="NeuraTwin home"><span>NEURATWIN</span><small>DIGITAL TWIN SYSTEMS</small></a>
-    <nav class="site-links" aria-label="Primary navigation">
-      <a href="#physical">Product</a><a href="#twin">How it works</a><a href="#evidence">Evidence</a><a href="#footer">About</a>
-    </nav>
-    <a class="nav-cta" href="/app">Open command center <span>↗</span></a>
-  </header>
-
-  <main>
-    <section class="hero" id="top">
-      <div class="hero-image" aria-hidden="true"></div>
-      <div class="hero-vignette" aria-hidden="true"></div>
-      <div class="hero-content reveal">
-        <p class="eyebrow"><i></i> NEURATWIN / NR-104</p>
-        <h1>Digital twins<br><em>for critical infrastructure.</em></h1>
-        <p class="hero-dek">A transformer is never silent. NeuraTwin listens to the signals that tell you what happens next.</p>
-        <a class="hero-link" href="/app">Open the operations console <span>↗</span></a>
-      </div>
-      <div class="hero-foot"><span>North Industrial Feeder</span><span id="hero-status">LIVE / 5 MIN TELEMETRY</span><span>Scroll to explore ↓</span></div>
-    </section>
-
-    <section class="story-section physical" id="physical">
-      <div class="section-index">01 / THE PHYSICAL WORLD</div>
-      <div class="physical-frame reveal"><div class="physical-image" aria-hidden="true"></div><span class="image-caption">Demonstration site A · 33 kV distribution transformer</span></div>
-      <div class="physical-copy reveal"><p class="eyebrow">THE MACHINE</p><h2>IS ALWAYS<br><em>TELLING A STORY.</em></h2><p>Temperature. Load. Ambient conditions. Mechanical behavior. NeuraTwin turns those signals into a continuously evolving representation of the asset.</p></div>
-    </section>
-
-    <section class="story-section signal-section" id="signals">
-      <div class="section-index">02 / LIVE SIGNALS</div>
-      <div class="signal-intro reveal"><p class="eyebrow">FROM STEEL TO DATA</p><h2>The physical world<br>leaves a trace.</h2><p>Every five minutes, the asset gives us another frame: measured, estimated, and labelled with the confidence it deserves.</p></div>
-      <div class="signal-art" aria-label="Transformer signals"><div class="signal-line line-a"></div><div class="signal-line line-b"></div><div class="signal-line line-c"></div><div class="signal-core"><span>NR-104</span><b>LIVE</b></div><div class="annotation ann-one"><small>WINDING</small><strong data-bind="hotspot">—</strong><em>°C / estimated</em></div><div class="annotation ann-two"><small>LOAD</small><strong data-bind="load-pct">—</strong><em>% / observed</em></div><div class="annotation ann-three"><small>AMBIENT</small><strong data-bind="ambient">—</strong><em>°C / measured</em></div><div class="annotation ann-four"><small>THERMAL LIMIT</small><strong data-bind="limit">120</strong><em>°C / configured</em></div></div>
-    </section>
-
-    <section class="story-section twin-section" id="twin">
-      <div class="section-index">03 / THE DIGITAL TWIN</div>
-      <div class="twin-copy reveal"><p class="eyebrow">A MODEL THAT STAYS HONEST</p><h2>REAL ASSET<br><span>↓</span> LIVE SIGNALS<br><span>↓</span> DIGITAL MODEL<br><span>↓</span> PREDICTION</h2><p>The twin separates what the instruments measured from what the model inferred. Rotate the asset. Change the layer. Inspect the state.</p><div class="twin-switch"><button class="active" data-mode="thermal">Thermal</button><button data-mode="electrical">Electrical</button></div></div>
-      <div class="twin-stage twin-canvas"><div class="twin-stage-grid"></div><canvas id="twin-3d" aria-label="Interactive 3D transformer digital twin"></canvas><div class="twin-stage-label">NEURATWIN / DIGITAL TWIN <span>drag to inspect</span></div><div class="twin-stage-status"><i></i><span id="twin-stage-status">MODEL SYNCHRONISED</span></div></div>
-    </section>
-
-    <section class="story-section change-section" id="change">
-      <div class="section-index">04 / SEE THE CHANGE</div>
-      <div class="change-copy reveal"><p class="eyebrow">A CONDITIONAL PROJECTION</p><h2>When the load<br>moves, heat follows.</h2><p>Hold the ambient conditions. Increase the feeder demand. The thermal response moves through the same evidence window as the physical asset.</p></div>
-      <div class="change-visual"><div class="change-image" aria-hidden="true"></div><svg class="change-curve" viewBox="0 0 900 340" preserveAspectRatio="none" aria-label="Thermal response curve"><path class="curve-grid" d="M0 60H900M0 170H900M0 280H900"></path><path class="curve-limit" d="M0 116H900"></path><path class="curve-main" d="M0 263 C150 260 240 246 350 250 S500 226 575 220 S660 186 710 150 S770 84 900 36"></path></svg><div class="curve-label limit-label">THERMAL LIMIT <b>120°C</b></div><div class="curve-label now-label">NOW <b>+<span id="change-minutes">—</span> MIN</b></div></div>
-    </section>
-
-    <section class="story-section prediction-section" id="prediction">
-      <div class="section-index">05 / PREDICT BEFORE IT HAPPENS</div>
-      <div class="prediction-head reveal"><h2>DON'T WAIT<br>FOR THE<br><em>FAILURE.</em></h2><div class="prediction-turn">PREDICT IT <span>↗</span></div></div>
-      <div class="prediction-graph"><div class="prediction-axis"><span>−6h</span><span>−3h</span><span>NOW</span><span>+60m</span></div><svg viewBox="0 0 1000 260" preserveAspectRatio="none" aria-label="Historical and predicted thermal curve"><path class="p-grid" d="M0 52H1000M0 130H1000M0 208H1000"></path><path class="p-history" d="M0 190 C90 188 140 191 210 179 S350 185 420 166 S535 171 600 153"></path><path class="p-future" d="M600 153 C670 141 712 127 760 105 S850 65 1000 42"></path><line class="p-now" x1="600" y1="22" x2="600" y2="238"></line></svg><div class="prediction-callout"><span>THERMAL BREACH</span><strong id="breach-minutes">— MIN</strong><small><b id="prediction-confidence">92%</b> prediction confidence</small></div></div>
-    </section>
-
-    <section class="story-section evidence-section" id="evidence">
-      <div class="section-index">06 / EVIDENCE</div>
-      <div class="evidence-head reveal"><p class="eyebrow">FORENSIC ENGINEERING</p><h2>EVERY PREDICTION<br><em>HAS EVIDENCE.</em></h2></div>
-      <div class="evidence-trace"><div class="trace-line"></div><article class="trace-item"><span>01</span><div><small>LOAD</small><strong id="evidence-load">+18%</strong><p>Demand above the configured nameplate response.</p></div></article><article class="trace-item"><span>02</span><div><small>AMBIENT</small><strong id="evidence-ambient">+6°C</strong><p>Ambient rise carried through the same window.</p></div></article><article class="trace-item"><span>03</span><div><small>THERMAL RESPONSE</small><strong id="evidence-response">ABNORMAL</strong><p>Measured oil temperature diverges from the reference response.</p></div></article></div>
-    </section>
-
-    <section class="story-section action-section" id="action">
-      <div class="section-index">07 / FROM SIGNAL TO ACTION</div>
-      <div class="action-image" aria-hidden="true"></div><div class="action-overlay"></div>
-      <div class="action-copy reveal"><p class="eyebrow">MAINTENANCE RECOMMENDATION</p><h2>THERMAL RISK<br><em>DETECTED.</em></h2><div class="action-values"><div><small>RECOMMENDED ACTION</small><strong>Reduce feeder load<br>~8%</strong></div><div><small>EXPECTED THERMAL REDUCTION</small><strong id="action-reduction">~11°C</strong></div></div><button class="action-button" id="simulate-action">Simulate action <span>↗</span></button><p class="action-note" id="action-note">A conditional comparison based on the current model state. No physical switching is performed.</p></div>
-    </section>
-
-    <section class="story-section final-twin" id="inspect">
-      <div class="section-index">08 / THE TWIN</div>
-      <div class="final-twin-copy reveal"><p class="eyebrow">INSPECT THE STATE</p><h2>One asset.<br>Many possible futures.</h2><p>Thermal and electrical layers are different views of the same physical state. The evidence trail remains attached to the asset.</p><a class="hero-link" href="/app">Open the operations console <span>↗</span></a></div>
-      <div class="final-data"><span><small>ASSET</small><b>NR-104</b></span><span><small>MODEL</small><b id="final-model-state">SYNCHRONISED</b></span><span><small>CONFIDENCE</small><b id="final-confidence">92%</b></span></div>
-    </section>
-
-    <section class="closing" id="about"><div class="closing-inner reveal"><p class="eyebrow">NEURATWIN / CRITICAL INFRASTRUCTURE</p><h2>SEE THE<br><em>UNSEEN.</em></h2><p>NeuraTwin connects physical infrastructure with the intelligence required to understand what happens next.</p><a class="nav-cta closing-cta" href="/app">Enter the command center <span>↗</span></a></div></section>
-  </main>
-
-  <footer class="site-footer" id="footer"><a class="wordmark" href="#top"><span>NEURATWIN</span><small>DIGITAL TWIN SYSTEMS</small></a><div><a href="#top">Product</a><a href="#twin">Technology</a><a href="#evidence">Evidence</a><a href="mailto:hello@neuratwin.local">Contact</a></div><small>© 2026 Neura Rangers · Demonstration system</small></footer>
-
-  <script src="https://cdn.jsdelivr.net/npm/three@0.149.0/build/three.min.js"></script>
-  <script src="/static/three-twin.js?v=2"></script>
-  <script src="/static/experience.js?v=2"></script>
-</body>
-</html>
+<head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="theme-color" content="#f4f3ee"><meta name="description" content="NeuraTwin Halo. Explore the transformer, inspect the bench and follow the readings."><title>NeuraTwin Halo</title><link rel="stylesheet" href="/static/halo-landing.css?v=1"></head>
+<body class="halo-home">
+<a class="skip-link" href="#main">Skip to content</a>
+<header class="landing-nav"><a class="wordmark" href="/" aria-label="NeuraTwin Halo home"><svg viewBox="0 0 32 32" aria-hidden="true"><path d="M7 4v24M25 4v24M7 16h18M11 4v24M21 4v24"/></svg><span>neuratwin<sup>®</sup></span></a><nav aria-label="Main"><a href="/app">Command centre</a><a href="/judge">Judge desk <span aria-hidden="true">↗</span></a></nav><span class="nav-credit">By Neura Rangers</span></header>
+<main id="main">
+<section class="product-hero" aria-labelledby="hero-heading">
+<div class="hero-intro"><h1 id="hero-heading">A closer look.<br>A clearer picture.</h1><p>Your transformer, made visible.<br>Explore it with Halo.</p></div>
+<div class="product-scene twin-canvas"><div class="hero-word" aria-hidden="true">halo</div><canvas id="twin-3d" aria-label="Rotating 3D transformer. Drag to turn the model."></canvas><div class="scene-index"><span class="fine-label">01 / THE TRANSFORMER</span><span>NR-104</span><small>Illustrative distribution model</small></div><div class="scene-interaction"><svg viewBox="0 0 36 36" aria-hidden="true"><path d="M7 13a13 13 0 0 1 23 0M30 7v6h-6M29 23a13 13 0 0 1-23 0M6 29v-6h6"/></svg><span>Go on, give it a turn.</span></div></div>
+<div class="hero-bottom"><div class="hero-caption"><span class="fine-label">NEURATWIN HALO</span><p>From the outside.<br>To the details that matter.</p></div><a class="enter-link" href="/app"><span>Open command centre</span><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg></a><a class="understated-link" href="#readings">Explore the readings <span aria-hidden="true">↓</span></a></div>
+</section>
+<section class="reading-strip" id="readings" aria-label="Simulated transformer readings"><div class="reading-origin"><span class="fine-label">A MOMENT IN THE MODEL</span><p>Distribution study</p><small>Simulated readings</small></div><div class="reading"><span>Estimated hot-spot</span><strong><span data-bind="hotspot">...</span><small>°C</small></strong></div><div class="reading"><span>Loading</span><strong><span data-bind="load-pct">...</span><small>%</small></strong></div><div class="reading"><span>Ambient</span><strong><span data-bind="ambient">...</span><small>°C</small></strong></div><a href="/app" class="reading-arrow" aria-label="Inspect readings in command centre">↗</a></section>
+<section class="next-step"><span class="fine-label">02 / THE WORKSPACE</span><h2>Take a look inside.</h2><p>Inspect the assembly. Follow a reading.<br>See what changes.</p><a href="/app">Enter the workspace <span aria-hidden="true">↗</span></a></section>
+</main><footer class="landing-footer"><span>Neura Rangers</span><span>Built around the transformer.</span><a href="/judge">Judge desk ↗</a></footer>
+<script src="/static/vendor/three-0.149.0.min.js"></script><script src="/static/halo-studio.js?v=1"></script><script src="/static/three-twin.js?v=6"></script><script src="/static/experience.js?v=2"></script></body></html>
