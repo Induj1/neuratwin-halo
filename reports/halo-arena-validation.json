@@ -1,0 +1,83 @@
+{
+  "date": "2026-10-07",
+  "source": "Synthetic software verification; no device commands or external messages",
+  "live_api": {
+    "mixed_case": "2fe48b3d0caa52831c3cc216",
+    "assessment": [
+      "Excess loading",
+      "Temperature-channel discrepancy"
+    ],
+    "committed_evidence_unchanged": true,
+    "planner_reduction_pct": 15,
+    "capacity_kva_by_window": [
+      {
+        "horizon_min": 15,
+        "extra_load_pu": 0.6769,
+        "extra_kva": 67.69,
+        "status": "Conditional model headroom",
+        "binding": [
+          "hot-spot sensitivity bound"
+        ],
+        "peak_upper_c": 119.99817630937316
+      },
+      {
+        "horizon_min": 30,
+        "extra_load_pu": 0.5641,
+        "extra_kva": 56.41,
+        "status": "Conditional model headroom",
+        "binding": [
+          "hot-spot sensitivity bound"
+        ],
+        "peak_upper_c": 119.99831390333318
+      },
+      {
+        "horizon_min": 60,
+        "extra_load_pu": 0.4857,
+        "extra_kva": 48.57,
+        "status": "Conditional model headroom",
+        "binding": [
+          "hot-spot sensitivity bound"
+        ],
+        "peak_upper_c": 119.99899035619558
+      }
+    ],
+    "network_candidates": 135,
+    "network_passes": 79,
+    "clinic_supplied_kw": 25.0,
+    "unmet_demand_kw": 72.5,
+    "clinic_outage_infeasible": true,
+    "case_manifest_verified": true,
+    "demo_kit_files": 6
+  },
+  "browser": {
+    "hidden_bias_to_probe_to_commit_to_reveal": "passed",
+    "three_futures_shared_minute_30": "passed",
+    "capacity_unsafe_zero_and_revised_positive": "passed",
+    "neighbourhood_before_after_and_infeasible_outage": "passed",
+    "desktop_console_errors": 0,
+    "phone_viewport_width": 390,
+    "phone_document_width": 375,
+    "phone_map_scroll_contained": true,
+    "browser_study_export": "button initiated; ZIP bytes separately verified through live API",
+    "portable_html_report_render": "visually reviewed at localhost using the actual exported HTML"
+  },
+  "artifacts": [
+    "halo-arena-futures.png",
+    "halo-arena-network.png",
+    "halo-arena-case-preview.html",
+    "NeuraTwin-Halo-Arena-Case.zip",
+    "NeuraTwin-Halo-Demo-Kit.zip"
+  ],
+  "limitations": [
+    "No physical measurement, relay switching or mains test.",
+    "Balanced synthetic power-flow and illustrative thermal parameters.",
+    "Rule alerts and model sensitivity are not calibrated fault probabilities.",
+    "Phone-width emulation, not a physical phone test."
+  ],
+  "automated_tests": {
+    "passed": 104,
+    "failed": 0,
+    "arena_tests": 21,
+    "report": "halo-arena-tests.xml"
+  }
+}

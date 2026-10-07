@@ -144,7 +144,7 @@ def test_complete_demo_kit_and_self_contained_fallback(client):
     assert r.status_code==200,r.text[:100]
     with zipfile.ZipFile(io.BytesIO(r.content)) as z:
         manifest=json.loads(z.read('manifest.json'))
-        assert len(manifest)==5 and 'halo-rehearsal.mp4' in manifest
+        assert len(manifest)==6 and 'halo-rehearsal.mp4' in manifest and 'halo-arena-guide.html' in manifest
         for name,digest in manifest.items():assert hashlib.sha256(z.read(name)).hexdigest()==digest
         page=z.read('halo-fallback.html').decode()
         assert '<script src=' not in page and 'fetch(' not in page

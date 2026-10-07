@@ -25,6 +25,8 @@ from .halo_evidence_api import router as evidence_router
 app.include_router(evidence_router)
 from .halo_demo import router as demo_router
 app.include_router(demo_router)
+from .halo_arena import router as arena_router
+app.include_router(arena_router)
 
 
 def asset_config(asset_id):
@@ -228,6 +230,7 @@ def operations_console():
     """Serve the functional Round 2 operator console behind the product story."""
     page=(ROOT/'web/halo.html').read_text(encoding='utf-8').replace('<!-- HALO_EVIDENCE -->',(ROOT/'web/halo-evidence.html').read_text(encoding='utf-8'))
     page=page.replace('<!-- HALO_DEMO -->',(ROOT/'web/halo-demo.html').read_text(encoding='utf-8'))
+    page=page.replace('<!-- HALO_ARENA -->',(ROOT/'web/halo-arena.html').read_text(encoding='utf-8'))
     return Response(page,media_type='text/html')
 
 
@@ -239,6 +242,11 @@ def legacy_console():
 @app.get('/judge')
 def judge_console():
     return FileResponse(ROOT/'web/halo-judge.html')
+
+
+@app.get('/arena/judge')
+def arena_judge():
+    return FileResponse(ROOT/'web/halo-arena-judge.html',headers={'Cache-Control':'no-store','Referrer-Policy':'no-referrer'})
 
 
 @app.get('/sw.js')

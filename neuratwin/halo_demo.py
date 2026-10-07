@@ -23,7 +23,7 @@ def readiness(context):
     check('Application response',True,'The application handled this authenticated request.')
     with database() as db:db.execute('SELECT 1').fetchone()
     check('Evidence database',True,'Local database is readable. This does not test every future disk write.')
-    files=['halo.js','halo-evidence.js','halo-demo.js','halo-demo.html','halo-fallback.html','vendor/three-0.149.0.min.js']
+    files=['halo.js','halo-evidence.js','halo-demo.js','halo-demo.html','halo-fallback.html','halo-arena.js','halo-arena.css','halo-arena-guide.html','vendor/three-0.149.0.min.js']
     missing=[f for f in files if not (ROOT/'web'/f).is_file()]
     check('Demonstration assets',not missing,'Missing: '+', '.join(missing) if missing else 'Workspace, 3D code and offline rehearsal are present.')
     check('Selected source',bool(snap['current']),f"{snap['asset_id']} / {snap['source']} / {snap['connection']}")
@@ -76,7 +76,7 @@ def recording(actor=Depends(operator)):
 
 @router.post('/kit')
 def kit(actor=Depends(operator)):
-    files=['halo-fallback.html','halo-architecture.svg','halo-bench-checklist.html','halo-demo-script.html','halo-rehearsal.mp4']
+    files=['halo-fallback.html','halo-architecture.svg','halo-bench-checklist.html','halo-demo-script.html','halo-rehearsal.mp4','halo-arena-guide.html']
     missing=[name for name in files if not (ROOT/'web'/name).is_file()]
     if missing:raise HTTPException(409,'Demo kit incomplete: '+', '.join(missing))
     stream=io.BytesIO();manifest={}
