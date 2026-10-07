@@ -1,16 +1,346 @@
-<!doctype html>
+﻿<!doctype html>
 <html lang="en">
-<head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="theme-color" content="#f4f3ee"><meta name="description" content="NeuraTwin Halo. Explore the transformer, inspect the bench and follow the readings."><title>NeuraTwin Halo</title><link rel="stylesheet" href="/static/halo-landing.css?v=1"></head>
-<body class="halo-home">
-<a class="skip-link" href="#main">Skip to content</a>
-<header class="landing-nav"><a class="wordmark" href="/" aria-label="NeuraTwin Halo home"><svg viewBox="0 0 32 32" aria-hidden="true"><path d="M7 4v24M25 4v24M7 16h18M11 4v24M21 4v24"/></svg><span>neuratwin<sup>®</sup></span></a><nav aria-label="Main"><a href="/app">Command centre</a><a href="/judge">Judge desk <span aria-hidden="true">↗</span></a></nav><span class="nav-credit">By Neura Rangers</span></header>
-<main id="main">
-<section class="product-hero" aria-labelledby="hero-heading">
-<div class="hero-intro"><h1 id="hero-heading">A closer look.<br>A clearer picture.</h1><p>Your transformer, made visible.<br>Explore it with Halo.</p></div>
-<div class="product-scene twin-canvas"><div class="hero-word" aria-hidden="true">halo</div><canvas id="twin-3d" aria-label="Rotating 3D transformer. Drag to turn the model."></canvas><div class="scene-index"><span class="fine-label">01 / THE TRANSFORMER</span><span>NR-104</span><small>Illustrative distribution model</small></div><div class="scene-interaction"><svg viewBox="0 0 36 36" aria-hidden="true"><path d="M7 13a13 13 0 0 1 23 0M30 7v6h-6M29 23a13 13 0 0 1-23 0M6 29v-6h6"/></svg><span>Go on, give it a turn.</span></div></div>
-<div class="hero-bottom"><div class="hero-caption"><span class="fine-label">NEURATWIN HALO</span><p>From the outside.<br>To the details that matter.</p></div><a class="enter-link" href="/app"><span>Open command centre</span><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg></a><a class="understated-link" href="#readings">Explore the readings <span aria-hidden="true">↓</span></a></div>
-</section>
-<section class="reading-strip" id="readings" aria-label="Simulated transformer readings"><div class="reading-origin"><span class="fine-label">A MOMENT IN THE MODEL</span><p>Distribution study</p><small>Simulated readings</small></div><div class="reading"><span>Estimated hot-spot</span><strong><span data-bind="hotspot">...</span><small>°C</small></strong></div><div class="reading"><span>Loading</span><strong><span data-bind="load-pct">...</span><small>%</small></strong></div><div class="reading"><span>Ambient</span><strong><span data-bind="ambient">...</span><small>°C</small></strong></div><a href="/app" class="reading-arrow" aria-label="Inspect readings in command centre">↗</a></section>
-<section class="next-step"><span class="fine-label">02 / THE WORKSPACE</span><h2>Take a look inside.</h2><p>Inspect the assembly. Follow a reading.<br>See what changes.</p><a href="/app">Enter the workspace <span aria-hidden="true">↗</span></a></section>
-</main><footer class="landing-footer"><span>Neura Rangers</span><span>Built around the transformer.</span><a href="/judge">Judge desk ↗</a></footer>
-<script src="/static/vendor/three-0.149.0.min.js"></script><script src="/static/halo-studio.js?v=1"></script><script src="/static/three-twin.js?v=6"></script><script src="/static/experience.js?v=2"></script></body></html>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <meta name="theme-color" content="#f4f3ee" />
+    <meta
+      name="description"
+      content="Meet Halo, a digital twin for transformer monitoring. Explore the model, compare thermal futures and trace every decision back to evidence."
+    />
+    <title>NeuraTwin Halo · See what comes next.</title>
+    <link rel="stylesheet" href="/static/halo-landing.css?v=3" />
+    <link rel="stylesheet" href="/static/halo-bench-landing.css?v=1" />
+    <link rel="stylesheet" href="/static/halo-glass.css?v=1" />
+    <link rel="stylesheet" href="/static/halo-thermal.css?v=1" />
+  </head>
+  <body class="halo-home">
+    <a class="skip-link" href="#main">Skip to content</a>
+    <header class="landing-nav wrap">
+      <a class="wordmark" href="/" aria-label="NeuraTwin Halo home"
+        ><svg viewBox="0 0 32 32" aria-hidden="true">
+          <path d="M7 4v24M25 4v24M7 16h18M11 4v24M21 4v24" /></svg
+        ><span>neuratwin</span></a
+      >
+      <nav aria-label="Main">
+        <a href="#possibilities">Explore Halo</a
+        ><a href="/judge">Judge desk ↗</a>
+      </nav>
+      <a href="/app" class="nav-open"
+        >Command centre <span aria-hidden="true">↗</span></a
+      >
+    </header>
+    <main id="main">
+      <section class="bench-hero" aria-labelledby="hero-heading">
+        <div class="bench-intro wrap">
+          <div>
+            <p class="eyebrow">NeuraTwin Halo</p>
+            <h1 id="hero-heading">
+              The real thing.<br /><em>A clearer picture.</em>
+            </h1>
+          </div>
+          <div class="bench-intro-action">
+            <p>Explore the machine.<br />Understand every connection.</p>
+            <a class="button" href="/app"
+              >Open Halo <span aria-hidden="true">&#8599;</span></a
+            >
+          </div>
+        </div>
+        <div class="bench-stage twin-canvas">
+          <div class="model-fallback">
+            <span>Halo</span>
+            <p>Explore the prototype in the command centre.</p>
+          </div>
+          <canvas
+            id="twin-3d"
+            tabindex="0"
+            role="img"
+            aria-label="Interactive 3D model of the transformer prototype. Drag or use arrow keys to rotate."
+          ></canvas>
+          <div class="bench-part-nav" aria-label="Inspect a component">
+            <button data-bench-part="transformer" aria-pressed="false">
+              Transformer</button
+            ><button data-bench-part="voltage" aria-pressed="false">
+              Voltage</button
+            ><button data-bench-part="current" aria-pressed="false">
+              Current</button
+            ><button data-bench-part="relay" aria-pressed="false">Loads</button
+            ><button data-bench-part="controller" aria-pressed="false">
+              ESP32
+            </button>
+          </div>
+          <div class="bench-stage-caption">
+            <span id="bench-component">Prototype assembly</span>
+          </div>
+          <div class="bench-tools">
+            <button id="model-cutaway" aria-pressed="false">Cutaway</button
+            ><label for="bench-explode">Explode</label
+            ><input
+              id="bench-explode"
+              type="range"
+              min="0"
+              max="100"
+              value="0"
+            /><button id="bench-reset">Reset</button
+            ><button id="model-motion" aria-pressed="false">Pause</button>
+          </div>
+        </div>
+        <div class="bench-bottom wrap">
+          <span>One transformer. Four load stages. Every change in view.</span
+          ><a href="#possibilities">Explore Halo &#8595;</a>
+        </div>
+      </section>
+      <section
+        class="intro wrap"
+        id="possibilities"
+        aria-labelledby="intro-heading"
+      >
+        <p class="eyebrow">The whole picture</p>
+        <h2 id="intro-heading">
+          From the bench to the bigger picture.<br /><span
+            >Follow the signal. See the consequence.</span
+          >
+        </h2>
+        <div class="capability-line">
+          <p>
+            Connect measurements to the machine. Explore what changes,
+            understand why, and carry the evidence into the field.
+          </p>
+          <div>
+            <span>Inspect in 3D</span><span>Compare futures</span
+            ><span>Verify with evidence</span>
+          </div>
+        </div>
+      </section>
+      <section
+        class="forecast-section"
+        id="readings"
+        aria-labelledby="forecast-heading"
+      >
+        <div class="wrap forecast-layout">
+          <div class="forecast-copy">
+            <p class="eyebrow">Try a different future</p>
+            <h2 id="forecast-heading">One decision.<br />Two outcomes.</h2>
+            <p>
+              Reduce the load. Watch the projected temperature change. Both
+              futures start from the same conditions.
+            </p>
+            <div class="load-control">
+              <label for="load-reduction"
+                >Load reduction
+                <output id="load-value" for="load-reduction">20%</output></label
+              ><input
+                id="load-reduction"
+                type="range"
+                min="0"
+                max="40"
+                step="5"
+                value="20"
+                aria-describedby="forecast-context"
+              />
+              <div class="range-ends">
+                <span>Keep the load</span><span>Reduce by 40%</span>
+              </div>
+            </div>
+            <a class="text-link" href="/app?asset=DT-SIM#actions"
+              >Explore Action Lab <span aria-hidden="true">↗</span></a
+            >
+          </div>
+          <div class="forecast-panel" aria-busy="true" id="forecast-panel">
+            <div class="chart-top">
+              <span>Projected hot-spot temperature</span><span>°C</span>
+            </div>
+            <div class="chart-legend">
+              <span class="baseline-key">Current load</span
+              ><span class="alternative-key">Reduced load</span>
+            </div>
+            <div class="chart-area">
+              <svg
+                id="forecast-chart"
+                viewBox="0 0 650 300"
+                role="img"
+                aria-label="Loading temperature comparison"
+              ></svg>
+              <p class="chart-state" id="chart-state">
+                Calculating both futures…
+              </p>
+            </div>
+            <div class="chart-axis">
+              <span>Now</span><span>60 min</span><span>120 min</span>
+            </div>
+            <div class="forecast-result">
+              <div>
+                <span>Projected peak reduction</span
+                ><strong
+                  ><span id="peak-reduction">…</span><small>°C</small></strong
+                >
+              </div>
+              <p id="forecast-summary" role="status" aria-live="polite">
+                Loading the distribution study.
+              </p>
+            </div>
+            <p class="source-note" id="forecast-context">
+              Synthetic overload study · 10-minute intervention delay · model
+              estimates, not live equipment readings.
+            </p>
+            <button class="text-link" id="retry-forecast" hidden>
+              Retry comparison ↗
+            </button>
+          </div>
+        </div>
+      </section>
+      <section class="evidence-section wrap" aria-labelledby="evidence-heading">
+        <div class="section-heading">
+          <h2 id="evidence-heading">Trust has a paper trail.</h2>
+          <p>
+            Follow a reading all the way to a decision, then check what actually
+            happened.
+          </p>
+        </div>
+        <div class="evidence-grid">
+          <div class="evidence-sheet">
+            <div class="sheet-top">
+              <span class="sheet-mark">h.</span><span>HALO / EVIDENCE LAB</span>
+            </div>
+            <h3>Every conclusion.<br />Connected to its source.</h3>
+            <ol class="evidence-chain">
+              <li>
+                <span class="chain-number">01</span>
+                <div>
+                  <strong>Observe</strong>
+                  <p>Measurements, freshness &amp; calibration</p>
+                </div>
+              </li>
+              <li>
+                <span class="chain-number">02</span>
+                <div>
+                  <strong>Investigate</strong>
+                  <p>Residuals, hypotheses &amp; model limits</p>
+                </div>
+              </li>
+              <li>
+                <span class="chain-number">03</span>
+                <div>
+                  <strong>Verify</strong>
+                  <p>Frozen forecasts against later readings</p>
+                </div>
+              </li>
+            </ol>
+            <div class="sheet-bottom">
+              Traceable from signal to outcome <span aria-hidden="true">↗</span>
+            </div>
+          </div>
+          <div class="evidence-content">
+            <article>
+              <span class="detail-index">See the source</span>
+              <h3>Reality and simulation,<br />clearly separated.</h3>
+              <p>
+                Bench measurements, replay and distribution studies keep their
+                own provenance. You always know what you are looking at.
+              </p>
+            </article>
+            <article>
+              <span class="detail-index">Challenge the model</span>
+              <h3>Evidence before confidence.</h3>
+              <p>
+                Inspect uncertainty, compare baselines and test forecasts
+                against later observations.
+              </p>
+            </article>
+            <a class="text-link" href="/app#evidence"
+              >Explore Evidence Lab <span aria-hidden="true">↗</span></a
+            >
+          </div>
+        </div>
+      </section>
+      <section class="arena-section" aria-labelledby="arena-heading">
+        <div class="wrap arena-layout">
+          <div class="arena-copy">
+            <p class="eyebrow">Grid Rescue</p>
+            <h2 id="arena-heading">Think beyond<br />one transformer.</h2>
+            <p>
+              A fault. A neighbourhood. A decision that changes both. Test your
+              response to judge-controlled scenarios and compare the trade-offs.
+            </p>
+            <a class="button" href="/app#arena"
+              >Enter Grid Rescue <span aria-hidden="true">↗</span></a
+            ><small>Controlled synthetic scenarios</small>
+          </div>
+          <div class="grid-scene">
+            <canvas
+              id="grid-3d"
+              role="img"
+              aria-label="Illustrative 3D neighbourhood connected to a transformer"
+            ></canvas>
+            <div class="grid-fallback">
+              Explore neighbourhood scenarios in Grid Rescue.
+            </div>
+            <div class="grid-caption">
+              <span>One asset. A connected neighbourhood.</span
+              ><small>Illustrative network</small>
+            </div>
+          </div>
+        </div>
+      </section>
+      <section class="field-section wrap" aria-labelledby="field-heading">
+        <div class="field-visual">
+          <img
+            src="/static/assets/nfc-passport-v2.png"
+            width="1024"
+            height="1024"
+            loading="lazy"
+            alt="Concept illustration of an NFC equipment tag mounted on a transformer"
+          /><span>Equipment passport · concept illustration</span>
+        </div>
+        <div class="field-copy">
+          <h2 id="field-heading">The twin goes<br />to work with you.</h2>
+          <p>
+            Open an equipment passport. Record an inspection. Keep the machine’s
+            history connected to the machine.
+          </p>
+          <div class="field-links">
+            <a href="/app#passport"
+              ><span>Equipment passport</span
+              ><span
+                >QR &amp; supported NFC <b aria-hidden="true">↗</b></span
+              ></a
+            ><a href="/app#maintenance"
+              ><span>Maintenance history</span
+              ><span
+                >Observations &amp; verification
+                <b aria-hidden="true">↗</b></span
+              ></a
+            ><a href="/app#integrations"
+              ><span>Grounded assistant</span
+              ><span
+                >Answers from asset readings <b aria-hidden="true">↗</b></span
+              ></a
+            >
+          </div>
+        </div>
+      </section>
+      <section class="closing wrap">
+        <div>
+          <p>See it. Question it. Test it.</p>
+          <h2>Your next move,<br />with Halo.</h2>
+        </div>
+        <a class="closing-link" href="/app" aria-label="Open Halo"
+          ><span>Open Halo</span><span aria-hidden="true">↗</span></a
+        >
+        <div class="closing-word" aria-hidden="true">halo</div>
+      </section>
+    </main>
+    <footer class="landing-footer wrap">
+      <span
+        >NeuraTwin Halo <span class="footer-credit">/ Neura Rangers</span></span
+      ><a href="/judge">Judge desk ↗</a>
+    </footer>
+    <script defer src="/static/vendor/three-0.149.0.min.js"></script>
+    <script defer src="/static/halo-studio.js?v=1"></script>
+    <script defer src="/static/halo-bench-model.js?v=2"></script>
+    <script defer src="/static/halo-twin.js?v=6"></script>
+    <script defer src="/static/halo-bench-landing.js?v=1"></script>
+    <script defer src="/static/halo-landing.js?v=1"></script>
+    <script defer src="/static/halo-thermal.js?v=1"></script>
+  </body>
+</html>

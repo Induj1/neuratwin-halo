@@ -1,13 +1,153 @@
 <section class="view" id="view-demo">
-  <div class="heading"><div><p class="eyebrow">PREPARE. REHEARSE. PRESENT.</p><h1>A clear story.<br><span>A dependable demonstration.</span></h1></div><button id="demo-kit" class="primary">Download demo kit ↗</button></div>
-  <section class="panel"><p class="eyebrow">LET THE JUDGE CHOOSE THE CHALLENGE</p><h2>Grid Rescue Arena</h2><p>Run a hidden disturbance, reveal the evidence, compare three futures and protect a synthetic neighbourhood. Every case has a portable evidence export.</p><button data-view="arena" class="primary">Open Grid Rescue Arena ↗</button> <a class="button" href="/static/halo-arena-guide.html" target="_blank" rel="noopener">Arena presenter guide ↗</a></section>
-  <div class="demo-grid">
-    <section class="panel"><p class="eyebrow">BEFORE THE JUDGES ARRIVE</p><h2>Check this setup.</h2><p>Check the selected source, measurement readiness, model evidence and export pipeline. Physical commissioning stays separate.</p><button id="demo-check" class="primary">Run readiness check</button><p id="demo-check-status" role="status">No readiness check has been run.</p><div id="demo-checks"></div></section>
-    <section class="panel demo-story"><p class="eyebrow">THREE MINUTES · FIVE STEPS</p><h2>Show the whole decision.</h2><ol><li>Inspect the asset and its source.</li><li>Explain the observed deviation.</li><li>Compare constrained interventions.</li><li>Freeze a prediction, then reveal the outcome.</li><li>Take the evidence away.</li></ol><p>This walkthrough selects the synthetic distribution study. It does not connect hardware or issue relay commands.</p><button id="demo-start" class="primary">Start guided rehearsal</button><a class="button" href="/static/halo-fallback.html" target="_blank" rel="noopener">Open offline rehearsal ↗</a></section>
+  <div class="heading">
+    <div>
+      <h1>Rehearsal</h1>
+    </div>
+    <button id="demo-kit">Download demo kit</button>
   </div>
-  <section class="panel"><p class="eyebrow">FROM THE ACTUAL BENCH</p><h2>Bring real observations.</h2><p>When the physical build has been reviewed and data has been acquired, export its recorded voltage, current and surface channels with calibration references and raw quality flags. Empty acquisition cannot generate a physical recording.</p><div class="demo-links"><button id="demo-recording">Export recorded physical session</button><a class="button" href="/static/halo-bench-checklist.html" target="_blank" rel="noopener">Hardware acceptance worksheet ↗</a><a class="button" href="/static/halo-architecture.svg" target="_blank" rel="noopener">System architecture ↗</a><a class="button" href="/static/halo-demo-script.html" target="_blank" rel="noopener">Presenter script ↗</a></div><p id="demo-export-status" role="status"></p></section>
+  <div class="demo-grid demo-launchers">
+    <section class="panel demo-story">
+      <span class="demo-duration">3-minute walkthrough</span>
+      <h2>See. Predict.<br />Prove.</h2>
+      <p>Follow a thermal event from first reading to tested prediction.</p>
+      <ol class="demo-path" aria-label="Walkthrough steps">
+        <li>Inspect</li>
+        <li>Investigate</li>
+        <li>Compare</li>
+        <li>Verify</li>
+        <li>Export</li>
+      </ol>
+      <div class="demo-launch-actions">
+        <button id="demo-start" class="primary">
+          Start walkthrough &#8599;</button
+        ><a href="/static/halo-fallback.html" target="_blank" rel="noopener"
+          >Offline version &#8599;</a
+        >
+      </div>
+    </section>
+    <section class="panel demo-arena-card">
+      <span class="demo-duration">Judge-controlled challenge</span>
+      <h2>Let them<br />change the grid.</h2>
+      <p>A hidden disturbance. Your diagnosis. Reveal the result.</p>
+      <svg
+        class="demo-grid-visual"
+        viewBox="0 0 460 120"
+        role="img"
+        aria-label="A transformer supplying three neighbourhood branches"
+      >
+        <path
+          d="M74 60H205M205 60L305 24H388M205 60H388M205 60L305 96H388"
+          fill="none"
+          stroke="#648d7c"
+          stroke-width="2"
+        />
+        <rect
+          x="42"
+          y="30"
+          width="64"
+          height="60"
+          rx="18"
+          fill="#e1ede5"
+          stroke="#fff"
+          stroke-width="2"
+        />
+        <path
+          d="M61 42h27v34H61zm6 5v24m7-24v24m7-24v24"
+          fill="none"
+          stroke="#436b58"
+          stroke-width="2"
+        />
+        <circle
+          cx="205"
+          cy="60"
+          r="8"
+          fill="#426f58"
+          stroke="#fff"
+          stroke-width="3"
+        />
+        <g fill="#f6faf7" stroke="#688e7b" stroke-width="1.5">
+          <rect x="368" y="8" width="36" height="30" rx="9" />
+          <rect x="368" y="45" width="36" height="30" rx="9" />
+          <rect x="368" y="82" width="36" height="30" rx="9" />
+        </g>
+        <path
+          d="M379 24h14m-7-7v14M379 62l7-7 7 7m-12-2v9h10v-9M380 96h12m-12 5h12"
+          fill="none"
+          stroke="#426f58"
+          stroke-width="1.7"
+        />
+        <circle
+          cx="289"
+          cy="29"
+          r="7"
+          fill="#dc995a"
+          stroke="#fff"
+          stroke-width="3"
+        />
+      </svg>
+      <div class="demo-launch-actions">
+        <button data-view="arena" class="primary">
+          Open Grid Rescue &#8599;
+        </button>
+      </div>
+    </section>
+  </div>
+  <details class="panel demo-preparation">
+    <summary>Setup &amp; downloads</summary>
+    <div class="demo-prep-grid">
+      <section>
+        <h2>Ready to present?</h2>
+        <p>Check the current source and export tools.</p>
+        <button id="demo-check">Check readiness</button>
+        <p id="demo-check-status" role="status">Not checked yet.</p>
+        <div id="demo-checks"></div>
+      </section>
+      <section>
+        <h2>Take the evidence</h2>
+        <p>Export acquired bench readings with their calibration records.</p>
+        <div class="demo-links">
+          <button id="demo-recording">Export bench recording</button
+          ><a
+            href="/static/halo-bench-checklist.html"
+            target="_blank"
+            rel="noopener"
+            >Bench checklist &#8599;</a
+          ><a
+            href="/static/halo-architecture.svg"
+            target="_blank"
+            rel="noopener"
+            >Architecture &#8599;</a
+          ><a
+            href="/static/halo-demo-script.html"
+            target="_blank"
+            rel="noopener"
+            >Presenter script &#8599;</a
+          ><a
+            href="/static/halo-arena-guide.html"
+            target="_blank"
+            rel="noopener"
+            >Grid Rescue guide &#8599;</a
+          >
+        </div>
+      </section>
+    </div>
+  </details>
+  <p id="demo-export-status" role="status"></p>
 </section>
 <aside id="demo-guide" class="demo-guide" aria-label="Guided rehearsal" hidden>
-  <div class="demo-guide-head"><span id="demo-step-label" class="eyebrow"></span><span id="demo-clock" aria-label="Rehearsal time">0:00 / 3:00</span><button id="demo-pause">Pause timer</button><button id="demo-end">End rehearsal</button></div>
-  <h2 id="demo-step-title"></h2><p id="demo-cue"></p><div class="demo-guide-actions"><span id="demo-guide-source">Synthetic distribution study · no equipment commands</span><button id="demo-back">Previous</button><button id="demo-next" class="primary">Next step →</button></div><p id="demo-guide-error" role="status"></p>
+  <div class="demo-guide-head">
+    <span id="demo-step-label" class="eyebrow"></span
+    ><span id="demo-clock" aria-label="Rehearsal time">0:00 / 3:00</span
+    ><button id="demo-pause">Pause timer</button
+    ><button id="demo-end">End</button>
+  </div>
+  <h2 id="demo-step-title"></h2>
+  <p id="demo-cue"></p>
+  <div class="demo-guide-actions">
+    <span id="demo-guide-source"
+      >Synthetic distribution study · no equipment commands</span
+    ><button id="demo-back">Back</button
+    ><button id="demo-next" class="primary">Next step →</button>
+  </div>
+  <p id="demo-guide-error" role="status"></p>
 </aside>
