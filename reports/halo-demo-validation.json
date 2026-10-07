@@ -1,0 +1,54 @@
+{
+  "checked_at": "2026-10-07T08:30:03.976054+00:00",
+  "automated_tests": {
+    "passed": 83,
+    "report": "halo-demo-tests.xml"
+  },
+  "browser_checks": [
+    "Guided inspect/investigate/plan/freeze/reveal/score/export flow",
+    "Readiness distinguishes synthetic replay and disconnected physical bench",
+    "Empty physical-session export refuses to invent observations",
+    "1440px desktop and 390px phone layouts inspected",
+    "Self-contained fallback navigation and JSON export with server stopped"
+  ],
+  "forecast_example": {
+    "source": "synthetic distribution overload",
+    "origin_frame": 148,
+    "reveal_frame": 151,
+    "samples": 3,
+    "model_mae_c": 0.156,
+    "persistence_mae_c": 4.125,
+    "field_validation": false
+  },
+  "exports": {
+    "kit_bytes": 1354509,
+    "kit_sha256": "77840358fd9bf507383ec0e24b497101a6e1ebe46412b698926d8e10cd0830ae",
+    "manifest_checks_passed": true,
+    "http_api_status": 200,
+    "browser_download_note": "UI initiated ZIP downloads; standalone artifact was saved directly from the authenticated export API and verified."
+  },
+  "video": {
+    "file": "web/halo-rehearsal.mp4",
+    "duration_seconds": 60,
+    "size_bytes": 1466589,
+    "dimensions": [
+      1920,
+      1080
+    ],
+    "codec": "h264",
+    "audio": false,
+    "content": "Five captured synthetic fallback screens, not physical hardware footage."
+  },
+  "physical_status": {
+    "connected": false,
+    "serial_ports_opened_by_this_work": false,
+    "commands_sent_by_this_work": false,
+    "commissioning_completed": false,
+    "required_next": [
+      "Qualified review of unresolved transformer identity and protections",
+      "Verify actual board/pins and sensor interfaces",
+      "Independently calibrate channels",
+      "Acquire and export real measurements and acceptance observations"
+    ]
+  }
+}

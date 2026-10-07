@@ -14,6 +14,7 @@ from .halo_contracts import Contract
 from . import halo_evidence as analysis, halo_store as store
 from .storage import now
 from .halo_report import report_html
+from .halo_qualification import qualify
 
 router=APIRouter(prefix='/api/halo/evidence')
 
@@ -34,7 +35,8 @@ def overview(context:Context):
     snap=snapshot(context)
     return {'asset_id':snap['asset_id'],'source':snap['source'],'timestamp':(snap.get('current') or {}).get('timestamp'),
             'investigation':analysis.investigation(snap),'ledger':analysis.ledger(snap,store.get('ageing_profile',snap['asset_id'])),
-            'channels':snap['evidence'],'holds':snap['holds']}
+            'channels':snap['evidence'],'holds':snap['holds'],
+            'qualification':qualify(snap,15 if context.mode=='transformer' else 3)}
 
 
 class Plan(Context):
@@ -51,8 +53,15 @@ class Plan(Context):
 
 @router.post('/plan')
 def plan(payload:Plan,actor=Depends(operator)):
-    result=analysis.plan(snapshot(payload),payload.horizon,payload.max_delay,payload.protected_branches)
+    snap=snapshot(payload)
+    result=analysis.plan(snap,payload.horizon,payload.max_delay,payload.protected_branches)
+    q=qualify(snap,payload.horizon);result['qualification']=q
     if result['available']:
+        if not q.get('study_comparison_allowed',False):
+            result['recommendation']=None;result['latest_qualifying_delay_min']=None
+            for candidate in result['candidates']:
+                candidate['qualifies']=False;candidate['reasons'].append('Model qualification: '+q['reason'])
+        result['note']+=' '+q['scope'] if q.get('scope') else ' '+q['reason']
         return keep('plan',{**result,'context':payload.model_dump()},actor)
     return result
 
@@ -130,7 +139,7 @@ class Acceptance(Contract):
 
 
 def evaluate_check(check):
-    result=check.model_dump(mode='json');result.update(status='not demonstrated',elapsed_s=None)
+    result=check.model_dump(mode='json');result.update(status='not demonstrated',elapsed_s=None,absolute_error=None,absolute_error_pct=None)
     if check.reference is not None and check.observed is not None:
         absolute=abs(check.observed-check.reference)
         percent=absolute/abs(check.reference)*100 if check.reference else None
@@ -247,6 +256,7 @@ def export_case(context:Context,actor=Depends(operator)):
     snap=snapshot(context); saved=records(Selection(asset_id=snap['asset_id']),actor)
     payload={'version':'halo-evidence-1','created_at':now(),'context':context.model_dump(),'snapshot':snap,
              'investigation':analysis.investigation(snap),'ledger':analysis.ledger(snap,store.get('ageing_profile',snap['asset_id'])),
+             'qualification':qualify(snap,15 if context.mode=='transformer' else 3),
              'records':saved,'maintenance':[r for r in store.records('incident') if r['asset_id']==snap['asset_id']],
              'limitations':'Recorded/replayed evidence is not field certification. No secrets or raw attachment files are included.'}
     raw=json.dumps(payload,indent=2,ensure_ascii=False).encode()

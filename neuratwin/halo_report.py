@@ -28,7 +28,7 @@ def report_html(case):
     sections.append('<h2>05 · Rolling evaluation</h2>'+table(['Record','Source','Horizon min','Origins','Observations','Model MAE °C','Persistence MAE °C'],[
         [r['id'],r['source'],s['horizon_min'],s['origin_count'],s['observations'],s['mae_c'],s['persistence_mae_c']] for r in records['benchmark'] for s in r['summary']]))
     sections.append('<h2>06 · Acceptance observations</h2>'+table(['Reviewer / source','Instrument / calibration','Check','Reference','Observed','Unit','Absolute error %','Result','Response evidence'],[
-        [r['reviewer']+' / '+r['source'],r['reference_instrument']+' / '+r['calibration_reference'],c['name'],c['reference'],c['observed'],c['unit'],c['absolute_error_pct'],c['status'],c.get('response_kind','not_observed')] for r in records['acceptance'] for c in r['checks']]))
+        [r['reviewer']+' / '+r['source'],r['reference_instrument']+' / '+r['calibration_reference'],c['name'],c.get('reference'),c.get('observed'),c['unit'],c.get('absolute_error_pct'),c['status'],c.get('response_kind','not_observed')] for r in records['acceptance'] for c in r['checks']]))
     sections.append('<h2>07 · Condition and ageing</h2>'+table(['Indicator','Result'],[
         ['Operating-stress index',ledger['operating_index']],['Observed channels',f"{ledger['available_channels']} / {ledger['total_channels']}"],
         ['Conditional equivalent ageing hours',ledger.get('equivalent_hours')],['Actual remaining useful life','Unavailable']])+'<p>'+text(ledger['reason'])+'</p>')
@@ -36,6 +36,10 @@ def report_html(case):
         [r['report_reference']+' / '+r['laboratory'],r['sample_at'],r['evidence_type'],v['analyte'],v['value'],v['unit'],v['laboratory_flag'],r['note']] for r in records['lab_report'] for v in r['values']]))
     sections.append('<h2>09 · Maintenance trail</h2>'+table(['Incident','State','Source'],[
         [r['id'],r['state'],r.get('source','See case.json')] for r in case['maintenance']]))
+    if case.get('qualification'):
+        q=case['qualification']
+        sections.append('<h2>10 · Automatic forecast qualification</h2><p>'+text(q['status'])+' · '+text(q['reason'])+'</p><p>'+text(q.get('scope'))+'</p>'+table(['Origin','Comparable','Model MAE °C','Persistence MAE °C','Reason'],[
+            [w['origin'],w['eligible'],w.get('mae_c'),w.get('persistence_mae_c'),w['reason']] for w in q['windows']])+'<p>'+text(q['policy'])+'</p>')
     sections.append('<h2>Commissioning holds</h2>'+(''.join('<p>• '+text(h)+'</p>' for h in snap['holds']) or '<p>No physical commissioning clearance is implied by this study.</p>'))
     return ('<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>NeuraTwin Halo · evidence case</title><style>'
             'body{font:15px/1.55 system-ui,sans-serif;margin:36px auto;padding:24px;max-width:1160px;color:#26353d;background:#fffef9}h1{font-size:40px;letter-spacing:-.04em;margin:10px 0}h2{font-size:23px;border-top:2px solid #c55b32;padding-top:20px;margin-top:40px}h3{font-size:18px}table{border-collapse:collapse;width:100%;font-size:12px;overflow-wrap:anywhere}td,th{text-align:left;vertical-align:top;border-bottom:1px solid #d9ddd8;padding:10px 8px}th{background:#ecebe3}article{padding:12px 0}button{background:#ae481f;color:white;border:0;padding:12px 20px;border-radius:6px;cursor:pointer}.eyebrow{font-size:12px;letter-spacing:.12em;color:#a44120}.context{background:#efece2;padding:18px}.empty{color:#69756f}@media print{body{margin:0;padding:0;font-size:11px}h1{font-size:30px}h2{break-after:avoid;font-size:18px}tr{break-inside:avoid}td,th{font-size:9px;padding:6px}button{display:none}@page{size:A4 landscape;margin:14mm}}'

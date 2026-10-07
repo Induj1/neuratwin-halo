@@ -315,7 +315,12 @@ class Compare(Context):
 def compare(payload:Compare):
     snap=obtain(**payload.model_dump(include=set(Context.model_fields)))
     origin={'asset_id':snap['asset_id'],'source':snap['source'],'evidence_timestamp':(snap.get('current') or {}).get('timestamp')}
-    if payload.mode!='transformer': return {**engine.futures(snap,payload.reduction,payload.delay,payload.horizon,payload.ambient),**origin}
+    if payload.mode!='transformer':
+        from .halo_qualification import qualify
+        result=engine.futures(snap,payload.reduction,payload.delay,payload.horizon,payload.ambient)
+        q=qualify(snap,payload.horizon);result['qualification']=q
+        if result.get('available'):result['assumptions']+=' Model check: '+q['reason']
+        return {**result,**origin}
     from .thermal import ThermalState,forecast,forecast_metrics
     from .domain import Asset
     row=snap['current']; asset=Asset.model_validate(snap['transformer']['asset'])
@@ -336,6 +341,10 @@ def compare(payload:Compare):
 
 @router.post('/envelope')
 def envelope(payload:Compare):
+    from .halo_qualification import qualify
+    q=qualify(obtain(**payload.model_dump(include=set(Context.model_fields))),payload.horizon)
+    if not q.get('study_comparison_allowed',False):
+        return {'available':False,'reason':q['reason'],'qualification':q}
     candidates=[]
     for reduction in range(0,51,5):
         result=compare(payload.model_copy(update={'reduction':reduction}))

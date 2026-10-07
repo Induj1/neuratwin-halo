@@ -1,5 +1,5 @@
-const CACHE='halo-workspace-v3.1';
-const SHELL=['/app','/static/halo-evidence.css','/static/halo-evidence.js','/static/halo.css','/static/halo.js','/static/halo-twin.js','/static/vendor/three-0.149.0.min.js','/static/halo.webmanifest','/static/halo-icon.svg'];
+const CACHE='halo-workspace-v4.0';
+const SHELL=['/app','/static/halo-demo.js','/static/halo-demo.css','/static/halo-fallback.html','/static/halo-evidence.css','/static/halo-evidence.js','/static/halo.css','/static/halo.js','/static/halo-twin.js','/static/vendor/three-0.149.0.min.js','/static/halo.webmanifest','/static/halo-icon.svg'];
 self.addEventListener('install',event=>event.waitUntil(caches.open(CACHE).then(c=>c.addAll(SHELL)).then(()=>self.skipWaiting())));
 self.addEventListener('activate',event=>event.waitUntil(caches.keys().then(keys=>Promise.all(keys.filter(k=>k.startsWith('halo-workspace-')&&k!==CACHE).map(k=>caches.delete(k)))).then(()=>self.clients.claim())));
 self.addEventListener('fetch',event=>{const url=new URL(event.request.url);if(event.request.method!=='GET'||url.origin!==location.origin||url.pathname.startsWith('/api/'))return;if(url.pathname==='/app'){event.respondWith(fetch(event.request).then(async r=>{if(r.ok){const cache=await caches.open(CACHE);await cache.put('/app',r.clone());}return r;}).catch(()=>caches.match('/app')));return;}if(SHELL.includes(url.pathname))event.respondWith(fetch(event.request).then(async r=>{if(r.ok){const cache=await caches.open(CACHE);await cache.put(event.request,r.clone());}return r;}).catch(()=>caches.match(event.request)));});

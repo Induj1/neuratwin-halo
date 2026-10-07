@@ -31,6 +31,27 @@ uv pip install --python .venv-laya/Scripts/python.exe -r requirements-laya.txt -
 
 The first Laya launch downloads the English model; allow several minutes. Subsequent inference uses cached weights locally. The launcher pins checkpoint `7b928d828b7b0e022f929d9bd2e44165aa270148` for reproducibility. The application remains usable if the model is absent. The model service is bound to **127.0.0.1:8766**, never publicly exposed by these scripts.
 
+## Rehearsal and demo kit
+
+Open **08 Rehearsal** at `/app#demo`.
+
+1. **Run readiness check** for the selected source. It checks the application, database, packaged assets, source identity and export serializer. Physical mode additionally checks freshness, required channels, calibration and commissioning holds. Laya health is not asserted by this check.
+2. **Start guided rehearsal** selects a labelled synthetic distribution overload. The five steps inspect the asset, investigate, compare conditional interventions, freeze a 15-minute oil forecast at frame 148, reveal frame 151 and score the same record, then export a case. Pause the presentation timer as needed. No step issues hardware commands.
+3. **Download demo kit** provides a self-contained offline HTML walkthrough, a silent 60-second 1080p screenshot video, system architecture SVG, presenter script and blank hardware acceptance worksheet. Unzip and open `halo-fallback.html` locally. All stored readings are clearly marked as precomputed synthetic examples.
+4. **Export recorded physical session** exports actual acquired frames, CSV, calibration references and file hashes. It refuses when no physical frames exist. The maximum export is the latest 20,000 physical frames; quality flags and relay GPIO reports remain in the raw JSON. This is not proof of contact operation or electrical safety.
+
+The physical demonstration is still outstanding: qualified hardware review, channel calibration, real acquisition and independently recorded acceptance observations. The worksheet is intentionally uncompleted. No transformer connections, chip identity or GPIOs have been inferred to clear these holds.
+
+### Automatic forecast qualification
+
+The active model is checked against persistence using up to three recent, non-overlapping, completed windows at the requested horizon. Each needs at least three samples, 80% coverage, 80% unchanged-input observations, and no missing readings or detected gaps. Every window must improve MAE by at least 5%. The latest comparable failure reports **degraded**; a lack of adequate evidence reports **insufficient evidence**. The policy is prototype screening, not a statistical or field certification.
+
+Forecast-based bench intervention recommendations are withheld unless this check passes and the current inputs/horizon remain within reference validation. Both intervention planners enforce it. Conditional comparison curves remain available with the qualification warning. Calibration mismatch, stale data and references fitted after the forecast origin cannot qualify. Distribution oil screening does not validate inferred winding hot-spots; distribution interventions remain explicitly conditional study scenarios.
+
+**Validation for this upgrade:** 83 automated tests passed; see `reports/halo-demo-tests.xml`. Browser checks cover the guided freeze/reveal/score flow, disconnected physical readiness, no-recording refusal, desktop/phone layout and fallback operation with the application server stopped. The video contains synthetic software screenshots, not footage of functioning hardware.
+
+Rebuild the text assets with `python scripts/build_demo_materials.py`. Rebuild the video from the five browser captures in `reports/demo-frames` with `python scripts/build_rehearsal_video.py` (requires ffmpeg). Downloaded cases, kits and physical records remain outside Git.
+
 ## A coherent five-minute demo
 
 1. Open **Bench replay / simulation** and inspect the 3D components and the explicit measurement sources. Rotate / cut away the illustrative assembly. It is not a wiring drawing.

@@ -229,7 +229,7 @@ def score_prediction(proof,rows):
         if t<=start or t>end: continue
         if (t-previous).total_seconds()>cadence*1.5:gaps+=1
         previous=t
-        if row.get(proof['target']) is None or row.get('quality_flags'):
+        if row.get(proof['target']) is None or row.get('quality_flags') or (proof['target']=='oil_c' and (row.get('flags') or row.get('confidence')=='Low')):
             missing+=1;continue
         if proof['target']=='surface_c' and row.get('calibration_id')!=proof.get('calibration_id'):
             missing+=1;continue

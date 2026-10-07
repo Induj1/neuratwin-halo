@@ -23,6 +23,8 @@ from . import halo_telegram
 app.include_router(halo_router)
 from .halo_evidence_api import router as evidence_router
 app.include_router(evidence_router)
+from .halo_demo import router as demo_router
+app.include_router(demo_router)
 
 
 def asset_config(asset_id):
@@ -225,6 +227,7 @@ def index():
 def operations_console():
     """Serve the functional Round 2 operator console behind the product story."""
     page=(ROOT/'web/halo.html').read_text(encoding='utf-8').replace('<!-- HALO_EVIDENCE -->',(ROOT/'web/halo-evidence.html').read_text(encoding='utf-8'))
+    page=page.replace('<!-- HALO_DEMO -->',(ROOT/'web/halo-demo.html').read_text(encoding='utf-8'))
     return Response(page,media_type='text/html')
 
 
