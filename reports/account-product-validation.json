@@ -1,0 +1,21 @@
+{
+  "checks": [
+    "Administrator adds existing account by case-insensitive email",
+    "Directory displays email and excludes Auth secrets",
+    "Role update and paused access persist",
+    "Unknown email returns actionable error",
+    "Anonymous access denied: halo_team_directory",
+    "Anonymous access denied: halo_account_by_email"
+  ],
+  "all_passed": true,
+  "temporary_account_removed": true,
+  "messages_sent": false,
+  "browser_checks": [
+    "Account dialog and role label",
+    "Team settings use email rather than UUID",
+    "Empty team state and default viewer role",
+    "No visible vendor/schema/bucket/setup text",
+    "No service-failure notice after successful background check",
+    "No browser console errors"
+  ]
+}

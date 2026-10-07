@@ -1,4 +1,4 @@
-const CACHE='halo-workspace-v6.0';
+const CACHE='halo-workspace-v6.1';
 const SHELL=['/app','/static/halo-auth.js','/static/halo-arena.js','/static/halo-arena.css','/static/halo-demo.js','/static/halo-demo.css','/static/halo-fallback.html','/static/halo-evidence.css','/static/halo-evidence.js','/static/halo.css','/static/halo.js','/static/halo-twin.js','/static/vendor/three-0.149.0.min.js','/static/halo.webmanifest','/static/halo-icon.svg'];
 self.addEventListener('install',event=>event.waitUntil(caches.open(CACHE).then(c=>c.addAll(SHELL)).then(()=>self.skipWaiting())));
 self.addEventListener('activate',event=>event.waitUntil(caches.keys().then(keys=>Promise.all(keys.filter(k=>k.startsWith('halo-workspace-')&&k!==CACHE).map(k=>caches.delete(k)))).then(()=>self.clients.claim())));

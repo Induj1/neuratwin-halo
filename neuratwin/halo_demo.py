@@ -22,7 +22,7 @@ def readiness(context):
         checks.append({'name':name,'status':'pass' if passed else 'fail' if required else 'attention','detail':detail,'required':required})
     check('Application response',True,'The application handled this authenticated request.')
     database_state=ping()
-    check('Evidence database',True,database_state['backend']+' database responded. This does not test every future write.')
+    check('Saved evidence',True,'The workspace can access saved records. This does not test every future write.')
     files=['halo.js','halo-evidence.js','halo-demo.js','halo-demo.html','halo-fallback.html','halo-arena.js','halo-arena.css','halo-arena-guide.html','vendor/three-0.149.0.min.js']
     missing=[f for f in files if not (ROOT/'web'/f).is_file()]
     check('Demonstration assets',not missing,'Missing: '+', '.join(missing) if missing else 'Workspace, 3D code and offline rehearsal are present.')

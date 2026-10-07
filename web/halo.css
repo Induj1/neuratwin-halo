@@ -9,4 +9,26 @@
 
 @media(max-width:600px){.heading{flex-direction:column;align-items:stretch}.heading>button,.heading>.button{align-self:flex-start}}
 
-.auth-dialog{width:min(500px,calc(100vw - 32px));padding:32px;border:1px solid #d6ddd3;border-radius:18px;background:#fafbf6;color:#193b38}.auth-dialog::backdrop{background:#16383270;backdrop-filter:blur(5px)}.auth-dialog h2{font-size:29px;line-height:1.15;margin:15px 0 24px}.auth-dialog label,.cloud-panel label{display:block;margin:14px 0}.auth-dialog input{width:100%;margin-top:6px}.auth-close{display:flex;justify-content:flex-end}.auth-close button{font-size:23px;border:0;padding:0 8px}.auth-dialog details{border-top:1px solid #dce2d7;margin-top:24px;padding-top:16px}.auth-dialog summary,.cloud-panel summary{cursor:pointer;font-weight:600}.cloud-panel{border-top:4px solid #a7be6f}.cloud-panel pre{font-size:12px;white-space:pre-wrap;overflow-wrap:anywhere;max-height:180px;overflow:auto}#auth-error{color:#aa391e;min-height:24px}
+/* Account settings belong to the user, not the infrastructure. */
+.auth-dialog{width:min(580px,calc(100vw - 32px));max-width:580px;max-height:calc(100dvh - 48px);overflow:auto;padding:30px;border:1px solid var(--line);border-radius:16px;background:var(--white);color:var(--ink)}
+.auth-dialog::backdrop{background:#16383270;backdrop-filter:blur(4px)}
+.auth-dialog h2{font-size:28px;line-height:1.2;margin:10px 0 24px;letter-spacing:-.6px}
+.auth-dialog label{display:block;font-size:14px;margin:16px 0 6px}
+.auth-dialog input:not([type=checkbox]),.auth-dialog select{width:100%;font-size:15px;min-height:44px}
+.auth-dialog form>button{margin-top:18px;min-height:42px}
+.auth-dialog button:active{transform:scale(.98)}
+.auth-dialog :focus-visible{outline:2px solid var(--orange);outline-offset:3px}
+.auth-close{display:flex;justify-content:flex-end}.auth-dialog .auth-close>button{font-size:24px;border:0;padding:0 8px;min-height:32px;margin:0}
+.auth-dialog details{border-top:1px solid var(--line);margin-top:25px;padding-top:22px}
+.auth-dialog summary{cursor:pointer;font-size:16px;font-weight:600}.auth-dialog summary span{display:block;margin:5px 0 0 19px;font-size:13px;font-weight:400;color:var(--muted)}
+.account-profile{display:flex;align-items:center;gap:15px}.account-avatar{display:grid;place-items:center;flex-shrink:0;width:48px;height:48px;border-radius:50%;background:#e8eee1;color:var(--ink);font-weight:600;font-size:17px}
+.account-profile strong{display:block;font-size:17px;font-weight:600;overflow-wrap:anywhere}.account-profile div>span{display:block;color:var(--muted);margin-top:4px;font-size:14px}
+.account-actions{display:flex;gap:10px;flex-wrap:wrap}.account-actions button{font-size:14px}#account-context{font-size:14px;line-height:1.6;margin:16px 0}
+#auth-error:empty,#member-message:empty{display:none}#auth-error,#member-message{font-size:14px;line-height:1.5;margin:15px 0;color:var(--orange)}
+.team-list{margin:20px 0}.team-empty{padding:16px;background:var(--paper);border-radius:8px;font-size:14px;color:var(--muted)}
+.team-member{padding:16px 0;border-bottom:1px solid var(--line)}.team-member-identity strong{display:block;font-size:14px;overflow-wrap:anywhere}.team-member-identity span{font-size:12px;color:var(--muted)}
+.team-member-controls{display:flex;gap:10px;align-items:center;margin-top:12px}.team-member-controls select{flex:1;min-width:0}.team-member-controls .member-access-toggle{display:flex;align-items:center;gap:6px;white-space:nowrap;font-size:12px;margin:0}.member-access-toggle input{width:16px;height:16px;accent-color:var(--orange)}
+#member-form{padding-top:4px}#member-form h3{font-size:17px;margin:6px 0}#member-form p{font-size:14px}
+.workspace-notice{display:flex;gap:20px;justify-content:space-between;align-items:center;border:1px solid #e2c293;background:#fff7e9;border-radius:10px;padding:18px 22px;margin-bottom:24px}.workspace-notice strong{font-size:15px}.workspace-notice p{margin:5px 0 0;font-size:14px;color:#705c40}.workspace-notice button{flex-shrink:0}
+[hidden]{display:none!important}
+@media(max-width:600px){.auth-dialog{padding:22px;max-height:calc(100dvh - 24px)}.auth-dialog h2{font-size:25px}.account-profile strong{font-size:15px}.team-member-controls{flex-wrap:wrap}.team-member-controls select{flex-basis:100%}.team-member-controls button{margin-left:auto}.workspace-notice{align-items:flex-start;flex-direction:column;padding:16px}.top-right #access{font-size:14px;min-height:40px}}

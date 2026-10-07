@@ -246,7 +246,7 @@ python -m pip install -r requirements.txt
 python -m uvicorn neuratwin.app:app --host 127.0.0.1 --port 8765 --env-file .env
 ```
 
-Open `/app#integrations` for the live database check and team controls. The local
+Open `/app#integrations` for the assistant and connected tools. Account and team controls live under **Account**; infrastructure diagnostics are available through the authenticated `/api/auth/backend` endpoint, not advertised in the operator interface. The local
 setup explicitly enables `HALO_LOCAL_OPERATOR=1`: same-origin loopback clients on
 this computer receive an owner session. This is a trusted development-computer
 mode, not team authentication. **Use `HALO_LOCAL_OPERATOR=0` on any shared/hosted
@@ -269,7 +269,7 @@ python scripts/supabase_admin.py set-role --user-id USER_UUID --role viewer
 python scripts/supabase_admin.py set-role --user-id USER_UUID --role viewer --disable
 ```
 
-The web **Operator access** dialog provides email/password sign-in. Auth tokens
+The web **Account** dialog provides email/password sign-in. Administrators manage existing accounts by email and edit roles or pause access in **Account → Team access**. Auth tokens
 live in HttpOnly, SameSite cookies, not JavaScript storage. The server verifies
 ES256/RS256 signatures against the project's JWKS and checks issuer, audience,
 expiry, UUID and current membership. Membership changes take effect on the next
@@ -320,7 +320,7 @@ synthetic. No measurements, calibration or physical readiness were invented.
 
 ### Schema and migration
 
-Both checked-in migrations are installed and recorded in the new project. For a
+All three checked-in migrations are installed and recorded in the new project. For a
 fresh project with an authorized CLI account:
 
 ```powershell
@@ -378,3 +378,18 @@ References: [Supabase API keys](https://supabase.com/docs/guides/getting-started
 [JWT verification](https://supabase.com/docs/guides/auth/jwts),
 [row-level security](https://supabase.com/docs/guides/database/postgres/row-level-security),
 [private Storage access](https://supabase.com/docs/guides/storage/security/access-control).
+
+
+### Operator interface polish
+
+The main workspace no longer displays database vendors, schema versions, storage
+bucket details, raw account UUIDs, or administrator scripts. Service connectivity
+is checked in the background; a failed check displays an actionable saved-records
+notice with retry. The account dialog distinguishes the authorized local workstation
+from signed-in team accounts, supports switching/sign-out, and moves administrator
+team management away from the operational assistant. Existing accounts are resolved
+by email through server-only directory functions; no invitations or emails are sent.
+Simulation provenance and hardware commissioning/control restrictions remain visible.
+
+Verification: `reports/halo-account-tests.xml`, `reports/account-product-validation.json`,
+`reports/workspace-product-ui.png`, and `reports/account-settings.png`.

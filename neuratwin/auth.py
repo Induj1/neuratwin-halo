@@ -6,7 +6,7 @@ import uuid
 from urllib.parse import urlparse
 import jwt
 from fastapi import APIRouter, HTTPException, Request, Response
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, model_validator
 from . import cloud
 
 router=APIRouter(prefix='/api/auth')
@@ -135,20 +135,34 @@ def logout(request:Request,response:Response):
 @router.get('/members')
 def members(request:Request):
     identity(request,'admin')
-    return {'members':cloud.rows('halo_members',{'select':'user_id,role,active,created_at','order':'created_at.asc'})}
+    return {'members':cloud.rpc('halo_team_directory')}
 
 
 class Membership(BaseModel):
-    user_id:uuid.UUID
+    user_id:uuid.UUID|None=None
+    email:str|None=Field(default=None,min_length=3,max_length=254,pattern=r'^[^\s@]+@[^\s@]+\.[^\s@]+$')
     role:str=Field(pattern='^(viewer|operator|admin)$')
     active:bool=True
+
+    @model_validator(mode='after')
+    def identifier(self):
+        if (self.user_id is None)==(self.email is None):
+            raise ValueError('Provide an email address or an account ID.')
+        return self
 
 
 @router.put('/members')
 def membership(payload:Membership,request:Request):
     csrf(request); actor=identity(request,'admin')
-    if str(payload.user_id)==actor['user_id'] and (payload.role!='admin' or not payload.active):
+    user_id=str(payload.user_id) if payload.user_id else None
+    if payload.email:
+        matches=cloud.rpc('halo_account_by_email',{'p_email':payload.email})
+        if not matches: raise HTTPException(404,'No account matches this email. Ask your colleague to contact the account administrator.')
+        user_id=str(matches[0]['user_id'])
+    if user_id==actor['user_id'] and (payload.role!='admin' or not payload.active):
         raise HTTPException(409,'An administrator cannot remove their own access.')
-    value=payload.model_dump(mode='json')
-    cloud.request('POST','/rest/v1/halo_members',payload=value,params={'on_conflict':'user_id'}) if not cloud.rows('halo_members',{'user_id':'eq.'+str(payload.user_id)},1) else cloud.request('PATCH','/rest/v1/halo_members',params={'user_id':'eq.'+str(payload.user_id)},payload={'role':payload.role,'active':payload.active})
+    value={'user_id':user_id,'role':payload.role,'active':payload.active}
+    existing=cloud.rows('halo_members',{'user_id':'eq.'+user_id},1)
+    if existing: cloud.request('PATCH','/rest/v1/halo_members',params={'user_id':'eq.'+user_id},payload={'role':payload.role,'active':payload.active})
+    else: cloud.request('POST','/rest/v1/halo_members',payload=value)
     return {'saved':True,**value}

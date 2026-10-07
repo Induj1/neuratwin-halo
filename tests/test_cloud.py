@@ -120,3 +120,37 @@ def test_rejected_endpoint_does_not_commit(backend,monkeypatch):
         result=client.put('/api/halo/config',json={'pinmap_verified':True},headers={'Authorization':'Bearer '+LOCAL_TOKEN})
         assert result.status_code==422
     assert not backend[0]
+
+
+def test_member_directory_requires_admin(backend,monkeypatch):
+    user=str(uuid.uuid4());called=[]
+    monkeypatch.setattr(auth,'claims',lambda _: {'sub':user})
+    monkeypatch.setattr(cloud,'rpc',lambda name,payload=None:called.append(name) or [])
+    with TestClient(app) as client:
+        assert client.get('/api/auth/members',headers={'Authorization':'Bearer viewer'}).status_code==403
+        assert called==[]
+        monkeypatch.setenv('HALO_LOCAL_OPERATOR','1')
+        result=client.get('/api/auth/members',headers={'Authorization':'Bearer '+LOCAL_TOKEN})
+        assert result.status_code==200 and result.json()=={'members':[]}
+        assert called==['halo_team_directory']
+
+
+def test_membership_email_lookup_and_missing_account(backend,monkeypatch):
+    user=str(uuid.uuid4());writes=[]
+    monkeypatch.setenv('HALO_LOCAL_OPERATOR','1')
+    monkeypatch.setattr(cloud,'rpc',lambda name,payload=None:[{'user_id':user}] if payload['p_email']=='colleague@example.com' else [])
+    monkeypatch.setattr(cloud,'rows',lambda *a,**kw:[])
+    monkeypatch.setattr(cloud,'request',lambda method,path,**kw:writes.append((method,path,kw['payload'])) or httpx.Response(201,json={}))
+    with TestClient(app) as client:
+        headers={'Authorization':'Bearer '+LOCAL_TOKEN}
+        result=client.put('/api/auth/members',headers=headers,json={'email':'colleague@example.com','role':'viewer'})
+        assert result.status_code==200 and result.json()['user_id']==user
+        assert writes==[('POST','/rest/v1/halo_members',{'user_id':user,'role':'viewer','active':True})]
+        assert client.put('/api/auth/members',headers=headers,json={'email':'missing@example.com','role':'viewer'}).status_code==404
+        assert len(writes)==1
+
+
+def test_membership_identifier_is_unambiguous():
+    from pydantic import ValidationError
+    for identifiers in ({},{'user_id':str(uuid.uuid4()),'email':'colleague@example.com'},{'email':'not an email'}):
+        with pytest.raises(ValidationError):auth.Membership(role='viewer',**identifiers)
