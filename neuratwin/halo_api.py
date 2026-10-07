@@ -19,6 +19,7 @@ from pydantic import Field, ValidationError
 from .halo_contracts import Contract, Frame, BenchConfig, Calibration, RelayRequest, Observation
 from . import halo_store as store, halo_engine as engine, halo_ai as ai, halo_workflow as workflow
 from .storage import database, now
+from . import cloud, auth
 
 router=APIRouter(prefix='/api/halo')
 LOCAL_TOKEN=secrets.token_urlsafe(32)
@@ -32,6 +33,9 @@ def local_request(request):
 
 
 def operator(request:Request):
+    if cloud.enabled():
+        user=auth.identity(request,"operator")
+        return "user:"+user["user_id"]
     expected=os.getenv('HALO_OPERATOR_TOKEN') or LOCAL_TOKEN
     supplied=request.headers.get('authorization','').removeprefix('Bearer ')
     if not supplied or not hmac.compare_digest(supplied,expected):
@@ -51,14 +55,18 @@ def device(request:Request):
 
 @router.get('/session')
 def session(request:Request):
-    if os.getenv('HALO_OPERATOR_TOKEN') or not local_request(request):
+    if cloud.enabled() and request.cookies.get(auth.ACCESS):
         return {'local':False,'token':None}
-    return Response(json.dumps({'local':True,'token':LOCAL_TOKEN}),media_type='application/json',headers={'Cache-Control':'no-store'})
+    if os.getenv('HALO_OPERATOR_TOKEN') or not local_request(request) or (cloud.enabled() and os.getenv('HALO_LOCAL_OPERATOR')!='1'):
+        return {'local':False,'token':None}
+    response=Response(json.dumps({'local':True,'token':LOCAL_TOKEN}),media_type='application/json',headers={'Cache-Control':'no-store'})
+    if cloud.enabled(): response.set_cookie(auth.LOCAL,LOCAL_TOKEN,httponly=True,samesite='strict',secure=request.url.scheme=='https',path='/api',max_age=10800)
+    return response
 
 
 @router.get('/status')
 def status():
-    return {'version':'2.0.0','local_model_enabled':os.getenv('HALO_AI_ENABLED')=='1',
+    return {'storage_backend':'supabase' if cloud.enabled() else 'sqlite','version':'2.1.0','local_model_enabled':os.getenv('HALO_AI_ENABLED')=='1',
             'local_model':'convaiinnovations/laya','public_url':os.getenv('HALO_PUBLIC_URL'),
             'telegram_configured':bool(os.getenv('HALO_TELEGRAM_BOT_TOKEN') and os.getenv('HALO_TELEGRAM_ALLOWED_CHAT_IDS')),
             'device_token_configured':bool(os.getenv('HALO_DEVICE_TOKEN')),
@@ -126,6 +134,7 @@ def ingest(payload:Frame,actor=Depends(device)):
         raise HTTPException(422,'Future acquisition timestamp rejected.')
     if payload.calibration_id and not store.get('calibration',payload.calibration_id):
         raise HTTPException(422,'Unknown calibration version.')
+    if cloud.enabled(): return cloud.rpc('halo_ingest_frame',{'p_frame':payload.model_dump(mode='json')})
     with WRITE_LOCK, database() as db:
         store.initialise(db)
         duplicate=db.execute('SELECT content FROM halo_frames WHERE device_id=? AND boot_id=? AND sequence=?',
@@ -507,15 +516,14 @@ def attach(key:str,payload:Attachment,actor=Depends(operator)):
     value={'id':key_id,'incident_id':key,'filename':Path(payload.filename).name,'actor':actor,'created_at':now(),
            'sha256':hashlib.sha256(data).hexdigest(),'mime':'image/png' if data.startswith(b'\x89PNG') else 'image/jpeg',
            'data':base64.b64encode(data).decode(),'interpretation':'Stored evidence only; no automatic image diagnosis.'}
-    store.put('attachment',key_id,value)
-    return {k:v for k,v in value.items() if k!='data'}
+    return store.photo(value,data)
 
 
 @router.get('/attachments/{key}')
 def attachment(key:str,actor=Depends(operator)):
     row=store.get('attachment',key)
     if not row: raise HTTPException(404)
-    return Response(base64.b64decode(row['data']),media_type=row['mime'],headers={'Cache-Control':'no-store','X-Content-Type-Options':'nosniff'})
+    return Response(cloud.download(row['object_path']) if row.get('object_path') else base64.b64decode(row['data']),media_type=row['mime'],headers={'Cache-Control':'no-store','X-Content-Type-Options':'nosniff'})
 
 
 @router.get('/passport/qr.png')

@@ -7,6 +7,7 @@ from .halo_api import router, operator, Context, obtain, incident_or_404, WRITE_
 from .halo_contracts import Contract, Observation
 from . import halo_store as store, halo_workflow as workflow, halo_ai as ai
 from .storage import now
+from . import cloud
 
 
 def allowed_chats():
@@ -14,6 +15,10 @@ def allowed_chats():
 
 
 def field_message(text,actor,apply=True):
+    with cloud.transaction(): return _field_message(text,actor,apply)
+
+
+def _field_message(text,actor,apply=True):
     tokens=text.strip().split(maxsplit=2)
     if not tokens: return 'Use /status BENCH-001 or /help.'
     cmd=tokens[0].split('@')[0].lower()

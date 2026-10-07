@@ -12,7 +12,7 @@ import httpx
 
 sys.path.insert(0,str(Path(__file__).resolve().parents[1]))
 from neuratwin.halo_telegram import allowed_chats, field_message
-from neuratwin import halo_store as store, halo_workflow as workflow
+from neuratwin import halo_store as store, halo_workflow as workflow, cloud
 from neuratwin.halo_contracts import Observation
 from neuratwin.storage import now
 from neuratwin.halo_api import obtain
@@ -48,43 +48,44 @@ def run():
                 if not body.get('ok'): raise ValueError('Telegram refused request')
                 for update in body['result']:
                     uid=str(update['update_id']);message=update.get('message',{});chat=str(message.get('chat',{}).get('id',''))
-                    prior=store.get('telegram_update',uid)
-                    if chat in allowed_chats() and not prior:
-                        actor=f'telegram:{chat}:{uid}'
-                        reply=field_message(message.get('text') or message.get('caption') or '/help',actor)
-                        if message.get('photo'):
-                            try:
-                                words=(message.get('caption') or '').split(maxsplit=2)
-                                incident=store.get('incident',words[1]) if len(words)>1 and words[0]=='/photo' else None
-                                if not incident: reply='Photo not stored. Caption it /photo INC-ID inspection note.'
-                                elif incident['state']=='resolved': reply='Incident is resolved; open a new investigation.'
-                                else:
-                                    file=client.post(base+'getFile',json={'file_id':message['photo'][-1]['file_id']}).json()
-                                    path=file.get('result',{}).get('file_path','')
-                                    if not file.get('ok') or '..' in path or not path.startswith('photos/'):
-                                        raise ValueError('Unsupported photo path')
-                                    photo=client.get('https://api.telegram.org/file/bot'+token+'/'+path)
-                                    photo.raise_for_status();data=photo.content
-                                    if len(data)>4_000_000: raise ValueError('Photo exceeds limit')
-                                    from PIL import Image
-                                    image=Image.open(io.BytesIO(data))
-                                    if image.width*image.height>20_000_000: raise ValueError('Photo dimensions exceed limit')
-                                    image.verify()
-                                    if image.format not in ('JPEG','PNG'): raise ValueError('Unsupported image')
-                                    key='PHOTO-TG-'+uid
-                                    store.put('attachment',key,{'id':key,'incident_id':incident['id'],'filename':Path(path).name,
-                                        'data':base64.b64encode(data).decode(),'mime':'image/jpeg' if image.format=='JPEG' else 'image/png',
-                                        'sha256':hashlib.sha256(data).hexdigest(),'actor':actor,'created_at':now(),
-                                        'interpretation':'Photo stored; no vision diagnosis performed.'})
-                                    workflow.observe(incident,Observation(request_id='tg-photo-'+uid,kind='inspection',
-                                        note=words[2] if len(words)>2 and len(words[2])>=5 else 'Telegram inspection photo received.',
-                                        observed_at=now(),attachment_ids=[key]),actor)
-                                    reply=f'{incident["id"]}: inspection photo stored. No automated image diagnosis.'
-                            except (ValueError,KeyError,TypeError,OSError):
-                                reply="Photo could not be accepted. Use a valid incident ID and a JPEG/PNG below 4 MB and 20 megapixels."
-                        # Persist before sending; retries cannot repeat a maintenance action.
-                        store.put('telegram_update',uid,{'chat_id':chat,'reply':reply,'processed_at':now(),'delivery':'pending'})
+                    with cloud.transaction():
                         prior=store.get('telegram_update',uid)
+                        if chat in allowed_chats() and not prior:
+                            actor=f'telegram:{chat}:{uid}'
+                            reply=field_message(message.get('text') or message.get('caption') or '/help',actor)
+                            if message.get('photo'):
+                                try:
+                                    words=(message.get('caption') or '').split(maxsplit=2)
+                                    incident=store.get('incident',words[1]) if len(words)>1 and words[0]=='/photo' else None
+                                    if not incident: reply='Photo not stored. Caption it /photo INC-ID inspection note.'
+                                    elif incident['state']=='resolved': reply='Incident is resolved; open a new investigation.'
+                                    else:
+                                        file=client.post(base+'getFile',json={'file_id':message['photo'][-1]['file_id']}).json()
+                                        path=file.get('result',{}).get('file_path','')
+                                        if not file.get('ok') or '..' in path or not path.startswith('photos/'):
+                                            raise ValueError('Unsupported photo path')
+                                        photo=client.get('https://api.telegram.org/file/bot'+token+'/'+path)
+                                        photo.raise_for_status();data=photo.content
+                                        if len(data)>4_000_000: raise ValueError('Photo exceeds limit')
+                                        from PIL import Image
+                                        image=Image.open(io.BytesIO(data))
+                                        if image.width*image.height>20_000_000: raise ValueError('Photo dimensions exceed limit')
+                                        image.verify()
+                                        if image.format not in ('JPEG','PNG'): raise ValueError('Unsupported image')
+                                        key='PHOTO-TG-'+uid
+                                        store.photo({'id':key,'incident_id':incident['id'],'filename':Path(path).name,
+                                            'data':base64.b64encode(data).decode(),'mime':'image/jpeg' if image.format=='JPEG' else 'image/png',
+                                            'sha256':hashlib.sha256(data).hexdigest(),'actor':actor,'created_at':now(),
+                                            'interpretation':'Photo stored; no vision diagnosis performed.'},data)
+                                        workflow.observe(incident,Observation(request_id='tg-photo-'+uid,kind='inspection',
+                                            note=words[2] if len(words)>2 and len(words[2])>=5 else 'Telegram inspection photo received.',
+                                            observed_at=now(),attachment_ids=[key]),actor)
+                                        reply=f'{incident["id"]}: inspection photo stored. No automated image diagnosis.'
+                                except (ValueError,KeyError,TypeError,OSError):
+                                    reply="Photo could not be accepted. Use a valid incident ID and a JPEG/PNG below 4 MB and 20 megapixels."
+                            # Persist before sending; retries cannot repeat a maintenance action.
+                            store.put('telegram_update',uid,{'chat_id':chat,'reply':reply,'processed_at':now(),'delivery':'pending'})
+                            prior=store.get('telegram_update',uid)
                     if prior and prior['delivery']=='pending':
                         sent=client.post(base+'sendMessage',json={'chat_id':chat,'text':prior['reply'][:4000]})
                         sent.raise_for_status()
@@ -100,4 +101,7 @@ def run():
                 time.sleep(3)
 
 
-if __name__=='__main__': run()
+if __name__=='__main__':
+    from dotenv import load_dotenv
+    load_dotenv(Path(__file__).resolve().parents[1]/'.env')
+    run()

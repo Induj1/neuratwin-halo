@@ -1,6 +1,8 @@
 """Versioned records and immutable telemetry, sharing the local SQLite store."""
 import json
+import base64
 from .storage import database, now
+from . import cloud
 
 
 def initialise(db):
@@ -18,6 +20,7 @@ def initialise(db):
 
 
 def get(kind, key, default=None):
+    if cloud.enabled(): return cloud.call('get',kind,key,default)
     with database() as db:
         initialise(db)
         row = db.execute('SELECT content FROM halo_records WHERE kind=? AND id=?', (kind,key)).fetchone()
@@ -25,6 +28,7 @@ def get(kind, key, default=None):
 
 
 def put(kind, key, content):
+    if cloud.enabled(): return cloud.call('put',kind,key,content)
     with database() as db:
         initialise(db)
         db.execute('INSERT OR REPLACE INTO halo_records VALUES (?,?,?,?)',
@@ -33,6 +37,7 @@ def put(kind, key, content):
 
 
 def records(kind):
+    if cloud.enabled(): return cloud.call('records',kind)
     with database() as db:
         initialise(db)
         rows = db.execute('SELECT content FROM halo_records WHERE kind=? ORDER BY updated_at DESC', (kind,)).fetchall()
@@ -40,6 +45,7 @@ def records(kind):
 
 
 def event(asset_id, kind, content):
+    if cloud.enabled(): return cloud.call('event',asset_id,kind,content)
     with database() as db:
         initialise(db)
         cursor = db.execute('INSERT INTO halo_events(asset_id,kind,content,created_at) VALUES (?,?,?,?)',
@@ -48,6 +54,7 @@ def event(asset_id, kind, content):
 
 
 def events(asset_id, limit=100):
+    if cloud.enabled(): return cloud.events(asset_id,limit)
     with database() as db:
         initialise(db)
         rows = db.execute('SELECT * FROM halo_events WHERE asset_id=? ORDER BY id DESC LIMIT ?',
@@ -56,8 +63,20 @@ def events(asset_id, limit=100):
 
 
 def frames(device_id, limit=600):
+    if cloud.enabled(): return cloud.frames(device_id,limit)
     with database() as db:
         initialise(db)
         rows = db.execute('SELECT content,received_at,id FROM halo_frames WHERE device_id=? ORDER BY id DESC LIMIT ?',
                           (device_id,limit)).fetchall()
     return [{**json.loads(r['content']), 'received_at':r['received_at'], 'evidence_id':f'T-{r["id"]}'} for r in reversed(rows)]
+
+
+def photo(value, data):
+    """Store already validated JPEG/PNG bytes; return metadata without bytes."""
+    value=dict(value)
+    if cloud.enabled():
+        path=value['incident_id']+'/'+value['id']+('.png' if value['mime']=='image/png' else '.jpg')
+        cloud.upload(path,data,value['mime']);value['object_path']=path;value.pop('data',None)
+    else: value['data']=base64.b64encode(data).decode()
+    put('attachment',value['id'],value)
+    return {k:v for k,v in value.items() if k!='data'}

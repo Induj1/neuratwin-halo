@@ -145,6 +145,8 @@ def run(port,server,queue_path):
 
 
 if __name__=='__main__':
+    from dotenv import load_dotenv
+    load_dotenv(Path(__file__).resolve().parents[1]/'.env')
     parser=argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--port',required=True,help='Explicit serial port, e.g. COM6. May reset the attached board.')
     parser.add_argument('--server',default='http://127.0.0.1:8765')

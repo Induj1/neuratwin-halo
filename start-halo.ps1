@@ -21,4 +21,6 @@ if (-not $WithoutLaya) {
     }
 }
 Write-Host 'Open http://127.0.0.1:8765/app. Physical controls remain disabled unless separately commissioned and enabled.'
-python -m uvicorn neuratwin.app:app --host 127.0.0.1 --port 8765
+$haloServerArgs = @('-m','uvicorn','neuratwin.app:app','--host','127.0.0.1','--port','8765')
+if (Test-Path -LiteralPath (Join-Path $PSScriptRoot '.env')) { $haloServerArgs += @('--env-file','.env') }
+python @haloServerArgs

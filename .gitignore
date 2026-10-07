@@ -29,3 +29,6 @@ secrets*.json
 *.zip
 *.7z
 *.tar.gz
+
+supabase/.temp/
+supabase/.branches/

@@ -10,7 +10,7 @@ from fastapi.responses import Response
 from .halo_api import Context, obtain, operator, status
 from .halo_qualification import qualify
 from . import halo_engine as engine, halo_store as store
-from .storage import database, now
+from .storage import ping, now
 
 router=APIRouter(prefix='/api/halo/demo')
 ROOT=Path(__file__).resolve().parents[1]
@@ -21,8 +21,8 @@ def readiness(context):
     def check(name,passed,detail,required=True):
         checks.append({'name':name,'status':'pass' if passed else 'fail' if required else 'attention','detail':detail,'required':required})
     check('Application response',True,'The application handled this authenticated request.')
-    with database() as db:db.execute('SELECT 1').fetchone()
-    check('Evidence database',True,'Local database is readable. This does not test every future disk write.')
+    database_state=ping()
+    check('Evidence database',True,database_state['backend']+' database responded. This does not test every future write.')
     files=['halo.js','halo-evidence.js','halo-demo.js','halo-demo.html','halo-fallback.html','halo-arena.js','halo-arena.css','halo-arena-guide.html','vendor/three-0.149.0.min.js']
     missing=[f for f in files if not (ROOT/'web'/f).is_file()]
     check('Demonstration assets',not missing,'Missing: '+', '.join(missing) if missing else 'Workspace, 3D code and offline rehearsal are present.')

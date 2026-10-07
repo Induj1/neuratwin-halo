@@ -1,0 +1,15 @@
+{
+  "checks": [
+    "Browser team password login",
+    "Operator UI hides admin membership controls",
+    "Persisted imported dataset available",
+    "JSON evidence download preserves simulated provenance",
+    "Cookie-authenticated case ZIP export",
+    "Supabase schema and private storage status visible"
+  ],
+  "local_app": "http://127.0.0.1:8765/app#integrations",
+  "live_project": "eaoqmxxtecpuygjlhxpg",
+  "test_account_removed": true,
+  "physical_control_enabled": false,
+  "public_app_deployment": false
+}

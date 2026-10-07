@@ -27,15 +27,18 @@ from .halo_demo import router as demo_router
 app.include_router(demo_router)
 from .halo_arena import router as arena_router
 app.include_router(arena_router)
+from .auth import router as auth_router
+app.include_router(auth_router)
+from .cloud_middleware import CloudMiddleware
+app.add_middleware(CloudMiddleware)
 
 
 def asset_config(asset_id):
     if asset_id not in ASSETS:
         raise HTTPException(404, 'Unknown asset.')
-    with storage.database() as db:
-        custom = db.execute('SELECT content FROM configurations WHERE asset_id=?', (asset_id,)).fetchone()
+    custom = storage.configuration(asset_id)
     if custom:
-        return Asset.model_validate_json(custom['content'])
+        return Asset.model_validate(custom)
     asset = ASSETS[asset_id]
     calibration_path = ROOT/'data/demo_calibration.json'
     if calibration_path.exists():
@@ -46,11 +49,10 @@ def asset_config(asset_id):
 
 def get_readings(asset_id, scenario_name, dataset_id):
     if dataset_id:
-        with storage.database() as db:
-            row = db.execute('SELECT * FROM datasets WHERE id=? AND asset_id=?', (dataset_id, asset_id)).fetchone()
+        row = storage.dataset(dataset_id,asset_id)
         if row is None:
             raise HTTPException(404, 'Imported dataset not found for this asset.')
-        return [Reading.model_validate(r) for r in json.loads(row['readings'])], {'mode': 'Imported telemetry', 'name': row['name'], 'dataset_id': dataset_id,
+        return [Reading.model_validate(r) for r in row['readings']], {'mode': 'Imported telemetry', 'name': row['name'], 'dataset_id': dataset_id,
                 'note': 'User-supplied measurements. Asset parameters require verification; no ground-truth health labels assumed.'}
     if scenario_name not in SCENARIOS:
         raise HTTPException(404, 'Unknown scenario.')
@@ -75,8 +77,7 @@ def health():
 
 @app.get('/api/catalog')
 def catalog():
-    with storage.database() as db:
-        datasets = [dict(r) for r in db.execute('SELECT id,asset_id,name,json_array_length(readings) AS count FROM datasets ORDER BY rowid DESC')]
+    datasets = storage.datasets()
     return {'assets': [asset_config(k).model_dump() for k in ASSETS], 'scenarios': SCENARIOS, 'datasets': datasets}
 
 
@@ -99,9 +100,8 @@ def fleet(cursor: int = Query(148, ge=1, le=20000)):
 def configure(asset_id: str, asset: Asset):
     if asset_id not in ASSETS or asset.asset_id != asset_id:
         raise HTTPException(400, 'Asset identity must match an existing configured asset.')
-    with storage.database() as db:
-        db.execute('INSERT OR REPLACE INTO configurations VALUES (?,?)', (asset_id, asset.model_dump_json()))
-    return {'asset': asset.model_dump(), 'note': 'Configuration saved locally. Existing measurements and work-order evidence remain unchanged.'}
+    storage.save_configuration(asset_id,asset.model_dump(mode='json'))
+    return {'asset': asset.model_dump(), 'note': 'Configuration saved. Existing measurements and work-order evidence remain unchanged.'}
 
 
 class CSVImport(BaseModel):
@@ -135,9 +135,7 @@ def import_csv(payload: CSVImport):
     except ValueError as error:
         raise HTTPException(422, str(error)) from error
     dataset_id = uuid.uuid4().hex
-    with storage.database() as db:
-        db.execute('INSERT INTO datasets VALUES (?,?,?,?)', (dataset_id, payload.asset_id, payload.name,
-                   json.dumps([r.model_dump(mode='json') for r in records], allow_nan=False)))
+    storage.save_dataset(dataset_id,payload.asset_id,payload.name,[r.model_dump(mode='json') for r in records])
     return {'dataset_id': dataset_id, 'count': len(records), 'asset_id': payload.asset_id, 'name': payload.name}
 
 
@@ -168,13 +166,8 @@ def create_order(request: WorkOrderRequest):
     content = {'asset_id': request.asset_id, 'asset_name': result['asset']['name'], **alert,
                'provenance': result['provenance'], 'observed_at': result['current']['timestamp'],
                'configuration': result['asset'], 'comparison': result['comparison'], 'intervention': result['intervention']}
-    timestamp = storage.now()
-    with storage.database() as db:
-        existing = db.execute('SELECT id FROM work_orders WHERE id=?', (order_id,)).fetchone()
-        if not existing:
-            db.execute('INSERT INTO work_orders VALUES (?,?,?,?,?)', (order_id, request.asset_id, 'open', json.dumps(content), timestamp))
-            db.execute('INSERT INTO audit (order_id,status,note,created_at) VALUES (?,?,?,?)', (order_id, 'open', 'Created from recorded model evidence; no physical action executed.', timestamp))
-    return {'id': order_id, 'created': not bool(existing)}
+    created = storage.create_order(order_id,request.asset_id,content)
+    return {'id':order_id,'created':created}
 
 
 @app.get('/api/work-orders')
@@ -189,11 +182,7 @@ class OrderUpdate(BaseModel):
 
 @app.patch('/api/work-orders/{order_id}')
 def update_order(order_id: str, request: OrderUpdate):
-    with storage.database() as db:
-        if db.execute('SELECT id FROM work_orders WHERE id=?', (order_id,)).fetchone() is None:
-            raise HTTPException(404, 'Work order not found.')
-        db.execute('UPDATE work_orders SET status=? WHERE id=?', (request.status, order_id))
-        db.execute('INSERT INTO audit (order_id,status,note,created_at) VALUES (?,?,?,?)', (order_id, request.status, request.note, storage.now()))
+    storage.update_order(order_id,request.status,request.note)
     return {'id': order_id, 'status': request.status}
 
 

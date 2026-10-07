@@ -1,0 +1,146 @@
+{
+  "project": "https://eaoqmxxtecpuygjlhxpg.supabase.co",
+  "at": "2026-10-07T10:23:33.066284+00:00",
+  "checks": [
+    {
+      "check": "Applied schema responds",
+      "passed": true
+    },
+    {
+      "check": "Anonymous cannot read halo_records",
+      "passed": true
+    },
+    {
+      "check": "Anonymous cannot read halo_frames",
+      "passed": true
+    },
+    {
+      "check": "Anonymous cannot read halo_events",
+      "passed": true
+    },
+    {
+      "check": "Anonymous cannot read halo_members",
+      "passed": true
+    },
+    {
+      "check": "Anonymous cannot read halo_kind_revisions",
+      "passed": true
+    },
+    {
+      "check": "Anonymous cannot invoke privileged RPC",
+      "passed": true
+    },
+    {
+      "check": "API denies anonymous evidence",
+      "passed": true
+    },
+    {
+      "check": "Real Supabase password sign-in",
+      "passed": true
+    },
+    {
+      "check": "Session uses HttpOnly cookies and returns no JWT",
+      "passed": true
+    },
+    {
+      "check": "JWT issuer/signature and member role",
+      "passed": true
+    },
+    {
+      "check": "Signed-in clients cannot bypass server authorization",
+      "passed": true
+    },
+    {
+      "check": "Operator cannot change commissioning",
+      "passed": true
+    },
+    {
+      "check": "Authenticated operator cannot energise K4",
+      "passed": true
+    },
+    {
+      "check": "Cross-origin request rejected",
+      "passed": true
+    },
+    {
+      "check": "Authenticated case persists",
+      "passed": true
+    },
+    {
+      "check": "Independent worker reads persistent case",
+      "passed": true
+    },
+    {
+      "check": "Judge capability cannot read other evidence",
+      "passed": true
+    },
+    {
+      "check": "Private evidence upload",
+      "passed": true
+    },
+    {
+      "check": "Identical photo retry verifies existing bytes",
+      "passed": true
+    },
+    {
+      "check": "Evidence download byte-for-byte",
+      "passed": true
+    },
+    {
+      "check": "No public photo URL",
+      "passed": true
+    },
+    {
+      "check": "Session refresh succeeds",
+      "passed": true
+    },
+    {
+      "check": "Role downgrade takes effect immediately",
+      "passed": true
+    },
+    {
+      "check": "Membership revocation blocks existing session",
+      "passed": true
+    },
+    {
+      "check": "Logout clears cookies",
+      "passed": true
+    },
+    {
+      "check": "Authenticated device ingestion",
+      "passed": true
+    },
+    {
+      "check": "Identical device retry is idempotent",
+      "passed": true
+    },
+    {
+      "check": "Changed retry rejected",
+      "passed": true
+    },
+    {
+      "check": "Out-of-order frame rejected",
+      "passed": true
+    },
+    {
+      "check": "Future acquisition rejected",
+      "passed": true
+    },
+    {
+      "check": "Physical K4 remains blocked",
+      "passed": true
+    },
+    {
+      "check": "Database prevents lost updates across workers",
+      "passed": true
+    },
+    {
+      "check": "Concurrent inserts respect record-set reads",
+      "passed": true
+    }
+  ],
+  "passed": true,
+  "qa_cleanup": "exact generated records only",
+  "hardware_connected": false,
+  "emails_sent": false
+}
