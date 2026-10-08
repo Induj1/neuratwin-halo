@@ -1,0 +1,287 @@
+:root {
+  --paper: #f5f6f3;
+  --ink: #22302b;
+  --accent: #315e50;
+  --green: #e4ece6;
+  --line: #d5ded7;
+  --muted: #5f7066;
+}
+.landing-nav {
+  height: 78px;
+}
+.bench-hero {
+  position: relative;
+  overflow: hidden;
+}
+.bench-intro {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 40px;
+  padding-top: 42px;
+  position: relative;
+  z-index: 2;
+}
+.bench-intro .eyebrow {
+  margin-bottom: 16px;
+  font-size: 11px;
+}
+.bench-intro h1 {
+  font: 500 clamp(45px, 4.6vw, 74px)/1.03 var(--display);
+  letter-spacing: -0.065em;
+}
+.bench-intro h1 em {
+  font-style: normal;
+  color: #77877b;
+}
+.bench-intro-action p {
+  font-size: 15px;
+  line-height: 1.65;
+  margin-bottom: 22px;
+}
+.bench-intro-action {
+  margin-right: 5%;
+}
+.bench-intro .button {
+  background: #315e50;
+}
+.bench-stage {
+  position: relative;
+  height: clamp(460px, 43vw, 650px);
+  margin-top: -45px;
+  isolation: isolate;
+  background: radial-gradient(ellipse at 55% 52%, #e0e7df 0%, #f5f6f3 68%);
+}
+.bench-stage canvas {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  cursor: grab;
+  touch-action: pan-y;
+  z-index: 1;
+  outline-offset: -5px;
+}
+.bench-stage canvas:active {
+  cursor: grabbing;
+}
+.bench-stage .model-fallback {
+  inset: 20% 30%;
+}
+.bench-part-nav {
+  position: absolute;
+  left: 4%;
+  top: 27%;
+  z-index: 2;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.bench-part-nav button {
+  border: 0;
+  background: transparent;
+  padding: 8px 12px;
+  text-align: left;
+  color: #52695b;
+  font-size: 12px;
+  border-radius: 20px;
+}
+.bench-part-nav button:hover,
+.bench-part-nav button[aria-pressed="true"] {
+  background: #dce6de;
+  color: #264f3d;
+}
+.bench-stage-caption {
+  position: absolute;
+  bottom: 25px;
+  left: 4%;
+  z-index: 2;
+  font-size: 13px;
+}
+.bench-stage-caption small {
+  display: block;
+  font-size: 10px;
+  color: var(--muted);
+  margin-top: 4px;
+}
+.bench-tools {
+  position: absolute;
+  left: 50%;
+  bottom: 26px;
+  transform: translateX(-50%);
+  display: flex;
+  align-items: center;
+  gap: 13px;
+  padding: 10px 14px;
+  z-index: 2;
+  border-radius: 30px;
+  background: #ffffffc9;
+  backdrop-filter: blur(12px);
+  border: 1px solid #d1dbd2;
+  white-space: nowrap;
+}
+.bench-tools button {
+  border: 0;
+  border-radius: 16px;
+  background: transparent;
+  font-size: 12px;
+  padding: 6px 10px;
+  min-height: 32px;
+}
+.bench-tools button:hover,
+.bench-tools button[aria-pressed="true"] {
+  background: #dae6dc;
+}
+.bench-tools label {
+  font-size: 11px;
+  color: var(--muted);
+}
+.bench-tools input[type="range"] {
+  width: 100px;
+  margin: 0;
+  height: 25px;
+}
+.bench-bottom {
+  display: flex;
+  justify-content: space-between;
+  gap: 30px;
+  border-block: 1px solid var(--line);
+  padding-block: 20px;
+  font-size: 12px;
+  color: var(--muted);
+}
+.bench-bottom a {
+  color: var(--ink);
+}
+.intro h2 {
+  font-size: clamp(34px, 4vw, 59px);
+  max-width: 1100px;
+}
+.intro {
+  padding-block: 85px;
+}
+.evidence-sheet {
+  transform: rotate(-1deg);
+}
+@media (max-width: 1100px) {
+  .bench-stage {
+    height: 530px;
+    margin-top: -10px;
+  }
+  .bench-stage-caption {
+    bottom: 90px;
+  }
+  .bench-part-nav {
+    left: 2%;
+    top: 18%;
+  }
+  .bench-intro-action {
+    margin-right: 0;
+  }
+  .bench-tools {
+    bottom: 20px;
+  }
+  .bench-intro h1 {
+    font-size: 58px;
+  }
+}
+@media (max-width: 760px) {
+  .bench-intro {
+    align-items: start;
+    padding-top: 30px;
+    gap: 20px;
+    flex-direction: column;
+  }
+  .bench-intro h1 {
+    font-size: clamp(43px, 8vw, 58px);
+  }
+  .bench-intro-action {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 20px;
+    width: 100%;
+  }
+  .bench-intro-action p {
+    font-size: 12px;
+    margin: 0;
+  }
+  .bench-intro-action .button {
+    gap: 24px;
+    padding-inline: 17px;
+    font-size: 12px;
+  }
+  .bench-stage {
+    height: 470px;
+    margin-top: 0;
+  }
+  .bench-part-nav {
+    top: 10px;
+    left: 0;
+    right: 0;
+    flex-direction: row;
+    justify-content: center;
+    gap: 0;
+  }
+  .bench-part-nav button {
+    font-size: 10px;
+    padding: 8px 10px;
+  }
+  .bench-stage-caption {
+    left: 20px;
+    bottom: 89px;
+    font-size: 12px;
+  }
+  .bench-tools {
+    gap: 5px;
+    padding: 7px 9px;
+    bottom: 23px;
+    max-width: calc(100% - 30px);
+  }
+  .bench-tools button {
+    padding: 5px 7px;
+    font-size: 11px;
+  }
+  .bench-tools input[type="range"] {
+    width: 65px;
+  }
+  .bench-tools label {
+    font-size: 10px;
+  }
+  .bench-bottom {
+    font-size: 10px;
+    gap: 20px;
+  }
+  .bench-bottom > span {
+    max-width: 200px;
+  }
+  .intro {
+    padding-block: 55px;
+  }
+  .grid-scene {
+    margin-inline: -20px;
+  }
+}
+@media (max-width: 380px) {
+  .bench-intro h1 {
+    font-size: 41px;
+  }
+  .bench-stage {
+    height: 425px;
+  }
+  .bench-tools {
+    gap: 3px;
+  }
+  .bench-tools input[type="range"] {
+    width: 42px;
+  }
+  .bench-tools button {
+    font-size: 10px;
+  }
+  .evidence-sheet {
+    padding-inline: 21px;
+  }
+  .grid-scene {
+    margin-inline: -16px;
+  }
+}

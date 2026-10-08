@@ -1,0 +1,714 @@
+/* Shared light glass surfaces. Backdrop blur is progressive enhancement. */
+:root {
+  --glass-ink: #203b39;
+  --glass-muted: #506b67;
+  --glass-accent: #275e50;
+  --glass-fill: linear-gradient(
+    135deg,
+    rgb(255 255 255 / 78%),
+    rgb(245 252 250 / 42%)
+  );
+  --glass-edge: rgb(255 255 255 / 86%);
+  --glass-shadow:
+    0 12px 35px rgb(49 83 77 / 7%), 0 2px 6px rgb(49 83 77 / 3%),
+    inset 0 1px 0 rgb(255 255 255 / 95%), inset 0 -1px 0 rgb(255 255 255 / 42%);
+  --glass-radius: 25px;
+}
+body.halo-home,
+body.operator-workspace {
+  --paper: #e8f0ed;
+  --ink: var(--glass-ink);
+  --muted: var(--glass-muted);
+  --line: rgb(71 112 101 / 15%);
+  --accent: var(--glass-accent);
+  background: #e8f0ed;
+  isolation: isolate;
+}
+body.halo-home::before,
+body.operator-workspace::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  background:
+    radial-gradient(ellipse at 3% 25%, #bed8ca 0%, transparent 45%),
+    radial-gradient(ellipse at 94% 12%, #c1d6e1 0%, transparent 42%),
+    linear-gradient(
+      125deg,
+      transparent 32%,
+      rgb(255 255 255 / 75%) 45%,
+      transparent 60%
+    ),
+    linear-gradient(155deg, #eaf2ed, #d7e7e2 54%, #eaf0eb);
+}
+.halo-home
+  :is(
+    .landing-nav,
+    .bench-part-nav,
+    .bench-tools,
+    .forecast-panel,
+    .evidence-sheet
+  ),
+.operator-workspace
+  :is(
+    .top,
+    .source-bar,
+    .tabs,
+    .model-panel,
+    .decision-panel,
+    .panel,
+    .future
+  ) {
+  background: var(--glass-fill);
+  border: 1px solid var(--glass-edge);
+  border-radius: var(--glass-radius);
+  box-shadow: var(--glass-shadow);
+  -webkit-backdrop-filter: blur(24px) saturate(135%);
+  backdrop-filter: blur(24px) saturate(135%);
+}
+.halo-home a:focus-visible,
+.halo-home button:focus-visible,
+.operator-workspace a:focus-visible,
+.operator-workspace button:focus-visible,
+.operator-workspace input:focus-visible,
+.operator-workspace select:focus-visible {
+  outline: 2px solid #285f50;
+  outline-offset: 4px;
+}
+
+/* Landing: an open scene framed by glass, with the model kept sharp. */
+.halo-home .landing-nav {
+  margin-top: 19px;
+  height: 68px;
+  padding-inline: 25px;
+  border-radius: 40px;
+}
+.halo-home .wordmark {
+  font-size: 21px;
+}
+.halo-home .nav-open {
+  padding: 10px 17px;
+  background: rgb(255 255 255 / 65%);
+  border: 1px solid #ffffffd9;
+  border-radius: 25px;
+  gap: 22px;
+  box-shadow: 0 3px 12px #476e6310;
+}
+.halo-home .bench-hero {
+  overflow: hidden;
+}
+.halo-home .bench-intro {
+  padding-top: 45px;
+}
+.halo-home .bench-intro h1 em {
+  color: #608278;
+}
+.halo-home .button {
+  border-radius: 28px;
+  border: 1px solid rgb(255 255 255 / 35%);
+  background: linear-gradient(145deg, #436f61, #28594b);
+  box-shadow:
+    inset 0 1px 1px #ffffff4d,
+    0 7px 18px #234e4320;
+}
+.halo-home .button:hover {
+  background: linear-gradient(145deg, #376454, #214b3e);
+}
+.halo-home .bench-stage {
+  background: radial-gradient(ellipse at 51% 52%, #ffffff7a, transparent 62%);
+}
+.halo-home .bench-part-nav {
+  padding: 10px 7px;
+  border-radius: 25px;
+  background: linear-gradient(120deg, #ffffffb8, #ffffff4d);
+}
+.halo-home .bench-part-nav button {
+  padding: 11px 18px;
+  color: #3c5c52;
+  transition:
+    background 0.2s,
+    box-shadow 0.2s;
+}
+.halo-home .bench-part-nav button[aria-pressed="true"],
+.halo-home .bench-part-nav button:hover {
+  background: #ffffffbd;
+  box-shadow:
+    0 3px 12px #345c5012,
+    inset 0 1px 0 white;
+}
+.halo-home .bench-tools {
+  background: linear-gradient(120deg, #ffffffbd, #edf8f270);
+  border-radius: 32px;
+  box-shadow:
+    0 12px 30px #294c4320,
+    inset 0 1px 1px white,
+    inset 0 -1px 1px #ffffffcc;
+  -webkit-backdrop-filter: blur(18px) saturate(150%);
+  backdrop-filter: blur(18px) saturate(150%);
+}
+.halo-home .bench-tools button[aria-pressed="true"],
+.halo-home .bench-tools button:hover {
+  background: #ffffffcf;
+  box-shadow: 0 2px 6px #385e5010;
+}
+.halo-home .bench-stage-caption {
+  padding: 13px 17px;
+  border: 1px solid #ffffff9c;
+  border-radius: 18px;
+  background: #ffffff61;
+  -webkit-backdrop-filter: blur(16px);
+  backdrop-filter: blur(16px);
+  box-shadow: inset 0 1px 0 #ffffffc9;
+}
+.halo-home .bench-bottom {
+  border-top: 1px solid #ffffffad;
+  border-bottom: 1px solid #7c9f8b2b;
+}
+.halo-home .intro h2 span {
+  color: #5f7e73;
+}
+.halo-home .forecast-section,
+.halo-home .arena-section {
+  background: linear-gradient(130deg, #ffffff30, #cbded54d);
+  border-block: 1px solid #ffffff75;
+}
+.halo-home .forecast-panel {
+  border-radius: 28px;
+  padding: 33px;
+}
+.halo-home .chart-state {
+  background: #edf5f1e6;
+  border-radius: 14px;
+}
+.halo-home .evidence-sheet {
+  background: linear-gradient(130deg, #ffffffc4, #ffffff6b);
+  border-radius: 25px;
+}
+.halo-home .evidence-sheet::after {
+  border-radius: 25px;
+  border-color: #ffffffc7;
+  background: #ffffff1f;
+}
+.halo-home .sheet-top,
+.halo-home .sheet-bottom {
+  border-color: #68897830;
+}
+.halo-home .field-visual img {
+  border-radius: 27px;
+  border: 1px solid #ffffffbb;
+  box-shadow: 0 15px 40px #36544822;
+}
+.halo-home .field-links {
+  padding: 9px 23px;
+  background: linear-gradient(125deg, #ffffff94, #ffffff40);
+  border: 1px solid #ffffffb8;
+  border-radius: 25px;
+  box-shadow: inset 0 1px 0 white;
+}
+.halo-home .field-links a:first-child {
+  border-top: 0;
+}
+.halo-home .closing-word {
+  color: #afc9bd61;
+}
+.halo-home .closing-link {
+  background: linear-gradient(140deg, #4a7d6c, #285748);
+  box-shadow:
+    inset 0 2px 2px #ffffff4d,
+    0 15px 35px #234e4325;
+  border: 1px solid #ffffff52;
+}
+.halo-home .closing-link:hover {
+  background: #315e50;
+}
+
+/* Command centre: floating navigation and translucent instrument panels. */
+.operator-workspace .top {
+  margin: 16px 20px 0 122px;
+  padding: 0 22px;
+  height: 60px;
+  border-radius: 30px;
+}
+.operator-workspace .brand {
+  position: static;
+  flex-shrink: 0;
+}
+.operator-workspace .source-bar {
+  margin: 12px 20px 0 122px;
+  padding: 9px 20px;
+  border-radius: 22px;
+  background: linear-gradient(120deg, #ffffff9c, #ffffff4a);
+}
+.operator-workspace .source-control label,
+.operator-workspace .source-note {
+  color: #4f6c62;
+}
+.operator-workspace .source-control select {
+  color: #233e35;
+}
+.operator-workspace .tabs {
+  top: 102px;
+  left: 16px;
+  bottom: 18px;
+  width: 88px;
+  padding: 12px 6px;
+  gap: 3px;
+  border-radius: 30px;
+  background: linear-gradient(115deg, #ffffffa6, #e8f3eb66);
+}
+.operator-workspace .tabs button {
+  border-radius: 22px;
+  min-height: 62px;
+  padding: 9px 2px;
+  transition:
+    background 0.2s,
+    box-shadow 0.2s;
+}
+.operator-workspace .tabs button span {
+  color: #436154;
+  font-size: 10px;
+}
+.operator-workspace .tabs button svg {
+  stroke: #436557;
+}
+.operator-workspace .tabs button.active {
+  background: #ffffffd9;
+  box-shadow:
+    0 4px 14px #30544412,
+    inset 0 1px 0 white;
+  border-bottom: 0;
+}
+.operator-workspace .tabs button:not(:disabled):hover {
+  background: #ffffff9c;
+}
+.operator-workspace .nav-home {
+  border-color: #66887626;
+  color: #425d50;
+  font-size: 10px;
+}
+.operator-workspace main {
+  padding: 23px 20px 0 18px;
+}
+.operator-workspace .heading h1 {
+  color: #244336;
+}
+.operator-workspace .asset-stamp small {
+  color: #536e61;
+}
+.operator-workspace .model-panel {
+  background: linear-gradient(125deg, #ffffff70, #eff9f347);
+  border-radius: 29px;
+  overflow: hidden;
+}
+.operator-workspace .model-panel > .panel-title {
+  padding-top: 20px;
+}
+.operator-workspace .model-panel > .panel-title h2 {
+  color: #435f52;
+}
+.operator-workspace .stage {
+  background: radial-gradient(ellipse at 52% 44%, #fcfffb66, transparent 65%);
+}
+.operator-workspace .view-projection,
+.operator-workspace .assembly-tools {
+  background: linear-gradient(130deg, #ffffffb3, #f2fcf466);
+  border: 1px solid #ffffffeb;
+  box-shadow:
+    0 8px 22px #31594618,
+    inset 0 1px 0 white,
+    inset 0 -1px 1px #ffffffad;
+  -webkit-backdrop-filter: blur(18px) saturate(150%);
+  backdrop-filter: blur(18px) saturate(150%);
+}
+.operator-workspace .view-projection button[aria-pressed="true"] {
+  background: #ffffffd4;
+  box-shadow: 0 2px 6px #365c4812;
+}
+.operator-workspace .stage-caption {
+  padding: 11px 14px;
+  bottom: 17px;
+  left: 17px;
+  max-width: 62%;
+  background: #ffffff6b;
+  border: 1px solid #ffffffb3;
+  border-radius: 17px;
+  -webkit-backdrop-filter: blur(12px);
+  backdrop-filter: blur(12px);
+}
+.operator-workspace .stage-caption span,
+.operator-workspace .stage-help {
+  color: #4b6859;
+}
+.operator-workspace .components {
+  background: #ffffff2e;
+  border-color: #ffffffa1;
+  padding: 10px 16px;
+}
+.operator-workspace .components button {
+  border-radius: 20px;
+  color: #3b5d4b;
+}
+.operator-workspace .components button.active {
+  background: #ffffffc4;
+  box-shadow:
+    inset 0 1px 0 white,
+    0 3px 10px #33523f0d;
+}
+.operator-workspace .metrics {
+  background: linear-gradient(110deg, #ffffff99, #ffffff54);
+  border-color: #ffffffc4;
+  padding-block: 22px;
+}
+.operator-workspace .metric {
+  border-color: #547d6521;
+}
+.operator-workspace .metric > span,
+.operator-workspace .metric > p {
+  color: #506b5a;
+}
+.operator-workspace .metric strong {
+  color: #244633;
+}
+.operator-workspace .metric strong small {
+  color: #4b6d55;
+}
+.operator-workspace .decision-panel {
+  padding: 23px;
+  border-radius: 29px;
+  background: linear-gradient(150deg, #ffffffb8, #f2faf17d);
+}
+.operator-workspace .decision-panel p,
+.operator-workspace .assessment-head small {
+  color: #4d6a58;
+}
+.operator-workspace .clear {
+  border-color: #678b7126;
+}
+.operator-workspace .assessment {
+  border-color: #678b7126;
+}
+.operator-workspace .panel,
+.operator-workspace .lower-grid .panel {
+  border-radius: 25px;
+}
+.operator-workspace button,
+.operator-workspace .button {
+  border-radius: 20px;
+  border-color: #ffffffde;
+  background: #ffffff87;
+  box-shadow: inset 0 1px 0 #ffffffcc;
+  transition:
+    background 0.18s,
+    box-shadow 0.18s;
+}
+.operator-workspace button:not(:disabled):hover,
+.operator-workspace .button:hover {
+  background: #ffffffd4;
+  box-shadow:
+    0 4px 12px #3a684d12,
+    inset 0 1px 0 white;
+}
+.operator-workspace button.primary,
+.operator-workspace .button.primary {
+  background: linear-gradient(145deg, #467860, #2b5c43);
+  border-color: #ffffff57;
+  box-shadow:
+    inset 0 1px 1px #ffffff47,
+    0 5px 12px #264c3720;
+  color: white;
+}
+.operator-workspace button.primary:not(:disabled):hover {
+  background: linear-gradient(145deg, #3e6a54, #204c36);
+  color: white;
+}
+.operator-workspace button:disabled {
+  opacity: 0.48;
+  box-shadow: none;
+}
+.operator-workspace .segmented button {
+  background: #ffffff75;
+  border-color: #ffffffc4;
+  border-radius: 16px;
+}
+.operator-workspace .segmented button[aria-pressed="true"] {
+  background: #f7e5ccbd;
+  border-color: #d8b491;
+  color: #773c1f;
+}
+.operator-workspace input:not([type="range"]):not([type="checkbox"]),
+.operator-workspace select,
+.operator-workspace textarea {
+  background: #ffffffa3;
+  border: 1px solid #76988a55;
+  border-radius: 12px;
+  color: #264235;
+  box-shadow: inset 0 1px 3px #42654d09;
+}
+.operator-workspace .source-control select {
+  background: transparent;
+  border: 0;
+  border-radius: 0;
+  box-shadow: none;
+}
+.operator-workspace .relay-card {
+  border: 1px solid #ffffffd4;
+  border-radius: 18px;
+  background: #ffffff5e;
+  box-shadow: inset 0 1px 0 white;
+}
+.operator-workspace .relay-card.active {
+  background: linear-gradient(130deg, #e4f1d1bf, #ffffff78);
+  border-color: #bccdad;
+}
+.operator-workspace .future {
+  overflow: hidden;
+}
+.operator-workspace .future canvas {
+  background: transparent;
+}
+.operator-workspace
+  :is(.ev-context, .ev-card, .ev-ledger article, .ar-judge-invite) {
+  background: #ffffff85;
+  border-color: #ffffffde;
+  border-radius: 20px;
+  box-shadow: inset 0 1px 0 white;
+}
+.operator-workspace .chat {
+  background: #ffffff52;
+  border-radius: 18px;
+  border-color: #ffffffc4;
+}
+.operator-workspace .assistant-message {
+  background: #ffffffb8;
+  border-color: #ffffffcf;
+}
+.operator-workspace dialog {
+  background: #f1f8f2e8;
+  border: 1px solid white;
+  border-radius: 25px;
+  box-shadow: 0 25px 90px #27493640;
+  -webkit-backdrop-filter: blur(24px);
+  backdrop-filter: blur(24px);
+}
+.operator-workspace dialog::backdrop {
+  background: #203e3436;
+  -webkit-backdrop-filter: blur(5px);
+  backdrop-filter: blur(5px);
+}
+
+@media (max-width: 1100px) {
+  .operator-workspace .decision-panel {
+    padding: 22px;
+  }
+  .halo-home .bench-stage-caption {
+    bottom: 91px;
+  }
+}
+@media (max-width: 760px) {
+  .halo-home .landing-nav {
+    width: calc(100% - 24px);
+    margin-top: 12px;
+    padding-inline: 16px;
+    height: 62px;
+  }
+  .halo-home .wordmark {
+    font-size: 19px;
+    gap: 6px;
+  }
+  .halo-home .nav-open {
+    font-size: 11px;
+    padding: 8px 11px;
+    gap: 12px;
+  }
+  .halo-home .bench-intro {
+    padding-top: 30px;
+  }
+  .halo-home .bench-part-nav {
+    top: 13px;
+    left: 50%;
+    right: auto;
+    transform: translateX(-50%);
+    padding: 4px;
+    width: max-content;
+    max-width: calc(100% - 24px);
+    border-radius: 24px;
+    gap: 0;
+  }
+  .halo-home .bench-part-nav button {
+    font-size: 10px;
+    padding: 9px 10px;
+  }
+  .halo-home .bench-stage-caption {
+    left: 20px;
+    bottom: 89px;
+    padding: 10px 13px;
+    max-width: calc(100% - 40px);
+  }
+  .halo-home .bench-tools {
+    padding: 7px 9px;
+    border-radius: 28px;
+  }
+  .halo-home .forecast-panel {
+    padding: 24px;
+    border-radius: 23px;
+  }
+  .operator-workspace .top {
+    margin: 12px 12px 0;
+    padding: 0 16px;
+    height: 58px;
+    border-radius: 29px;
+  }
+  .operator-workspace .brand {
+    position: static;
+  }
+  .operator-workspace .source-bar {
+    margin: 10px 12px 0;
+    padding: 10px 13px;
+    border-radius: 21px;
+  }
+  .operator-workspace .tabs {
+    position: static;
+    width: auto;
+    margin: 10px 12px 0;
+    padding: 7px;
+    flex-direction: row;
+    border-radius: 23px;
+    gap: 3px;
+  }
+  .operator-workspace .tabs button {
+    min-height: 57px;
+    min-width: 64px;
+    padding: 7px 3px;
+    border-radius: 18px;
+  }
+  .operator-workspace main {
+    margin-left: 0;
+    padding: 23px 12px 0;
+  }
+  .operator-workspace .model-panel,
+  .operator-workspace .decision-panel {
+    border-radius: 24px;
+  }
+  .operator-workspace .stage-caption {
+    max-width: calc(100% - 28px);
+    left: 14px;
+    bottom: 12px;
+    padding: 9px 12px;
+  }
+  .operator-workspace .assembly-tools {
+    bottom: 104px;
+  }
+  .operator-workspace .decision-panel {
+    padding: 20px;
+  }
+  .operator-workspace .metrics {
+    padding-block: 0;
+  }
+  .operator-workspace .metric {
+    border-color: #74947c24;
+  }
+  .operator-workspace .panel,
+  .operator-workspace .lower-grid .panel {
+    border-radius: 22px;
+  }
+  .halo-home :is(.landing-nav, .forecast-panel, .evidence-sheet),
+  .operator-workspace
+    :is(.top, .source-bar, .tabs, .model-panel, .decision-panel, .panel) {
+    -webkit-backdrop-filter: blur(14px);
+    backdrop-filter: blur(14px);
+  }
+}
+@media (max-width: 380px) {
+  .halo-home .nav-open {
+    font-size: 10px;
+    gap: 8px;
+  }
+  .halo-home .wordmark {
+    font-size: 17px;
+  }
+  .halo-home .bench-part-nav button {
+    font-size: 9px;
+    padding-inline: 9px;
+  }
+  .halo-home .forecast-panel {
+    padding: 20px 16px;
+  }
+}
+@supports not (
+  (backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))
+) {
+  .halo-home
+    :is(
+      .landing-nav,
+      .bench-part-nav,
+      .bench-tools,
+      .forecast-panel,
+      .evidence-sheet,
+      .bench-stage-caption
+    ),
+  .operator-workspace
+    :is(
+      .top,
+      .source-bar,
+      .tabs,
+      .model-panel,
+      .decision-panel,
+      .panel,
+      .view-projection,
+      .assembly-tools,
+      .stage-caption
+    ) {
+    background: #f3f8f4;
+  }
+}
+@media (prefers-reduced-transparency: reduce) {
+  .halo-home
+    :is(
+      .landing-nav,
+      .bench-part-nav,
+      .bench-tools,
+      .forecast-panel,
+      .evidence-sheet,
+      .bench-stage-caption
+    ),
+  .operator-workspace
+    :is(
+      .top,
+      .source-bar,
+      .tabs,
+      .model-panel,
+      .decision-panel,
+      .panel,
+      .view-projection,
+      .assembly-tools,
+      .stage-caption
+    ) {
+    background: #f3f8f4;
+    -webkit-backdrop-filter: none;
+    backdrop-filter: none;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .halo-home *,
+  .operator-workspace * {
+    transition: none !important;
+  }
+}
+@media (forced-colors: active) {
+  body.halo-home::before,
+  body.operator-workspace::before {
+    display: none;
+  }
+  .halo-home,
+  .operator-workspace {
+    background: Canvas;
+  }
+  .halo-home button,
+  .operator-workspace button {
+    border: 1px solid ButtonText;
+  }
+  .operator-workspace .panel {
+    border: 1px solid CanvasText;
+  }
+}
