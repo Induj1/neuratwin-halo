@@ -10,6 +10,7 @@ constexpr int RELAY_PINS[4] = {12,14,27,26}; // Reported working assignments, no
 constexpr int PRIMARY_ADC = -1;   // UNKNOWN. Earlier GPIO4 is not ADC1 on classic ESP32.
 constexpr int SECONDARY_ADC = -1; // UNKNOWN. Earlier GPIO5 has NO ADC on classic ESP32.
 constexpr int CURRENT_ADC = -1;   // UNKNOWN. Verify 5 V sensor output conditioning.
+constexpr int PRIMARY_CURRENT_ADC = -1; // OPTIONAL / UNKNOWN. Separate conditioned, isolated sensor required.
 constexpr int SURFACE_DATA = -1;  // UNKNOWN. 3.3 V DS18B20 + verified pull-up.
 constexpr char DEVICE_ID[] = "HALO-ESP32";
 constexpr unsigned long HOST_TIMEOUT_MS = 3000;

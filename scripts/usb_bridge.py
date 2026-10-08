@@ -48,11 +48,11 @@ def convert(raw,anchor,calibration,ambient=None):
     timestamp=anchor['utc']+timedelta(seconds=elapsed)
     if timestamp>datetime.now(timezone.utc)+timedelta(seconds=2): raise ValueError('Device clock moved into the future.')
     flags=list(raw.get('quality_flags',[]));values={};cal=calibration or {}
-    for name,unit in [('primary','v'),('secondary','v'),('current','a')]:
+    for name,unit in [('primary','v'),('secondary','v'),('current','a'),('primary_current','a')]:
         rms=raw.get(name+'_rms_mv');scale=cal.get(f'{name}_{unit}_per_mv')
         invalid=any(f in flags for f in ('adc_unverified','pinmap_unverified','sampling_overrun',name+'_adc_range'))
         if rms is None or scale is None or invalid: values[f'{name}_{unit}']=None
-        elif name=='current': values['current_a']=math.sqrt(max(0,rms*rms-cal.get('current_noise_mv',0)**2))*scale
+        elif name in ('current','primary_current'): values[name+'_a']=math.sqrt(max(0,rms*rms-cal.get(name+'_noise_mv',0)**2))*scale
         else: values[f'{name}_{unit}']=rms*scale
     surface=raw.get('surface_raw_c')
     values['surface_c']=surface+cal.get('surface_offset_c',0) if surface is not None else None
@@ -72,7 +72,9 @@ def compatible(hello,config):
     if holds(c) or not all(hello.get(k) for k in ('pinmap_verified','adc_verified','relay_verified','control_compiled')): return False
     chip=hello.get('chip','').upper()
     if ('S3' in chip)!=(c.board=='ESP32-S3') or not chip.startswith('ESP32'): return False
-    return all(hello.get(k)==getattr(c,k) for k in ('primary_adc_pin','secondary_adc_pin','current_adc_pin','temperature_pin','active_low')) and hello.get('relay_pins')==list(c.relay_pins)
+    optional=hello.get('primary_current_adc_pin')
+    if optional == -1: optional=None
+    return optional==c.primary_current_adc_pin and all(hello.get(k)==getattr(c,k) for k in ('primary_adc_pin','secondary_adc_pin','current_adc_pin','temperature_pin','active_low')) and hello.get('relay_pins')==list(c.relay_pins)
 
 
 def run(port,server,queue_path):

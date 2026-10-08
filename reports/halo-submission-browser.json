@@ -1,0 +1,30 @@
+{
+  "date": "2026-10-08",
+  "source": "labelled synthetic browser QA on configured development backend",
+  "run_id": "IND-613ed738-d0ef-4c01-8997-a4fe8926d99b",
+  "checks": [
+    "Same industrial run and simulated clock retained in Evidence, Action Lab and Maintenance",
+    "Frozen 15-minute prediction scored against later observations, with changed-input count retained",
+    "Compared zero-delay interventions; 60-minute study recommended a 10 percent simulated demand reduction",
+    "Applied simulated demand reduction; no physical command",
+    "Created work order and recorded investigation and action",
+    "Premature closure rejected with visible error; later qualified recovery accepted",
+    "Run and closed maintenance trail restored after server restart",
+    "Synthetic oil reference fitted with explicit provenance; held-out RMSE 0.276 C vs persistence 0.689 C",
+    "Physical source disconnected with unknown measurements, contact feedback and locked K4",
+    "Source transitions hide old view while loading; independent replay is labelled separately",
+    "Export ZIP downloaded and its file hashes, linked forecasts, plans and closed work order verified",
+    "Phone viewport 390x844: no page-level horizontal overflow; tables scroll within their containers",
+    "Current hardware handoff verified after refresh: four 39 ohm branches and unresolved transformer identity",
+    "No browser JavaScript errors after final reload"
+  ],
+  "screenshots": [
+    "halo-submission-desktop.jpg",
+    "halo-submission-mobile.jpg"
+  ],
+  "limitations": [
+    "No serial port opened, firmware uploaded, relay command issued or mains energized",
+    "No field-fault validation; numerical benchmark and demonstrated recovery are synthetic",
+    "No live Telegram or NFC test; no public deployment or external submission"
+  ]
+}

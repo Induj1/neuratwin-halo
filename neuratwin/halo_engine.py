@@ -7,7 +7,7 @@ from scipy.optimize import lsq_linear
 from .halo_contracts import BenchConfig
 from . import halo_store as store
 
-CHANNELS = {'primary_v':'V RMS', 'secondary_v':'V RMS', 'current_a':'A RMS',
+CHANNELS = {'primary_current_a':'A RMS primary', 'primary_v':'V RMS', 'secondary_v':'V RMS', 'current_a':'A RMS',
             'surface_c':'°C surface', 'ambient_c':'°C ambient'}
 
 
@@ -77,7 +77,7 @@ def snapshot(rows, source='measured', asset_id='BENCH-001', c=None):
     calibration = calibration or {}
     channel_calibration = {
         key: simulated or bool(calibration.get(field))
-        for key, field in [('primary_v','primary_v_per_mv'), ('secondary_v','secondary_v_per_mv'),
+        for key, field in [('primary_current_a','primary_current_a_per_mv'), ('primary_v','primary_v_per_mv'), ('secondary_v','secondary_v_per_mv'),
                            ('current_a','current_a_per_mv'), ('surface_c','surface_reference'),
                            ('ambient_c','ambient_reference')]
     }
@@ -133,7 +133,7 @@ def snapshot(rows, source='measured', asset_id='BENCH-001', c=None):
                        'surface_margin_c':margin,'surface_slope_c_min':slope,'condition_index':score,
                        'expected_current_a':expected,'current_residual_a':mismatch},
             'quality':{'freshness':connection,'coverage':sum(values.get(k) is not None for k in CHANNELS),
-                       'total_channels':5,'calibration':'synthetic' if simulated else 'reference recorded' if calibrated else 'unverified',
+                       'total_channels':len(CHANNELS),'calibration':'synthetic' if simulated else 'reference recorded' if calibrated else 'unverified',
                        'agreement':'independent probe not connected','model_validity':'fitted surface model' if model else 'surface model not fitted'},
             'limits':{'current_a':c.current_limit_a,'surface_c':c.surface_limit_c,'nominal_secondary_v':c.nominal_secondary_v},
             'holds':holds(c) if not simulated else [],'model':model,

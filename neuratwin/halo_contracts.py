@@ -17,6 +17,7 @@ class Frame(Contract):
     primary_v: float | None = Field(default=None, ge=0, le=300)
     secondary_v: float | None = Field(default=None, ge=0, le=60)
     current_a: float | None = Field(default=None, ge=0, le=30)
+    primary_current_a: float | None = Field(default=None, ge=0, le=30)
     surface_c: float | None = Field(default=None, ge=-55, le=125)
     ambient_c: float | None = Field(default=None, ge=-30, le=80)
     ambient_source: Literal['not_measured', 'probe', 'manual'] = 'not_measured'
@@ -64,6 +65,8 @@ class BenchConfig(Contract):
     primary_adc_pin: int | None = 4
     secondary_adc_pin: int | None = 5
     current_adc_pin: int | None = None
+    primary_current_adc_pin: int | None = None
+    automatic_cutoff_enabled: bool = False
     temperature_pin: int | None = None
     active_low: bool | None = None
     reviewer: str = Field(default='', max_length=100)
@@ -81,6 +84,10 @@ class BenchConfig(Contract):
             if len(set(pins)) != len(pins):
                 raise ValueError('GPIO assignments must be unique.')
             adc = [self.primary_adc_pin, self.secondary_adc_pin, self.current_adc_pin]
+            if self.primary_current_adc_pin is not None:
+                if self.primary_current_adc_pin in pins:
+                    raise ValueError('Primary current must use a separate, verified ADC input.')
+                adc.append(self.primary_current_adc_pin)
             if self.board == 'ESP32':
                 # ADC1 only, even for the USB transport, to avoid later Wi-Fi conflict.
                 if any(p not in range(32, 40) for p in adc):
@@ -105,6 +112,8 @@ class Calibration(Contract):
     secondary_v_per_mv: float | None = Field(default=None, gt=0, le=10)
     current_a_per_mv: float | None = Field(default=None, gt=0, le=1)
     current_noise_mv: float = Field(default=0, ge=0, le=1000)
+    primary_current_a_per_mv: float | None = Field(default=None, gt=0, le=1)
+    primary_current_noise_mv: float = Field(default=0, ge=0, le=1000)
     surface_offset_c: float = Field(default=0, ge=-10, le=10)
     surface_reference: str | None = Field(default=None, min_length=5, max_length=300)
     ambient_reference: str | None = Field(default=None, min_length=5, max_length=300)

@@ -27,6 +27,10 @@ from .halo_demo import router as demo_router
 app.include_router(demo_router)
 from .halo_arena import router as arena_router
 app.include_router(arena_router)
+from .twin_api import router as twin_router
+app.include_router(twin_router)
+from .twin_study_api import router as twin_study_router
+app.include_router(twin_study_router)
 from .auth import router as auth_router
 app.include_router(auth_router)
 from .cloud_middleware import CloudMiddleware
@@ -220,6 +224,7 @@ def operations_console():
     page=(ROOT/'web/halo.html').read_text(encoding='utf-8').replace('<!-- HALO_EVIDENCE -->',(ROOT/'web/halo-evidence.html').read_text(encoding='utf-8'))
     page=page.replace('<!-- HALO_DEMO -->',(ROOT/'web/halo-demo.html').read_text(encoding='utf-8'))
     page=page.replace('<!-- HALO_ARENA -->',(ROOT/'web/halo-arena.html').read_text(encoding='utf-8'))
+    page=page.replace('<!-- HALO_OPERATE -->',(ROOT/'web/halo-operate.html').read_text(encoding='utf-8'))
     return Response(page,media_type='text/html')
 
 

@@ -1,0 +1,32 @@
+{
+  "date": "2026-10-08",
+  "url": "http://127.0.0.1:8765/app#operate",
+  "source": "Browser checks against the local app and its configured Supabase workspace",
+  "checks": {
+    "industrial_run_persists_across_reload_and_server_restart": "passed",
+    "sustained_overload_trips_after_configured_dwell": "passed",
+    "open_breaker_removes_current_and_temperature_cools_gradually": "passed",
+    "trip_requires_investigation_and_recovery_before_manual_reconnection": "passed",
+    "manual_reconnection_restores_closed_state": "passed",
+    "pause_stops_simulated_clock": "passed",
+    "report_download_contains_html_json_csv_and_valid_sha256_manifest": "passed; archive inspected on disk (browser download-event observer timed out)",
+    "disconnected_prototype_reports_unknown_contact_state_and_unavailable_measurements": "passed",
+    "disconnected_prototype_load_controls_are_disabled": "passed",
+    "prototype_k4_control_is_disabled": "passed",
+    "source_switch_hides_previous_source_during_loading": "passed",
+    "390_by_844_mobile_viewport_has_no_horizontal_content_overflow": "passed; 375 px content width with scrollbar",
+    "browser_console_errors": "none observed"
+  },
+  "screenshots": [
+    "halo-dual-mode-desktop.png",
+    "halo-dual-mode-prototype.png",
+    "halo-dual-mode-mobile.png"
+  ],
+  "automated_tests": {"passed": 148, "failed": 0, "report": "halo-dual-mode-tests.xml"},
+  "firmware": {"esp32": "compile passed", "esp32s3": "compile passed", "uploaded": false},
+  "hardware": {
+    "connected_or_energized_by_this_work": false,
+    "physical_control_enabled_by_this_work": false,
+    "actual_calibration_cutoff_timing_and_contact_feedback_verified": false
+  }
+}

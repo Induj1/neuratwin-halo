@@ -129,19 +129,27 @@ def ambient_reference(payload:Ambient,actor=Depends(operator)):
 @router.post('/telemetry')
 def ingest(payload:Frame,actor=Depends(device)):
     c=engine.config()
+    content=payload.model_dump(mode="json")
+    if content.get("primary_current_a") is None: content.pop("primary_current_a",None)
     if payload.device_id!=c.device_id: raise HTTPException(409,'Device identity does not match the commissioned asset.')
     if payload.timestamp>datetime.now(timezone.utc)+timedelta(seconds=5):
         raise HTTPException(422,'Future acquisition timestamp rejected.')
     if payload.calibration_id and not store.get('calibration',payload.calibration_id):
         raise HTTPException(422,'Unknown calibration version.')
-    if cloud.enabled(): return cloud.rpc('halo_ingest_frame',{'p_frame':payload.model_dump(mode='json')})
+    if cloud.enabled():
+        result=cloud.rpc('halo_ingest_frame',{'p_frame':content})
+        from .twin_api import process_prototype
+        process_prototype(payload)
+        return result
     with WRITE_LOCK, database() as db:
         store.initialise(db)
         duplicate=db.execute('SELECT content FROM halo_frames WHERE device_id=? AND boot_id=? AND sequence=?',
                              (payload.device_id,payload.boot_id,payload.sequence)).fetchone()
         if duplicate:
-            if json.loads(duplicate['content'])!=payload.model_dump(mode='json'):
+            if json.loads(duplicate['content'])!=content:
                 raise HTTPException(409,'Sequence reused with different content.')
+            from .twin_api import process_prototype
+            process_prototype(payload)
             return {'accepted':True,'duplicate':True,'sequence':payload.sequence}
         previous=db.execute('SELECT content FROM halo_frames WHERE device_id=? AND boot_id=? ORDER BY sequence DESC LIMIT 1',
                             (payload.device_id,payload.boot_id)).fetchone()
@@ -152,9 +160,10 @@ def ingest(payload:Frame,actor=Depends(device)):
         latest=db.execute('SELECT timestamp FROM halo_frames WHERE device_id=? ORDER BY id DESC LIMIT 1',(payload.device_id,)).fetchone()
         if latest and payload.timestamp<=engine.timestamp(latest['timestamp']):
             raise HTTPException(409,'Old boot/session data cannot overwrite the live state.')
-        content=payload.model_dump(mode='json')
         db.execute('INSERT INTO halo_frames(device_id,boot_id,sequence,timestamp,received_at,content) VALUES (?,?,?,?,?,?)',
                    (payload.device_id,payload.boot_id,payload.sequence,payload.timestamp.isoformat(),now(),json.dumps(content,allow_nan=False)))
+    from .twin_api import process_prototype
+    process_prototype(payload)
     return {'accepted':True,'duplicate':False,'sequence':payload.sequence}
 
 
@@ -256,6 +265,8 @@ def relay_command(payload:RelayRequest,actor=Depends(operator)):
         snap=obtain();c=engine.config()
         if payload.states[3]: raise HTTPException(403,'K4 is locked in physical mode. Use a labelled overload simulation.')
         if enabling:
+            if store.get('twin_prototype','BENCH-001',{}).get('latched'):
+                raise HTTPException(423,'Protection decision is latched. Investigate and reset the latch before requesting load ON.')
             if os.getenv('HALO_ALLOW_CONTROL')!='1' or engine.holds(c): raise HTTPException(423,'Physical control is locked pending commissioning and explicit local enablement.')
             if snap['connection']!='live' or snap['quality']['calibration']!='reference recorded': raise HTTPException(423,'Fresh calibrated telemetry is required.')
             row=snap['current']
@@ -411,7 +422,7 @@ class Import(Contract):
 @router.post('/import')
 def import_bench(payload:Import,actor=Depends(operator)):
     reader=csv.DictReader(io.StringIO(payload.csv_text.lstrip('\ufeff')))
-    allowed={'timestamp','primary_v','secondary_v','current_a','surface_c','ambient_c','ambient_source','ambient_observed_at','relay_mask','calibration_id'}
+    allowed={'timestamp','primary_v','primary_current_a','secondary_v','current_a','surface_c','ambient_c','ambient_source','ambient_observed_at','relay_mask','calibration_id'}
     fields=set(reader.fieldnames or [])
     if not {'timestamp','secondary_v','current_a','surface_c'}.issubset(fields): raise HTTPException(422,'Required columns: timestamp,secondary_v,current_a,surface_c. Units are V RMS, A RMS and °C surface.')
     if fields-allowed: raise HTTPException(422,'Unsupported columns: '+', '.join(sorted(fields-allowed)))

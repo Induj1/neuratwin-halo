@@ -71,6 +71,12 @@ def test_anonymous_legacy_and_halo_routes_protected(backend):
     with TestClient(app) as client:
         assert client.get('/api/catalog').status_code==401
         assert client.get('/api/halo/config').status_code==401
+        assert client.get('/api/halo/twin/catalog').status_code==401
+        assert client.get('/api/halo/twin/prototype').status_code==401
+        assert client.get('/api/halo/twin/validation').status_code==401
+        assert client.get('/api/halo/twin/references').status_code==401
+        assert client.post('/api/halo/twin/runs/none/proofs',json={}).status_code==401
+        assert client.post('/api/halo/twin/runs',json={'request_id':'unauthenticated'}).status_code==401
         assert client.post('/api/import',json={}).status_code==401
         assert client.get('/api/health').status_code==200
         assert client.get('/api/halo/session').json()['token'] is None
@@ -99,6 +105,9 @@ def test_signed_jwt_claims_roles_and_revocation(backend,monkeypatch):
         headers={'Authorization':'Bearer '+signed()}
         assert client.get('/api/auth/me',headers=headers).json()['role']=='viewer'
         assert client.post('/api/halo/arena/rooms',headers=headers).status_code==403
+        assert client.post('/api/halo/twin/runs',headers=headers,json={'request_id':'viewer-no-write'}).status_code==403
+        assert client.post('/api/halo/twin/runs/none/proofs',headers=headers,json={'request_id':'viewer-no-write','revision':0}).status_code==403
+        assert client.post('/api/halo/twin/runs/none/work',headers=headers,json={'request_id':'viewer-no-write','revision':0,'title':'Cannot write','owner':'Viewer','acceptance':'Must not create this work order.'}).status_code==403
         monkeypatch.setattr(cloud,'rows',lambda *a,**k:[])
         assert client.get('/api/auth/me',headers=headers).status_code==403
 

@@ -27,6 +27,8 @@ secrets*.json
 *.o
 *.a
 *.zip
+# Reviewed synthetic example required to rebuild the submission kit.
+!reports/synthetic-rehearsal-case.zip
 *.7z
 *.tar.gz
 

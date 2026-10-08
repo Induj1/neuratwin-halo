@@ -1,0 +1,7 @@
+{
+  "status": "pass",
+  "archive_boot": "isolated SQLite",
+  "private_env_loaded": false,
+  "hardware_control": false,
+  "checks": 10
+}
