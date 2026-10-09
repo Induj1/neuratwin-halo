@@ -22,6 +22,8 @@ Thumbs.db
 *.pfx
 credentials*.json
 secrets*.json
+# Wi-Fi credentials and device token for the ESP32 sketch.
+firmware/esp32_integration/secrets.h
 *.bin
 *.elf
 *.o
