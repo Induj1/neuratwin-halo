@@ -520,3 +520,65 @@
     padding: 10px 12px;
   }
 }
+
+/* Keep workspace navigation available at tablet widths. The previous
+   breakpoint hid the only view switcher before a replacement was rendered. */
+@media (max-width: 1000px) {
+  .operator-workspace .tabs {
+    position: relative;
+    inset: auto;
+    display: flex;
+    flex-direction: row;
+    width: auto;
+    margin: 12px 16px 0;
+    padding: 7px;
+    gap: 4px;
+    overflow-x: auto;
+    overflow-y: hidden;
+    border: 1px solid rgb(255 255 255 / 86%);
+    border-radius: 22px;
+  }
+
+  .operator-workspace .tabs button {
+    flex: 0 0 auto;
+    min-height: 48px;
+    white-space: nowrap;
+  }
+
+  .operator-workspace .tabs .nav-home {
+    display: none;
+  }
+
+  .operator-workspace .top,
+  .operator-workspace .source-bar,
+  .operator-workspace main {
+    margin-left: 0;
+  }
+
+  .operator-workspace .top {
+    margin-right: 16px;
+    margin-left: 16px;
+  }
+}
+
+@media (max-width: 640px) {
+  .operator-workspace .tabs {
+    margin: 10px 12px 0;
+    padding: 5px;
+    border-radius: 18px;
+  }
+
+  .operator-workspace .tabs button {
+    min-height: 44px;
+    padding: 9px 11px;
+    gap: 7px;
+  }
+
+  .operator-workspace .tabs button span {
+    font-size: 12px;
+  }
+
+  .operator-workspace .source-bar {
+    margin-inline: 12px;
+  }
+}

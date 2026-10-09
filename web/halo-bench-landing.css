@@ -222,6 +222,9 @@
     flex-direction: row;
     justify-content: center;
     gap: 0;
+    max-width: calc(100% - 24px);
+    overflow-x: auto;
+    overscroll-behavior-inline: contain;
   }
   .bench-part-nav button {
     font-size: 10px;
@@ -237,6 +240,10 @@
     padding: 7px 9px;
     bottom: 23px;
     max-width: calc(100% - 30px);
+    width: calc(100% - 30px);
+    justify-content: center;
+    flex-wrap: wrap;
+    white-space: normal;
   }
   .bench-tools button {
     padding: 5px 7px;
@@ -244,6 +251,7 @@
   }
   .bench-tools input[type="range"] {
     width: 65px;
+    flex: 1 1 65px;
   }
   .bench-tools label {
     font-size: 10px;
