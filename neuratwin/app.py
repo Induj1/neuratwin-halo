@@ -23,15 +23,21 @@ ROOT = Path(__file__).resolve().parents[1]
 @asynccontextmanager
 async def lifespan(application):
     from .halo_api import AnalysisRecoveryWorker
+    from .halo_esp32 import Esp32Poller
     worker=AnalysisRecoveryWorker()
     application.state.analysis_worker=worker
     application.state.acquisition_recovery=worker.state
+    # Wi-Fi board poller idles unless HALO_ESP32_URL is set; it only ever makes HTTP calls.
+    esp32=Esp32Poller()
+    application.state.esp32_poller=esp32
     try:
         await worker.start()
+        await esp32.start()
         yield
     finally:
         # Stop taking work immediately, let the current fenced transaction finish,
         # and wake any polling delay. No serial or hardware operations are started.
+        await esp32.stop()
         await worker.stop()
 
 
@@ -41,6 +47,8 @@ from . import halo_telegram
 app.include_router(halo_router)
 from .halo_evidence_api import router as evidence_router
 app.include_router(evidence_router)
+from .halo_esp32 import router as esp32_router
+app.include_router(esp32_router)
 from .halo_demo import router as demo_router
 app.include_router(demo_router)
 from .halo_arena import router as arena_router
