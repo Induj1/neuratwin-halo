@@ -1,0 +1,195 @@
+{
+  "reviewed_at": "2026-10-08T13:25:19.767943+00:00",
+  "scope": "Independent re-review of current local software and submitted source archive; no application changes or hardware actuation.",
+  "rubric": "Reviewer-defined, not an official CPRI rubric. Score concerns a 24-hour software prototype, not utility deployment.",
+  "score": {
+    "problem_alignment": {
+      "earned": 17,
+      "possible": 20
+    },
+    "modelling": {
+      "earned": 14,
+      "possible": 20
+    },
+    "predictive_evidence": {
+      "earned": 12,
+      "possible": 20
+    },
+    "maintenance_workflow": {
+      "earned": 9,
+      "possible": 10
+    },
+    "ui_and_demo": {
+      "earned": 8,
+      "possible": 10
+    },
+    "software_engineering": {
+      "earned": 9,
+      "possible": 10
+    },
+    "novelty_and_utility_value": {
+      "earned": 7,
+      "possible": 10
+    },
+    "total": 76
+  },
+  "organizer_requirement": "The original DT Problem Statement.pdf permits simulated datasets and expects later extension to sensors/utility monitoring. Physical hardware is not a prerequisite in that document.",
+  "verified": {
+    "tests_passed_this_review": 191,
+    "tests_duration_s": 26.19,
+    "benchmark_numerical_source_hashes_match": true,
+    "archive_manifest_files_verified": 183,
+    "archive_matches_prior_17_check_smoke": true
+  },
+  "findings": [
+    {
+      "priority": "high",
+      "title": "Thermal-deviation detection does not invalidate the nominal-cooling forecast",
+      "reproduction": {
+        "seed": 88013,
+        "scenario": "cooling_overload",
+        "origin_min": 105,
+        "signals": [
+          "overload",
+          "thermal_deviation"
+        ],
+        "forecast_available": true,
+        "predicted_critical_in_min": 9,
+        "plant_critical_in_min": 3,
+        "predicted_30min_c": 136.4984617371747,
+        "observed_30min_c": 212.5998120265419,
+        "plant_true_30min_c": 212.98349302519983
+      },
+      "implication": "An alarm exists, but the apparent action window can be too optimistic. This is a synthetic counterexample, not a hardware observation.",
+      "source": "neuratwin/twin_observer.py"
+    },
+    {
+      "priority": "high",
+      "title": "Two different inference paths have different information",
+      "detail": "Industrial operation/projection uses declared cooling and disturbance settings. The independent observation-only pipeline excludes them. Its benchmark is not evidence that the primary scenario-aware operator forecast independently diagnosed the fault.",
+      "sources": [
+        "neuratwin/twin_core.py",
+        "neuratwin/twin_studies.py",
+        "neuratwin/twin_observer.py"
+      ]
+    },
+    {
+      "priority": "high",
+      "title": "Observation-only pipeline requires a reported hotspot input",
+      "reproduction": "Removing hotspot_c from otherwise complete generated oil/ambient/load/voltage rows returns missing_data and withholds forecast.",
+      "detail": "Hotspot is not a listed required input in the organizer statement. Other oil-reference and prototype paths exist, but this advanced pipeline lacks an oil-only operating mode."
+    },
+    {
+      "priority": "medium",
+      "title": "Perfect condition number with a cooling warning",
+      "reproduction": {
+        "load_percent": 77,
+        "ambient_c": 35,
+        "cooling": "degraded",
+        "condition_index": 100.0,
+        "status": "WARNING"
+      },
+      "detail": "The warning is correctly retained; the number still visually suggests perfect condition. This was also visible in the current UI."
+    },
+    {
+      "priority": "medium",
+      "title": "Headline forecast score combines unlike conditions",
+      "detail": "Fixed origins 75/90/105/120/135/150 straddle disturbances injected at minute 100. Some large errors follow future input changes unavailable at forecast time. Future biased sensor readings are also used as targets. Report unchanged-input error, changed-input stress performance and latent-plant physical error separately.",
+      "diagnostic_30min_groups": {
+        "crosses_injected_onset": {
+          "count": 384,
+          "mae_c": 16.48035244581466,
+          "p95_c": 45.427657369421254
+        },
+        "post_onset_origins": {
+          "count": 543,
+          "mae_c": 8.736546550891964,
+          "p95_c": 43.21068977077229
+        },
+        "healthy_all_origins": {
+          "count": 144,
+          "mae_c": 2.2758069194335597,
+          "p95_c": 5.464583746283509
+        }
+      },
+      "group_note": "Diagnostic groups are not mutually exclusive: healthy rows occur in post-onset clock positions, without a fault. These are not new benchmark claims."
+    },
+    {
+      "priority": "medium",
+      "title": "Cooling-detection gain is mainly persistent-deviation detection",
+      "added_cases": [
+        {
+          "seed": 88001,
+          "severity": 0.2,
+          "noise_c": 0.15,
+          "delay_min": 80,
+          "critical_min": null
+        },
+        {
+          "seed": 88005,
+          "severity": 0.2,
+          "noise_c": 0.5,
+          "delay_min": 40,
+          "critical_min": null
+        },
+        {
+          "seed": 88009,
+          "severity": 0.5,
+          "noise_c": 1.0,
+          "delay_min": 15,
+          "critical_min": null
+        },
+        {
+          "seed": 88019,
+          "severity": 0.2,
+          "noise_c": 0.15,
+          "delay_min": 40,
+          "critical_min": null
+        },
+        {
+          "seed": 88021,
+          "severity": 0.2,
+          "noise_c": 0.5,
+          "delay_min": 35,
+          "critical_min": null
+        }
+      ],
+      "detail": "The five additional detections take 15/35/40/40/80 minutes and none crosses critical in this evaluation. All three cooling misses are mild and noncritical within the evaluation. Do not equate event recall with proven imminent-failure warning."
+    },
+    {
+      "priority": "medium",
+      "title": "Narrow validation coverage",
+      "detail": "24 parameter/noise seeds crossed with ten conditions in one synthetic plant family, fixed event onset and assumed healthy prefix. CUSUM requires one-minute cadence; a two-minute resampling disables it. No calibrated uncertainty interval or independently validated 240-minute planning performance."
+    },
+    {
+      "priority": "medium",
+      "title": "CPRI phase data is represented as acceptance examples, not a phase-resolved twin",
+      "detail": "Supplied workbook includes IR/IY/IB and VR/VY/VB. Current main industrial model assumes balanced three-phase RMS and unity power factor; core telemetry has no per-phase model."
+    },
+    {
+      "priority": "medium",
+      "title": "Prototype engineering is proven more strongly than production operation",
+      "detail": "Tests and restart rehearsal are meaningful. Full-run JSON persistence, browser-driven simulation stepping and repeated retrieval of records are prototype architecture; no measured fleet-scale latency, soak, backup-restore or field-validation result was established by this review."
+    },
+    {
+      "priority": "medium",
+      "title": "Demonstration needs a narrower story",
+      "detail": "Separate industrial, physical, reference and emulator workflows have honest provenance but create navigation and trust-level complexity. The next-step panel is verbose; validation tables require interpretation; strong method details risk obscuring the operator decision."
+    }
+  ],
+  "recommended_order": [
+    "Withhold action-time claims after an unexplained thermal residual, or qualify an updated model before use.",
+    "Make observation-based forecasting/diagnosis the central demonstration and expose scenario truth only in a separate comparison.",
+    "Add an oil-only observation mode and define temperature-channel provenance.",
+    "Partition evaluation by held assumptions and physical versus sensor targets; report lead-time/error trade-offs.",
+    "Reconcile the condition index with active defects and improve the one-case demo."
+  ],
+  "sources_sha256": {
+    "neuratwin/twin_core.py": "a149e0fcf03dc0c3099892d39213c9a07acc844d4fce0dda50f99285afdcc94c",
+    "neuratwin/twin_studies.py": "cf5a59dcaa003fe0f8f51174b65bd1f568f2df8062218eaa8bf2a3a08dfc9aa7",
+    "neuratwin/twin_observer.py": "f9007b4bbcbe6d1a98fc1f8e8e2c2f27ac7b344a3c8c725b96d967454f110a60",
+    "neuratwin/thermal_reference.py": "cd31d218cdbb1317244f49a2a5112da4f1e2bc8f95cd3126358f2b83f3f50eb8",
+    "neuratwin/validation_plant.py": "43c54122ed16754f39f4e041da520c02b82961738aa47b1d81ffe266dd365887",
+    "scripts/benchmark_pipeline.py": "13c0416ba1045fe40d07fb1ab07e67130e11049b733fd95c7e02809deaeac7a0"
+  }
+}

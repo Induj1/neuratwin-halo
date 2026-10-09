@@ -45,7 +45,17 @@ def test_rendered_workspace_includes_lab(client):
 def test_per_channel_calibration_and_current_alarm(client):
     store.put('calibration','C1',{'secondary_v_per_mv':.01,'current_a_per_mv':.001})
     row={'timestamp':datetime.now(timezone.utc).isoformat(),'calibration_id':'C1','evidence_id':'T1','secondary_v':12,'current_a':1.1,'surface_c':40,'primary_v':230,'ambient_c':25,'relay_states':[True]*3+[False]}
-    snap=engine.snapshot([row],c=BenchConfig(current_limit_a=1,surface_limit_c=55))
+    config=BenchConfig(current_limit_a=1,surface_limit_c=55)
+    # A current measurement remains visible without a binding, but today's limit
+    # cannot be silently attributed to a legacy acquisition.
+    unbound=engine.snapshot([row],c=config)
+    assert unbound['current']['current_a']==1.1
+    assert 'configuration_unbound' in [a['code'] for a in unbound['alerts']]
+    assert unbound['limits']['current_a'] is None
+    key=engine.config_identity(config)
+    store.create_unique('config_version',key,{'config':config.model_dump(),'meaning':'Synthetic regression fixture only'})
+    row.update(device_id=config.device_id,config_id=key,hardware_config_status='reported_match')
+    snap=engine.snapshot([row],c=config)
     channels={e['channel']:e['calibrated'] for e in snap['evidence']}
     assert channels['current_a'] and channels['secondary_v']
     assert not channels['surface_c'] and not channels['primary_v'] and not channels['ambient_c']
@@ -79,11 +89,16 @@ def test_short_window_abrupt_reading_change(client):
 
 def test_imported_fit_stops_at_selected_frame(client):
     rows=engine.demonstration('normal',600)
+    config=BenchConfig(device_id='SIM-BENCH',nominal_secondary_v=12,current_limit_a=1,surface_limit_c=55)
+    key=engine.config_identity(config)
+    store.create_unique('config_version',key,{'config':config.model_dump(),'meaning':'Synthetic recording fixture configuration, not physical commissioning'})
+    for row in rows:row.update(config_id=key,hardware_config_status='reported_match')
     store.put('calibration','synthetic',{'secondary_v_per_mv':.01,'current_a_per_mv':.001,'surface_reference':'Test fixture','ambient_reference':'Test fixture'})
     store.put('bench_dataset','FIXTURE',{'rows':rows,'name':'Future leakage regression fixture'})
     result=client.post('/api/halo/models/fit',json={**CTX,'dataset_id':'FIXTURE','cursor':360,'qualified_healthy':True,'note':'Synthetic past-only fit regression'},headers=AUTH)
     assert result.status_code==200,result.text
     assert result.json()['data_end_at']==rows[360]['timestamp']
+    assert result.json()['config_id']==key
 
 
 def test_scoring_detects_unobserved_tail(client):

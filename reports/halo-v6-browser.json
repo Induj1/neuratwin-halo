@@ -1,0 +1,19 @@
+{
+  "status": "partially_verified",
+  "source": "Browser interaction using the connected Codex browser before its transport closed",
+  "verified": [
+    "Operations Assess readings returned source-bound observation assessment with explicit insufficient-evidence hold",
+    "Withheld health no longer showed the 100/100 headline",
+    "External ETTh1 test MAE and negative persistence comparison matched retained backend report",
+    "Historical origin11520 forecast showed1h9.084 and6h8.820 source units",
+    "Reveal showed later observations9.145 and8.864 with absolute errors0.061 and0.044",
+    "Forecast/reveal source labelled historical public dataset and source units"
+  ],
+  "not_verified": [
+    "Final browser interaction for invalidation on run revision change; JavaScript and API regressions passed instead",
+    "Final mobile responsive layout",
+    "Final screenshots after the last edits"
+  ],
+  "blocker": "Browser and desktop-app MCP transports closed after the host session pause; reconnect and responsive acceptance remain necessary. No alternate browser-control mechanism was used.",
+  "screenshots": "No v6 screenshots captured. halo-release-desktop.jpg and halo-release-mobile.jpg are retained historical v5 evidence only."
+}

@@ -8,15 +8,15 @@ import numpy as np
 from scipy.optimize import least_squares
 
 
-def step(oil,ambient,load_percent,dt_min,rise,tau,core_fraction):
-    target=ambient+rise*(core_fraction+(1-core_fraction)*(load_percent/100)**2)**.8
+def step(oil,ambient,load_percent,dt_min,rise,tau,core_fraction,voltage_pu=1.):
+    target=ambient+rise*(core_fraction*voltage_pu**2+(1-core_fraction)*(load_percent/100)**2)**.8
     return target+(oil-target)*math.exp(-dt_min/tau)
 
 
 def rollout(rows,rise,tau,core_fraction):
     oil=rows[0]['oil_c'];result=[oil]
     for a,b in zip(rows,rows[1:]):
-        oil=step(oil,a['ambient_c'],a['load_percent'],(b['elapsed_s']-a['elapsed_s'])/60,rise,tau,core_fraction)
+        oil=step(oil,a['ambient_c'],a['load_percent'],(b['elapsed_s']-a['elapsed_s'])/60,rise,tau,core_fraction,a.get('voltage_pu',1.))
         result.append(oil)
     return result
 
@@ -24,11 +24,14 @@ def rollout(rows,rise,tau,core_fraction):
 def fit(rows,core_fraction=1000/7500):
     if len(rows)<60:raise ValueError('At least 60 samples are required.')
     if not 0<=core_fraction<1:raise ValueError('Invalid core-loss fraction.')
+    voltage_declared=any('voltage_pu' in r for r in rows)
     for r in rows:
         if not all(k in r and isinstance(r[k],(int,float)) and math.isfinite(r[k]) for k in ('elapsed_s','oil_c','ambient_c','load_percent')):
             raise ValueError('Every calibration row needs finite elapsed_s, oil_c, ambient_c and load_percent.')
         if not -20<=r['oil_c']<=200 or not -30<=r['ambient_c']<=65 or not 0<=r['load_percent']<=150:
             raise ValueError('Calibration readings exceed the supported reference envelope.')
+        if voltage_declared and (isinstance(r.get('voltage_pu'),bool) or not isinstance(r.get('voltage_pu'),(int,float)) or not math.isfinite(r['voltage_pu']) or not .4<=r['voltage_pu']<=1.6):
+            raise ValueError('Declared voltage requires a finite 0.4–1.6 pu observation in every calibration row; no nominal substitution.')
     if any(not 0<b['elapsed_s']-a['elapsed_s']<=120 for a,b in zip(rows,rows[1:])):
         raise ValueError('Samples must be chronological, unique and no more than 120 seconds apart.')
     if rows[-1]['elapsed_s']-rows[0]['elapsed_s']<1800:raise ValueError('Record at least 30 minutes of thermal response.')
@@ -50,14 +53,16 @@ def fit(rows,core_fraction=1000/7500):
             'jacobian_condition':condition,'at_parameter_boundary':boundary,
             'load_range_percent':[min(r['load_percent'] for r in train),max(r['load_percent'] for r in train)],
             'ambient_range_c':[min(r['ambient_c'] for r in train),max(r['ambient_c'] for r in train)],
-            'method':'Bounded first-order oil reference; chronological 70/30 split. Validation uses recorded operating inputs; operational forecasts hold inputs constant.',
+            'voltage_basis':'recorded_per_unit_voltage' if voltage_declared else 'nominal_voltage_assumed',
+            'voltage_range_pu':[min(r.get('voltage_pu',1.) for r in train),max(r.get('voltage_pu',1.) for r in train)],
+            'method':'Bounded first-order oil reference with squared-voltage core losses; chronological 70/30 split. Validation uses recorded operating inputs; operational forecasts hold inputs constant.',
             'scope':'Reference-fit evidence only. Not a fault classifier, confidence interval, winding calibration or field-life estimate.'}
 
 
 def forecast(reference,observation,horizon_min):
     if observation.get('oil_c') is None:return None
     return step(observation['oil_c'],observation['ambient_c'],observation['load_percent'],horizon_min,
-                reference['rated_oil_rise_c'],reference['oil_tau_min'],reference['core_fraction'])
+                reference['rated_oil_rise_c'],reference['oil_tau_min'],reference['core_fraction'],observation.get('voltage_pu',1.))
 
 
 def residual_screen(reference,rows):

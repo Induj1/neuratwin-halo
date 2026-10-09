@@ -1,5 +1,7 @@
 """Local-first Halo API: physical bench, replay, commissioning and shared evidence."""
 import base64
+import asyncio
+from copy import deepcopy
 import csv
 from datetime import datetime, timedelta, timezone
 import hashlib
@@ -9,6 +11,7 @@ import json
 import os
 from pathlib import Path
 import secrets
+import sqlite3
 import threading
 import uuid
 from urllib.parse import urlparse
@@ -24,6 +27,9 @@ from . import cloud, auth
 router=APIRouter(prefix='/api/halo')
 LOCAL_TOKEN=secrets.token_urlsafe(32)
 WRITE_LOCK=threading.RLock()
+ANALYSIS_LEASE_SECONDS=120
+ANALYSIS_BACKOFF_SECONDS=2
+ANALYSIS_MAX_BACKOFF_SECONDS=60
 
 
 def local_request(request):
@@ -71,31 +77,57 @@ def status():
             'telegram_configured':bool(os.getenv('HALO_TELEGRAM_BOT_TOKEN') and os.getenv('HALO_TELEGRAM_ALLOWED_CHAT_IDS')),
             'device_token_configured':bool(os.getenv('HALO_DEVICE_TOKEN')),
             'hardware_control_enabled':os.getenv('HALO_ALLOW_CONTROL')=='1',
-            'k4_physical_control':False,'holds':engine.holds(engine.config()),
+            'k4_physical_control':False,'holds':engine.holds(engine.config()),'hardware_ingestion':hardware_readiness(),
             'optional_extensions':{'AR':'not commissioned','vibration':'not installed','oil_level':'not installed','network_transfer':'no verified network model'}}
+
+
+def hardware_readiness():
+    if not cloud.enabled():return {'ready':True,'durable_analysis':True,'backend':'sqlite'}
+    try:
+        result=cloud.rpc('halo_hardware_health',{})
+        if result.get('durable_analysis') is True:return {'ready':True,**result}
+    except HTTPException:pass
+    return {'ready':False,'durable_analysis':False,'reason':'Hardware ingestion is blocked until migration 202610080004 is applied and its pending-analysis trigger is enabled.'}
+
+
+@router.get('/analysis-recovery')
+def analysis_recovery_status(request:Request,actor=Depends(operator)):
+    worker=getattr(request.app.state,'analysis_worker',None)
+    try:queue=store.analysis_queue_sample();queue_available=True
+    except Exception:queue=[];queue_available=False
+    return {'worker':worker.snapshot() if worker else {'status':'not_started','hardware_commands_allowed':False},
+            'queue_available':queue_available,'oldest_unfinished_sample':queue,'sample_limit':8,
+            'note':'Bounded queue sample, not total backlog. Recovery never sends hardware commands.'}
 
 
 @router.get('/config')
 def get_config():
-    return {'config':engine.config().model_dump(),'holds':engine.holds(engine.config())}
+    c=engine.config();key=engine.config_identity(c)
+    bound,_=engine.recorded_config({'config_id':key,'device_id':c.device_id})
+    return {'config':c.model_dump(),'config_id':key if bound else None,'holds':engine.holds(c)}
 
 
 @router.put('/config')
 def set_config(payload:BenchConfig,actor=Depends(operator)):
-    with WRITE_LOCK:
+    with WRITE_LOCK, store.transaction():
         old=engine.config()
-        store.put('config_version',uuid.uuid4().hex,{'config':old.model_dump(),'at':now()})
+        for version in (old,payload):
+            key=engine.config_identity(version)
+            if not store.get('config_version',key):
+                store.create_unique('config_version',key,{'id':key,'config':version.model_dump(),'at':now(),'actor':actor,
+                    'meaning':'Reviewed server configuration; not independent verification of device wiring.'})
         store.put('config','bench',payload.model_dump())
-        store.event('BENCH-001','commissioning_updated',{'actor':actor,'holds':engine.holds(payload)})
+        store.event('BENCH-001','commissioning_updated',{'actor':actor,'config_id':engine.config_identity(payload),'holds':engine.holds(payload)})
     return get_config()
 
 
 @router.post('/calibrations')
 def calibrate(payload:Calibration,actor=Depends(operator)):
-    if store.get('calibration',payload.id): raise HTTPException(409,'Calibration IDs are immutable; create a new version.')
-    result={**payload.model_dump(),'created_at':now(),'actor':actor}
-    store.put('calibration',payload.id,result); store.put('active_calibration','bench',result)
-    store.event('BENCH-001','calibration_recorded',{'id':payload.id,'reviewer':payload.reviewer})
+    with WRITE_LOCK,store.transaction():
+        if store.get('calibration',payload.id): raise HTTPException(409,'Calibration IDs are immutable; create a new version.')
+        result={**payload.model_dump(),'created_at':now(),'actor':actor}
+        store.put('calibration',payload.id,result); store.put('active_calibration','bench',result)
+        store.event('BENCH-001','calibration_recorded',{'id':payload.id,'reviewer':payload.reviewer})
     return result
 
 
@@ -106,8 +138,25 @@ def calibrations():
 
 @router.get('/device/config')
 def device_config(actor=Depends(device)):
-    return {'config':engine.config().model_dump(),'calibration':store.get('active_calibration','bench'),
+    return {**get_config(),'calibration':store.get('active_calibration','bench'),
             'control_enabled':os.getenv('HALO_ALLOW_CONTROL')=='1','ambient':store.get('ambient','bench')}
+
+
+class DeviceLink(Contract):
+    device_id:str=Field(pattern=r'^[\w-]{1,48}$')
+    boot_id:str=Field(pattern=r'^[\w-]{1,64}$')
+    chip:str=Field(min_length=1,max_length=60)
+    protocol:int=Field(ge=0,le=100)
+    compatible:bool
+    permit:bool
+    pending_frames:int=Field(ge=0)
+
+
+@router.post('/device/link')
+def device_link(payload:DeviceLink,actor=Depends(device)):
+    if payload.device_id!=engine.config().device_id:raise HTTPException(409,'Bridge device does not match the configured asset.')
+    row={**payload.model_dump(),'received_at':now(),'meaning':'Bridge-reported status only; not contact feedback or commissioning approval.'}
+    store.put('device_link',payload.device_id,row);return {'accepted':True}
 
 
 class Ambient(Contract):
@@ -128,43 +177,208 @@ def ambient_reference(payload:Ambient,actor=Depends(operator)):
 
 @router.post('/telemetry')
 def ingest(payload:Frame,actor=Depends(device)):
+    # Keep admission and the immediate analysis attempt together within this
+    # process; durable DB claims also protect separate application processes.
+    with WRITE_LOCK:return _ingest(payload,actor)
+
+
+def _ingest(payload,actor):
     c=engine.config()
     content=payload.model_dump(mode="json")
-    if content.get("primary_current_a") is None: content.pop("primary_current_a",None)
+    for optional in ('primary_current_a','config_id'):
+        if content.get(optional) is None: content.pop(optional,None)
+    if content.get('hardware_config_status')=='unverified':content.pop('hardware_config_status',None)
     if payload.device_id!=c.device_id: raise HTTPException(409,'Device identity does not match the commissioned asset.')
     if payload.timestamp>datetime.now(timezone.utc)+timedelta(seconds=5):
         raise HTTPException(422,'Future acquisition timestamp rejected.')
     if payload.calibration_id and not store.get('calibration',payload.calibration_id):
         raise HTTPException(422,'Unknown calibration version.')
+    if payload.config_id and engine.recorded_config(content)[0] is None:
+        raise HTTPException(422,'Unknown, modified or mismatched acquisition configuration.')
     if cloud.enabled():
+        try: readiness=cloud.rpc('halo_hardware_health',{})
+        except HTTPException:
+            raise HTTPException(503,'Hardware ingestion requires migration 202610080004; no frame accepted.')
+        if not isinstance(readiness,dict) or readiness.get('durable_analysis') is not True:
+            raise HTTPException(503,'Durable hardware analysis is unavailable; no frame accepted.')
         result=cloud.rpc('halo_ingest_frame',{'p_frame':content})
-        from .twin_api import process_prototype
-        process_prototype(payload)
+        if result.get('duplicate'):
+            with store.independent_transaction():
+                key=analysis_identity(content)
+                if not store.get('analysis_job',key):
+                    store.put('analysis_job',key,{'id':key,'frame':content,'status':'pending','created_at':now(),
+                        'config_id':content.get('config_id'),'admission':'legacy retry'})
+        analyse_acquisition(analysis_identity(content),allow_control=True)
         return result
-    with WRITE_LOCK, database() as db:
-        store.initialise(db)
+    with WRITE_LOCK, store.transaction() as db:
         duplicate=db.execute('SELECT content FROM halo_frames WHERE device_id=? AND boot_id=? AND sequence=?',
                              (payload.device_id,payload.boot_id,payload.sequence)).fetchone()
         if duplicate:
-            if json.loads(duplicate['content'])!=content:
+            prior_content=json.loads(duplicate['content'])
+            for optional in ('primary_current_a','config_id'):
+                if prior_content.get(optional) is None:prior_content.pop(optional,None)
+            if prior_content.get('hardware_config_status')=='unverified':prior_content.pop('hardware_config_status',None)
+            if prior_content!=content:
                 raise HTTPException(409,'Sequence reused with different content.')
-            from .twin_api import process_prototype
-            process_prototype(payload)
-            return {'accepted':True,'duplicate':True,'sequence':payload.sequence}
         previous=db.execute('SELECT content FROM halo_frames WHERE device_id=? AND boot_id=? ORDER BY sequence DESC LIMIT 1',
                             (payload.device_id,payload.boot_id)).fetchone()
-        if previous:
+        if previous and not duplicate:
             p=json.loads(previous['content'])
             if payload.sequence<=p['sequence'] or payload.uptime_ms<=p['uptime_ms'] or payload.timestamp<=engine.timestamp(p['timestamp']):
                 raise HTTPException(409,'Out-of-order telemetry rejected; do not rewrite acquisition time on retry.')
         latest=db.execute('SELECT timestamp FROM halo_frames WHERE device_id=? ORDER BY id DESC LIMIT 1',(payload.device_id,)).fetchone()
-        if latest and payload.timestamp<=engine.timestamp(latest['timestamp']):
+        if latest and not duplicate and payload.timestamp<=engine.timestamp(latest['timestamp']):
             raise HTTPException(409,'Old boot/session data cannot overwrite the live state.')
-        db.execute('INSERT INTO halo_frames(device_id,boot_id,sequence,timestamp,received_at,content) VALUES (?,?,?,?,?,?)',
-                   (payload.device_id,payload.boot_id,payload.sequence,payload.timestamp.isoformat(),now(),json.dumps(content,allow_nan=False)))
+        if not duplicate:
+            db.execute('INSERT INTO halo_frames(device_id,boot_id,sequence,timestamp,received_at,content) VALUES (?,?,?,?,?,?)',
+                       (payload.device_id,payload.boot_id,payload.sequence,payload.timestamp.isoformat(),now(),json.dumps(content,allow_nan=False)))
+        key=analysis_identity(content)
+        if not store.get('analysis_job',key):
+            store.put('analysis_job',key,{'id':key,'frame':content,'status':'pending','created_at':now(),
+                'config_id':content.get('config_id'),'admission':'legacy retry' if duplicate else 'atomic acquisition'})
+    analyse_acquisition(key,allow_control=True)
+    return {'accepted':True,'duplicate':bool(duplicate),'sequence':payload.sequence}
+
+
+def analysis_identity(frame):
+    return f"analysis:{frame['device_id']}/{frame['boot_id']}/{frame['sequence']}"
+
+
+def analyse_acquisition(key,*,allow_control=False):
+    """Durable claim plus fenced atomic result commit, including across workers."""
     from .twin_api import process_prototype
-    process_prototype(payload)
-    return {'accepted':True,'duplicate':False,'sequence':payload.sequence}
+    claimed=claim_analysis(key)
+    if not claimed.get('_claimed'):return claimed
+    token=claimed['claim_token']
+    try:
+        with WRITE_LOCK,store.independent_transaction():
+            job=store.get('analysis_job',key)
+            if not owns_claim(job,token):raise AnalysisLeaseLost()
+            result=process_prototype(Frame.model_validate(job['frame']),allow_control=allow_control)
+            if not owns_claim(job,token):raise AnalysisLeaseLost()
+            job.update(status=result.get('status','complete'),completed_at=now(),result=result)
+            for field in ('claim_token','lease_until','next_attempt_at','last_error_code'):job.pop(field,None)
+            store.put('analysis_job',key,job)
+        return {**job,'_claimed':True}
+    except Exception as error:
+        try:record_analysis_failure(key,token,error)
+        except Exception:pass  # A durable processing lease remains reclaimable after expiry.
+        raise
+
+
+class AnalysisLeaseLost(RuntimeError):
+    """No derived state may commit after ownership expires or moves."""
+
+
+def owns_claim(job,token):
+    return bool(job and job.get('status')=='processing' and job.get('claim_token')==token and
+                job.get('lease_until') and engine.timestamp(job['lease_until'])>datetime.now(timezone.utc))
+
+
+def claim_analysis(key):
+    with WRITE_LOCK,store.independent_transaction():
+        job=store.get('analysis_job',key)
+        if not job:raise HTTPException(503,'Accepted frame lacks durable analysis record; recovery required.')
+        stamp=datetime.now(timezone.utc)
+        if job['status']=='processing':
+            ready=not job.get('lease_until') or engine.timestamp(job['lease_until'])<=stamp
+        else:
+            ready=job['status']=='pending' and (not job.get('next_attempt_at') or engine.timestamp(job['next_attempt_at'])<=stamp)
+        if not ready:return {**job,'_claimed':False}
+        job.update(status='processing',claim_token=uuid.uuid4().hex,
+                   lease_until=(stamp+timedelta(seconds=ANALYSIS_LEASE_SECONDS)).isoformat(),
+                   last_attempt_at=stamp.isoformat(),attempts=int(job.get('attempts',0))+1)
+        store.put('analysis_job',key,job)
+    return {**job,'_claimed':True}
+
+
+def record_analysis_failure(key,token,error):
+    with WRITE_LOCK,store.independent_transaction():
+        job=store.get('analysis_job',key)
+        if not job or job.get('claim_token')!=token or job.get('status')!='processing':return
+        attempts=max(1,int(job.get('attempts',1)))
+        delay=min(ANALYSIS_MAX_BACKOFF_SECONDS,ANALYSIS_BACKOFF_SECONDS*2**min(attempts-1,10))
+        code='lease_lost' if isinstance(error,AnalysisLeaseLost) else 'record_conflict' if isinstance(error,HTTPException) and error.status_code==409 else 'analysis_failed'
+        job.update(status='pending',last_error_code=code,
+                   next_attempt_at=(datetime.now(timezone.utc)+timedelta(seconds=delay)).isoformat())
+        job.pop('claim_token',None);job.pop('lease_until',None)
+        store.put('analysis_job',key,job)
+
+
+def recover_pending_analyses(limit=25,stop_event=None):
+    """One bounded oldest-due-first pass. Recovery never allows physical commands."""
+    limit=max(1,min(int(limit),100))
+    recovered=failed=skipped=attempted=0
+    storage_failed=False
+    pending=store.due_analysis_jobs(now(),limit)
+    for job in pending:
+        if stop_event is not None and stop_event.is_set():break
+        try:
+            result=analyse_acquisition(job['id'],allow_control=False)
+            if result.get('_claimed'):recovered+=1
+            else:skipped+=1
+        except Exception as error:
+            failed+=1
+            storage_failed=(isinstance(error,HTTPException) and error.status_code in (429,503)) or isinstance(error,sqlite3.DatabaseError)
+        attempted+=1
+        if storage_failed:break  # Reads may work while durable claim/result writes do not.
+    return {'recovered':recovered,'failed':failed,'skipped':skipped,'attempted':attempted,
+            'remaining':None,'more_due_possible':len(pending)>=limit,'storage_failed':storage_failed,
+            'hardware_commands_allowed':False}
+
+
+class AnalysisRecoveryWorker:
+    """Lifecycle-owned bounded polling. Stop waits for the current job, not a batch."""
+    def __init__(self,*,batch_size=25,poll_seconds=2,max_storage_backoff=60):
+        self.batch_size=max(1,min(int(batch_size),100));self.poll_seconds=max(.01,float(poll_seconds))
+        self.max_storage_backoff=max(self.poll_seconds,float(max_storage_backoff))
+        self.stop_event=threading.Event();self.wake=asyncio.Event();self.task=None
+        self.state={'status':'starting','running':False,'cycles':0,'recovered':0,'failed':0,'skipped':0,
+                    'attempted':0,'storage_failures':0,'consecutive_storage_failures':0,
+                    'batch_size':self.batch_size,'poll_seconds':self.poll_seconds,'hardware_commands_allowed':False}
+
+    def snapshot(self):return deepcopy(self.state)
+
+    async def cycle(self,limit=None):
+        from starlette.concurrency import run_in_threadpool
+        self.state.update(last_cycle_started_at=now(),status='processing',running=True)
+        try:
+            result=await run_in_threadpool(recover_pending_analyses,limit or self.batch_size,self.stop_event)
+            for key in ('recovered','failed','skipped','attempted'):self.state[key]+=result[key]
+            self.state['last_result']=result
+            if result['storage_failed']:raise RuntimeError('Durable queue write unavailable.')
+            self.state.update(status='retrying' if result['failed'] else 'idle',last_success_at=now(),
+                consecutive_storage_failures=0,last_error_code=None)
+            delay=.05 if result['more_due_possible'] else self.poll_seconds
+        except Exception:
+            failures=self.state['consecutive_storage_failures']+1
+            self.state.update(status='storage_unavailable',storage_failures=self.state['storage_failures']+1,
+                              consecutive_storage_failures=failures,last_error_code='queue_unavailable')
+            delay=min(self.max_storage_backoff,self.poll_seconds*2**min(failures-1,10))
+        self.state.update(cycles=self.state['cycles']+1,last_cycle_finished_at=now(),
+                          next_poll_at=(datetime.now(timezone.utc)+timedelta(seconds=delay)).isoformat())
+        return delay
+
+    async def start(self):
+        # A single bootstrap attempt preserves startup diagnostics without a
+        # large backlog delaying service readiness. Remaining jobs drain in background.
+        delay=await self.cycle(limit=1)
+        self.task=asyncio.create_task(self.run(delay),name='halo-analysis-recovery')
+        return self
+
+    async def run(self,delay):
+        try:
+            while not self.stop_event.is_set():
+                try:await asyncio.wait_for(self.wake.wait(),timeout=delay)
+                except asyncio.TimeoutError:pass
+                if self.stop_event.is_set():break
+                delay=await self.cycle()
+        finally:self.state.update(status='stopped',running=False,next_poll_at=None)
+
+    async def stop(self):
+        self.stop_event.set();self.wake.set()
+        if self.task is not None:await self.task
+        self.state.update(status='stopped',running=False,next_poll_at=None)
 
 
 def transformer_snapshot(scenario,cursor,dataset_id=None):
@@ -265,11 +479,14 @@ def relay_command(payload:RelayRequest,actor=Depends(operator)):
         snap=obtain();c=engine.config()
         if payload.states[3]: raise HTTPException(403,'K4 is locked in physical mode. Use a labelled overload simulation.')
         if enabling:
+            if snap.get('configuration_binding',{}).get('state')!='bound' or (snap.get('current') or {}).get('config_id')!=engine.config_identity(c):
+                raise HTTPException(423,'Latest acquisition must reference the current immutable configuration before enabling a load.')
             if store.get('twin_prototype','BENCH-001',{}).get('latched'):
                 raise HTTPException(423,'Protection decision is latched. Investigate and reset the latch before requesting load ON.')
             if os.getenv('HALO_ALLOW_CONTROL')!='1' or engine.holds(c): raise HTTPException(423,'Physical control is locked pending commissioning and explicit local enablement.')
             if snap['connection']!='live' or snap['quality']['calibration']!='reference recorded': raise HTTPException(423,'Fresh calibrated telemetry is required.')
             row=snap['current']
+            if row.get('hardware_config_status')!='reported_match':raise HTTPException(423,'Firmware configuration report must match the reviewed server configuration before enabling loads.')
             if not row.get('relay_output_configured'): raise HTTPException(423,'Firmware has not confirmed relay-output configuration.')
             if row['quality_flags'] or any(row.get(k) is None for k in ('secondary_v','current_a','surface_c')):
                 raise HTTPException(423,'Required sensor channels are invalid.')
@@ -280,7 +497,7 @@ def relay_command(payload:RelayRequest,actor=Depends(operator)):
         for pending in pending_commands():
             pending['status']='superseded'; store.put('command',pending['id'],pending)
         row={'id':payload.request_id,'states':list(payload.states),'status':'pending','created_at':now(),
-             'expires_at':(datetime.now(timezone.utc)+timedelta(seconds=5)).isoformat(),'actor':actor,'device_id':c.device_id}
+             'expires_at':(datetime.now(timezone.utc)+timedelta(seconds=5)).isoformat(),'actor':actor,'device_id':c.device_id,'config_id':engine.config_identity(c)}
         store.put('command',row['id'],row); store.event('BENCH-001','relay_requested',row)
         return row
 
@@ -297,10 +514,11 @@ def device_commands(actor=Depends(device)):
     pending=pending_commands(); allowed=[]
     for cmd in pending:
         snap=obtain();c=engine.config();r=snap.get('current') or {}
-        valid=r.get('relay_output_configured') and not r.get('quality_flags') and all(r.get(k) is not None for k in ('secondary_v','current_a','surface_c'))
+        valid=(snap.get('configuration_binding',{}).get('state')=='bound' and r.get('config_id')==engine.config_identity(c) and cmd.get('config_id')==engine.config_identity(c) and r.get('hardware_config_status')=='reported_match' and
+               r.get('relay_output_configured') and not r.get('quality_flags') and all(r.get(k) is not None for k in ('secondary_v','current_a','surface_c')))
         if valid and c.current_limit_a and c.surface_limit_c:
             valid=r['current_a']<=c.current_limit_a and r['surface_c']<c.surface_limit_c and sum(r['secondary_v']/ohm for on,ohm in zip(cmd['states'],c.resistor_ohms) if on)<=c.current_limit_a
-        if any(cmd['states']) and (os.getenv('HALO_ALLOW_CONTROL')!='1' or engine.holds(c) or snap['connection']!='live' or snap['quality']['calibration']!='reference recorded' or not valid):
+        if any(cmd['states']) and (store.get('twin_prototype','BENCH-001',{}).get('latched') or os.getenv('HALO_ALLOW_CONTROL')!='1' or engine.holds(c) or snap['connection']!='live' or snap['quality']['calibration']!='reference recorded' or not valid):
             cmd['status']='cancelled';store.put('command',cmd['id'],cmd)
         else: allowed.append(cmd)
     return {'commands':allowed}
@@ -392,10 +610,14 @@ def fit(payload:Fit,actor=Depends(operator)):
     if not engine.ambient_qualified(snap): raise HTTPException(422,'Verify the ambient probe or record an independent ambient observation before fitting.')
     rows=store.frames(engine.config().device_id,3600) if payload.mode=='bench' else engine.demonstration(payload.scenario,payload.cursor) if not payload.dataset_id else store.get('bench_dataset',payload.dataset_id)['rows'][:payload.cursor+1]
     calibration_id=(snap.get('current') or {}).get('calibration_id') if snap['source']!='simulated' else None
+    config_id=(snap.get('current') or {}).get('config_id') if snap['source']!='simulated' else None
+    if snap['source']!='simulated' and snap.get('configuration_binding',{}).get('state')!='bound':
+        raise HTTPException(422,'An immutable acquisition configuration is required; legacy data cannot inherit current settings.')
     if calibration_id: rows=[r for r in rows if r.get('calibration_id')==calibration_id]
+    if config_id:rows=[r for r in rows if r.get('config_id')==config_id]
     try: result=engine.fit_surface(rows,snap['asset_id'])
     except ValueError as e: raise HTTPException(422,str(e))
-    result.update(id='MODEL-'+uuid.uuid4().hex[:10],source=snap['source'],calibration_id=calibration_id,created_at=now(),note=payload.note,actor=actor)
+    result.update(id='MODEL-'+uuid.uuid4().hex[:10],source=snap['source'],calibration_id=calibration_id,config_id=config_id,created_at=now(),note=payload.note,actor=actor)
     store.put('surface_model',result['id'],result)
     if result['beats_persistence']: store.put('active_model',snap['asset_id'],result)
     store.event(snap['asset_id'],'model_fitted',result)

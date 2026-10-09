@@ -2,6 +2,7 @@
 from datetime import datetime, timedelta, timezone
 import math
 import hashlib
+import json
 import numpy as np
 from scipy.optimize import lsq_linear
 from .halo_contracts import BenchConfig
@@ -13,6 +14,29 @@ CHANNELS = {'primary_current_a':'A RMS primary', 'primary_v':'V RMS', 'secondary
 
 def config():
     return BenchConfig.model_validate(store.get('config','bench',BenchConfig(board='ESP32').model_dump()))
+
+
+def config_identity(c):
+    """Content identity of a server-reviewed configuration, not proof of wiring."""
+    # Revalidate even model instances: Pydantic defaults may contain integer
+    # literals for float fields, while a stored JSON round-trip normalizes them.
+    data=BenchConfig.model_validate(c.model_dump() if isinstance(c,BenchConfig) else c).model_dump()
+    return 'CFG-'+hashlib.sha256(json.dumps(data,sort_keys=True,separators=(',',':'),allow_nan=False).encode()).hexdigest()
+
+
+def recorded_config(row):
+    """Never bind a legacy acquisition to whichever configuration is current today."""
+    key=(row or {}).get('config_id')
+    if not key:
+        return None,{'id':None,'state':'unbound','note':'Legacy acquisition has no configuration reference. Limits and configuration-derived condition are unavailable.'}
+    record=store.get('config_version',key)
+    try:
+        c=BenchConfig.model_validate(record['config'])
+        valid=config_identity(c)==key and c.device_id==row.get('device_id')
+    except (TypeError,KeyError,ValueError):valid=False
+    if not valid:
+        return None,{'id':key,'state':'unavailable','note':'Referenced configuration is missing, mismatched or modified. Configuration-derived interpretation is withheld.'}
+    return c,{'id':key,'state':'bound','note':'Immutable server configuration referenced by the bridge at conversion. This does not independently prove physical wiring or firmware configuration.'}
 
 
 def holds(c):
@@ -70,6 +94,11 @@ def snapshot(rows, source='measured', asset_id='BENCH-001', c=None):
     if simulated:
         c=c.model_copy(update={'nominal_secondary_v':12.,'current_limit_a':1.,'surface_limit_c':55.})
     latest=rows[-1] if rows else None
+    binding={'id':None,'state':'simulated','note':'Explicit simulation settings.'}
+    if not simulated:
+        recorded,binding=recorded_config(latest)
+        # Raw/calibrated measurements remain visible, but unknown limits never inherit today's config.
+        c=recorded or c.model_copy(update={'nominal_secondary_v':None,'current_limit_a':None,'surface_limit_c':None})
     age=max(0,(datetime.now(timezone.utc)-timestamp(latest['timestamp'])).total_seconds()) if latest else None
     fresh=bool(latest) and (source!='measured' or age<=5)
     connection='replay' if source!='measured' else 'live' if fresh else 'stale' if latest else 'disconnected'
@@ -85,6 +114,12 @@ def snapshot(rows, source='measured', asset_id='BENCH-001', c=None):
     alerts=[]; evidence=[]
     def warn(code,title,detail,severity='warning',component='transformer'):
         alerts.append({'code':code,'title':title,'evidence':detail,'severity':severity,'component':component})
+    if latest and not simulated and binding['state']!='bound':
+        warn('configuration_unbound','Acquisition configuration unavailable',binding['note'])
+    hardware_status=(latest or {}).get('hardware_config_status','unverified')
+    if latest and not simulated and hardware_status!='reported_match':
+        warn('hardware_configuration','Firmware configuration '+('mismatch' if hardware_status=='mismatch' else 'unverified'),
+             'The bridge has not reported a matching firmware chip/pin configuration. Server configuration identity alone does not establish actual wiring.')
     if not fresh: warn('telemetry','Waiting for fresh telemetry','No recent measurement is available. Last values are historical.','warning','controller')
     for key,unit in CHANNELS.items():
         value=latest.get(key) if latest else None
@@ -106,7 +141,8 @@ def snapshot(rows, source='measured', asset_id='BENCH-001', c=None):
         warn('overcurrent','Current exceeds configured limit',f'{current:.3f} A > {c.current_limit_a:.3f} A. Request all loads off; independent protection is required.','critical','current')
     if fresh and channel_calibration['surface_c'] and margin is not None and margin<=0:
         warn('surface_limit','Surface temperature exceeds configured limit',f'{surface:.1f} °C surface; limit {c.surface_limit_c:.1f} °C. This is not winding temperature.','critical','surface')
-    temperatures=[r for r in rows[-60:] if r.get('surface_c') is not None]
+    temperatures=[r for r in rows[-60:] if r.get('surface_c') is not None and
+                  (simulated or all(r.get(k)==values.get(k) for k in ('config_id','calibration_id')))]
     slope=None
     if len(temperatures)>2:
         dt=(timestamp(temperatures[-1]['timestamp'])-timestamp(temperatures[0]['timestamp'])).total_seconds()/60
@@ -114,14 +150,14 @@ def snapshot(rows, source='measured', asset_id='BENCH-001', c=None):
     if fresh and channel_calibration['surface_c'] and slope is not None and slope>2:
         warn('temperature_change','Rapid surface-reading change',f'{slope:.2f} °C/min in the visible window. Compare with an independent probe before attributing a fault.','warning','surface')
     branches=values.get('relay_states',[False]*4)
-    expected=sum(v/r for on,r in zip(branches,c.resistor_ohms) if on) if v is not None and (source!='measured' or values.get('relay_output_configured')) else None
+    expected=sum(v/r for on,r in zip(branches,c.resistor_ohms) if on) if v is not None and (simulated or binding['state']=='bound') and (source!='measured' or values.get('relay_output_configured')) else None
     mismatch=current-expected if expected is not None and current is not None else None
     if fresh and channel_calibration['current_a'] and channel_calibration['secondary_v'] and mismatch is not None and abs(mismatch)>.12:
         warn('load_mismatch','Load-bank current differs from expected',f'Observed minus ideal resistor-bank current: {mismatch:+.3f} A. GPIO states do not prove contact closure.','warning','relay')
     if branches[3] and source=='measured':
         warn('k4','K4 reported active','K4 is prohibited in physical control. Disconnect the load source through the approved procedure.','critical','relay')
     score=None
-    if fresh and calibrated and load is not None and margin is not None and not values.get('quality_flags') and all(values.get(k) is not None for k in ('secondary_v','current_a','surface_c')):
+    if fresh and calibrated and (simulated or hardware_status=='reported_match') and load is not None and margin is not None and not values.get('quality_flags') and all(values.get(k) is not None for k in ('secondary_v','current_a','surface_c')):
         score=round(max(0,min(100,100-max(max(0,load-80),max(0,10-margin)*3))))
     model=store.get('active_model',asset_id)
     return {'asset_id':asset_id,'name':c.name if not simulated else 'Halo bench • synthetic replay',
@@ -136,7 +172,9 @@ def snapshot(rows, source='measured', asset_id='BENCH-001', c=None):
                        'total_channels':len(CHANNELS),'calibration':'synthetic' if simulated else 'reference recorded' if calibrated else 'unverified',
                        'agreement':'independent probe not connected','model_validity':'fitted surface model' if model else 'surface model not fitted'},
             'limits':{'current_a':c.current_limit_a,'surface_c':c.surface_limit_c,'nominal_secondary_v':c.nominal_secondary_v},
-            'holds':holds(c) if not simulated else [],'model':model,
+            'holds':(holds(c)+([binding['note']] if binding['state']!='bound' else [])) if not simulated else [],'model':model,
+            'configuration_binding':binding,
+            'hardware_configuration':{'state':hardware_status if not simulated else 'simulated','meaning':'Firmware handshake report only; not an independent wiring or isolation test.'},
             'notes':['The surface channel represents outer-case temperature; oil, winding hot-spot and remaining life are not measured on this bench.',
                      'VA is apparent power, not measured watts or efficiency. THD is unavailable.',
                      'Condition index is a screening heuristic, not a failure probability.',
@@ -193,6 +231,8 @@ def futures(snap,reduction=25,delay=0,horizon=10,ambient=None):
         return {'available':False,'reason':'A qualified surface model that beats persistence on a held-out period is required.','baseline':[],'alternative':[]}
     if snap['source']!='simulated' and (snap['quality']['calibration']!='reference recorded' or not model.get('calibration_id') or row.get('calibration_id')!=model['calibration_id']):
         return {'available':False,'reason':'The current calibration must match the reviewed model training data. Refit after changing calibration.','baseline':[],'alternative':[]}
+    if snap['source']!='simulated' and (snap.get('configuration_binding',{}).get('state')!='bound' or not model.get('config_id') or row.get('config_id')!=model['config_id']):
+        return {'available':False,'reason':'Acquisition configuration must match the immutable model-training configuration. Legacy/unbound models require a new qualified fit.','baseline':[],'alternative':[]}
     if snap['connection'] in ('stale','disconnected') or row.get('quality_flags'):
         return {'available':False,'reason':'Restore fresh, valid measurements first.','baseline':[],'alternative':[]}
     if not ambient_qualified(snap):

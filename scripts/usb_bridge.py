@@ -41,7 +41,8 @@ class Outbox:
     def close(self): self.db.close()
 
 
-def convert(raw,anchor,calibration,ambient=None):
+def convert(raw,anchor,calibration,ambient=None,config_id=None,hardware_config_status='unverified'):
+    if raw.get('emulated') or raw.get('device_id')=='EMULATOR':raise ValueError('Software fixture cannot enter the physical telemetry stream.')
     if raw.get('boot_id')!=anchor['boot_id']: raise ValueError('Handshake required after a reboot.')
     elapsed=(int(raw['uptime_ms'])-anchor['uptime_ms'])/1000
     if elapsed<0: raise ValueError('Pre-handshake buffered frame discarded.')
@@ -64,17 +65,54 @@ def convert(raw,anchor,calibration,ambient=None):
                  **values,ambient_c=ambient['value_c'] if valid_ambient else None,ambient_source='manual' if valid_ambient else 'not_measured',
                  ambient_observed_at=ambient_time if valid_ambient else None,relay_states=raw['relay_states'],
                  relay_output_configured=raw.get('relay_output_configured',False),
-                 calibration_id=cal.get('id'),quality_flags=flags,raw=raw_values).model_dump(mode='json')
+                 calibration_id=cal.get('id'),config_id=config_id,hardware_config_status=hardware_config_status,quality_flags=flags,raw=raw_values).model_dump(mode='json')
+
+
+def hardware_config_status(hello,config):
+    """Compare the firmware report, without claiming electrical verification."""
+    if not hello or not config:return 'unverified'
+    c=BenchConfig.model_validate(config)
+    required=('protocol','device_id','chip','relay_pins','primary_adc_pin','secondary_adc_pin','current_adc_pin','temperature_pin','active_low')
+    if c.board=='UNKNOWN' or any(hello.get(k) is None for k in required):return 'unverified'
+    if any(getattr(c,k) is None for k in ('primary_adc_pin','secondary_adc_pin','current_adc_pin','temperature_pin','active_low')) or any(p is None for p in c.relay_pins):return 'unverified'
+    if hello['protocol']!=1 or hello['device_id']!=c.device_id:return 'mismatch'
+    chip=hello.get('chip','').upper()
+    if ('S3' in chip)!=(c.board=='ESP32-S3') or not chip.startswith('ESP32'): return 'mismatch'
+    optional=hello.get('primary_current_adc_pin')
+    if optional == -1: optional=None
+    matches=optional==c.primary_current_adc_pin and all(hello.get(k)==getattr(c,k) for k in ('primary_adc_pin','secondary_adc_pin','current_adc_pin','temperature_pin','active_low')) and hello.get('relay_pins')==list(c.relay_pins)
+    return 'reported_match' if matches else 'mismatch'
 
 
 def compatible(hello,config):
     c=BenchConfig.model_validate(config)
-    if holds(c) or not all(hello.get(k) for k in ('pinmap_verified','adc_verified','relay_verified','control_compiled')): return False
-    chip=hello.get('chip','').upper()
-    if ('S3' in chip)!=(c.board=='ESP32-S3') or not chip.startswith('ESP32'): return False
-    optional=hello.get('primary_current_adc_pin')
-    if optional == -1: optional=None
-    return optional==c.primary_current_adc_pin and all(hello.get(k)==getattr(c,k) for k in ('primary_adc_pin','secondary_adc_pin','current_adc_pin','temperature_pin','active_low')) and hello.get('relay_pins')==list(c.relay_pins)
+    return hardware_config_status(hello,config)=='reported_match' and not holds(c) and all(hello.get(k) for k in ('pinmap_verified','adc_verified','relay_verified','control_compiled'))
+
+
+def control_permit(hello,configuration,last_frame,last_accepted,config_at,clock=None,*,accepted_frame=None):
+    """Permission expires independently of queued/retried telemetry and config."""
+    clock=time.monotonic() if clock is None else clock
+    if not configuration or not last_frame or not hello:return False
+    if not accepted_frame or any(accepted_frame.get(k)!=last_frame.get(k) for k in ('device_id','boot_id','sequence','timestamp')):return False
+    if not 0<=clock-last_accepted<2 or not 0<=clock-config_at<12:return False
+    if not 0<=(datetime.now(timezone.utc)-datetime.fromisoformat(last_frame['timestamp'].replace('Z','+00:00'))).total_seconds()<2:return False
+    if last_frame.get('boot_id')!=hello.get('boot_id') or last_frame.get('device_id')!=hello.get('device_id'):return False
+    if not configuration.get('config_id') or last_frame.get('config_id')!=configuration['config_id']:return False
+    if last_frame.get('hardware_config_status')!='reported_match':return False
+    return bool(configuration.get('control_enabled') and not last_frame.get('quality_flags') and
+                all(last_frame.get(k) is not None for k in ('secondary_v','current_a','surface_c')) and
+                last_frame.get('relay_output_configured') and compatible(hello,configuration.get('config',{})))
+
+
+def deliver_one(queue,client):
+    """One durable retry; only an explicit accepted response completes a frame."""
+    pending=queue.next()
+    if not pending:return None
+    key,frame=pending;r=client.post('/api/halo/telemetry',json=frame)
+    if r.status_code in (409,422):queue.finish(key,'rejected',str(r.status_code));return None
+    r.raise_for_status()
+    if r.json().get('accepted') is not True:raise ValueError('Backend did not acknowledge this acquisition.')
+    queue.finish(key,'delivered');return frame
 
 
 def run(port,server,queue_path):
@@ -82,7 +120,7 @@ def run(port,server,queue_path):
     token=os.getenv('HALO_DEVICE_TOKEN')
     if not token: raise SystemExit('Set HALO_DEVICE_TOKEN in both the application and this bridge. No port opened.')
     if not server.startswith(('http://127.0.0.1:','http://localhost:','https://')): raise SystemExit('Use loopback HTTP or authenticated HTTPS.')
-    queue=Outbox(queue_path);hello=None;anchor=None;configuration=None;next_config=0;last_frame=None;nonce=None;sent_at=None;last_accepted=0
+    queue=Outbox(queue_path);hello=None;anchor=None;configuration=None;next_config=0;last_frame=None;accepted_frame=None;nonce=None;sent_at=None;last_accepted=float('-inf');config_at=float('-inf');next_link=0
     with httpx.Client(base_url=server,headers={'Authorization':'Bearer '+token},timeout=2) as client, serial.Serial(port,115200,timeout=.05,write_timeout=1) as usb:
         def write(value): usb.write((json.dumps(value,separators=(',',':'))+'\n').encode())
         def handshake():
@@ -93,8 +131,8 @@ def run(port,server,queue_path):
             while True:
                 if time.monotonic()>=next_config:
                     try:
-                        r=client.get('/api/halo/device/config');r.raise_for_status();configuration=r.json();next_config=time.monotonic()+10
-                    except httpx.HTTPError: next_config=time.monotonic()+3
+                        r=client.get('/api/halo/device/config');r.raise_for_status();configuration=r.json();config_at=time.monotonic();next_config=config_at+10
+                    except httpx.HTTPError: config_at=float('-inf');next_config=time.monotonic()+3
                 incoming=usb.read(usb.in_waiting or 1)
                 if incoming: buffer+=incoming
                 if len(buffer)>16384: buffer=b'';anchor=None;handshake()
@@ -112,7 +150,7 @@ def run(port,server,queue_path):
                             print('USB handshake established. Host UTC anchor; sensor channels remain subject to calibration.',flush=True)
                         elif raw.get('type')=='telemetry_raw':
                             if not anchor or raw.get('boot_id')!=anchor['boot_id']:anchor=None;handshake();continue
-                            frame=convert(raw,anchor,(configuration or {}).get('calibration'),(configuration or {}).get('ambient'));queue.append(frame);last_frame=frame
+                            frame=convert(raw,anchor,(configuration or {}).get('calibration'),(configuration or {}).get('ambient'),(configuration or {}).get('config_id'),hardware_config_status(hello,(configuration or {}).get('config')));queue.append(frame);last_frame=frame
                         elif raw.get('type')=='ack':
                             r=client.post('/api/halo/device/commands/'+raw['id']+'/ack',json={k:raw[k] for k in ('accepted','states','reason')});r.raise_for_status()
                     except (ValueError,KeyError,TypeError,httpx.HTTPError):
@@ -120,18 +158,17 @@ def run(port,server,queue_path):
                 if time.monotonic()<next_poll: continue
                 next_poll=time.monotonic()+.4
                 try:
-                    pending=queue.next()
-                    fresh_accepted=False
-                    if pending:
-                        key,frame=pending;r=client.post('/api/halo/telemetry',json=frame)
-                        if r.status_code in (409,422):queue.finish(key,'rejected',str(r.status_code));print('Historical or invalid queued frame quarantined.',flush=True)
-                        else:
-                            r.raise_for_status();queue.finish(key,'delivered')
-                            fresh_accepted=(datetime.now(timezone.utc)-datetime.fromisoformat(frame['timestamp'].replace('Z','+00:00'))).total_seconds()<2
-                            if fresh_accepted: last_accepted=time.monotonic()
+                    frame=deliver_one(queue,client)
+                    if frame and 0<=(datetime.now(timezone.utc)-datetime.fromisoformat(frame['timestamp'].replace('Z','+00:00'))).total_seconds()<2:
+                        last_accepted=time.monotonic();accepted_frame=frame
                     c=(configuration or {}).get('config',{});cal=(configuration or {}).get('calibration') or {}
-                    permit=bool(time.monotonic()-last_accepted<2 and hello and c and compatible(hello,c) and configuration.get('control_enabled') and not (last_frame or {}).get('quality_flags'))
+                    permit=control_permit(hello,configuration,last_frame,last_accepted,config_at,accepted_frame=accepted_frame)
                     write({'type':'heartbeat','permit':permit,**{k:cal.get(k) or 0 for k in ('current_a_per_mv','secondary_v_per_mv','current_noise_mv','surface_offset_c')},**{k:c.get(k) or 0 for k in ('current_limit_a','surface_limit_c','nominal_secondary_v')}})
+                    if hello and time.monotonic()>=next_link:
+                        r=client.post('/api/halo/device/link',json={'device_id':hello.get('device_id','UNKNOWN'),'boot_id':hello.get('boot_id','UNKNOWN'),
+                            'chip':hello.get('chip','UNKNOWN'),'protocol':hello.get('protocol',0),'compatible':compatible(hello,c) if c else False,
+                            'permit':permit,'pending_frames':queue.db.execute('SELECT count(*) FROM outbox WHERE state="pending"').fetchone()[0]})
+                        r.raise_for_status();next_link=time.monotonic()+5
                     r=client.get('/api/halo/device/commands');r.raise_for_status()
                     for cmd in r.json()['commands']:
                         enabling=any(cmd['states']);remaining=(datetime.fromisoformat(cmd['expires_at'])-datetime.now(timezone.utc)).total_seconds()

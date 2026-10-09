@@ -9,3 +9,21 @@
 *.h text eol=lf
 *.ps1 text eol=crlf
 *.png binary
+
+# Frozen evaluation hashes bind exact bytes, including original line endings.
+# Keep these inputs and evidence unchanged on every platform and in archives.
+/reports/** -text
+/data/external/** -text
+/neuratwin/app.py -text
+/neuratwin/external_forecast.py -text
+/neuratwin/thermal_adaptation.py -text
+/neuratwin/thermal_reference.py -text
+/neuratwin/twin_core.py -text
+/neuratwin/twin_observer.py -text
+/neuratwin/twin_studies.py -text
+/neuratwin/validation_plant.py -text
+/requirements.txt -text
+/scripts/benchmark_pipeline.py -text
+/scripts/evaluate_external_forecast.py -text
+/scripts/evaluation_metrics.py -text
+/scripts/prospective_evaluation.py -text

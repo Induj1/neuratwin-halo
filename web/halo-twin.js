@@ -240,6 +240,7 @@ class HaloTwin {
     }
     this.parts = [];
     this.cutawayParts = [];
+    this.thermalSurfaces = [];
     this.bench = null;
     if (!distribution && window.HaloBenchModel) {
       this.bench = HaloBenchModel(THREE);
@@ -264,8 +265,9 @@ class HaloTwin {
         "transformer",
         0.5,
       );
+      this.thermalSurfaces.push(this.body);
       for (let i = 0; i < 12; i++) {
-        this.box(
+        const fin = this.box(
           -1.55 + i * 0.22,
           1.05,
           1,
@@ -273,9 +275,10 @@ class HaloTwin {
           1.8,
           0.35,
           0x83968f,
-          "transformer",
+          "radiator",
           0.45,
         );
+        this.thermalSurfaces.push(fin);
       }
       this.cover = this.box(
         -0.4,
@@ -289,12 +292,13 @@ class HaloTwin {
         0.4,
       );
       for (let x = -1.1; x < 0.8; x += 0.7) {
-        this.cylinder(x, 2.7, 0, 0.13, 0.75, 0xae7451, "transformer");
+        this.cylinder(x, 2.7, 0, 0.13, 0.75, 0xae7451, "bushings");
         for (let y = 2.4; y < 3; y += 0.14)
-          this.cylinder(x, y, 0, 0.21, 0.07, 0xc4946c, "transformer");
+          this.cylinder(x, y, 0, 0.21, 0.07, 0xc4946c, "bushings");
       }
       this.cylinder(0.8, 2.3, 0, 0.23, 0.9, 0xb85b2f, "surface");
       this.box(2, 0.6, 0, 1.4, 1.2, 1.5, 0xe6dfc8, "controller");
+      this.parts.forEach(mesh=>{mesh.material.envMapIntensity=.3;mesh.material.roughness=.58;mesh.material.metalness=.15;});
     } else {
       for (let i = 0; i < 20; i++) {
         const plate = this.box(
@@ -413,22 +417,40 @@ class HaloTwin {
       if (m.userData.part === part) {
         if (!m.userData.selectedMaterial) {
           m.userData.selectedMaterial = m.userData.baseMaterial.clone();
-          m.userData.selectedMaterial.emissive?.setHex(0x163b36);
+          m.userData.selectedMaterial.emissive?.setHex(this.distribution?0x15456b:0x163b36);
+          if(this.distribution)m.userData.selectedMaterial.emissiveIntensity=.65;
         }
         m.material = m.userData.selectedMaterial;
       } else m.material = m.userData.baseMaterial;
-      if (m.userData.thermalActive) m.material = m.userData.thermalMaterial;
+      if (m.userData.thermalActive) {
+        m.material = m.userData.thermalMaterial;
+        // Retain thermal fill; a brighter emissive cue makes selection visible.
+        if(m.material.emissive)m.material.emissiveIntensity=m.userData.isSelected?1:.45;
+      }
     });
     this.onSelect(part);
     this.draw();
   }
-  temperature(value, severity = "normal") {
+  temperature(value, severity = "normal", limits = {}) {
     if (this.failed) return;
     this.surfaceTemperature = value;
     if (this.bench) {
       this.bench.setTemperature(value, severity);
       this.draw();
       return;
+    }
+    if(this.distribution && Number.isFinite(limits.warning) && Number.isFinite(limits.critical)) {
+      const color=new THREE.Color(0x366476),amber=new THREE.Color(0xb9781a),red=new THREE.Color(0xb43e2b);
+      const low=limits.warning-45,ratio=Math.max(0,Math.min(1,(value-low)/Math.max(1,limits.warning-low)));
+      if(value==null)color.setHex(0xa4aaa4);
+      else if(value<=limits.warning)color.lerp(amber,ratio);
+      else color.copy(amber).lerp(red,Math.max(0,Math.min(1,(value-limits.warning)/Math.max(1,limits.critical-limits.warning))));
+      for(const mesh of this.thermalSurfaces||[this.body]){
+        (mesh.userData.baseMaterial||mesh.material).color.copy(color);
+        mesh.material.color.copy(color);
+        if(mesh.userData.selectedMaterial)mesh.userData.selectedMaterial.color.copy(color);
+      }
+      this.draw();return;
     }
     this.body.material.color.setHex(
       value == null

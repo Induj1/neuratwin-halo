@@ -1,0 +1,209 @@
+{
+  "status": "passed",
+  "started_at": "2026-10-08T19:26:52.248291+00:00",
+  "finished_at": "2026-10-08T19:27:09.288226+00:00",
+  "scope": "Real loopback HTTP to a disposable single-process Uvicorn server and temporary SQLite; synthetic independent industrial runs.",
+  "workload": {
+    "runs": 12,
+    "actions_per_run": 10,
+    "readback_after_each_action": true,
+    "export_per_run": true,
+    "max_concurrent_clients": 4,
+    "server_workers": 1,
+    "measured_requests": 264,
+    "expected_requests": 264,
+    "readiness_and_final_diagnostics_excluded": true,
+    "delete_operation": "Not exercised; the application exposes no run DELETE operation."
+  },
+  "latency": {
+    "all": {
+      "count": 264,
+      "p50_ms": 65.921,
+      "p95_ms": 313.397,
+      "p99_ms": 370.531,
+      "max_ms": 386.122
+    },
+    "create": {
+      "count": 12,
+      "p50_ms": 131.63,
+      "p95_ms": 264.606,
+      "p99_ms": 276.081,
+      "max_ms": 278.949
+    },
+    "action": {
+      "count": 120,
+      "p50_ms": 235.954,
+      "p95_ms": 342.361,
+      "p99_ms": 378.724,
+      "max_ms": 386.122
+    },
+    "read": {
+      "count": 120,
+      "p50_ms": 25.964,
+      "p95_ms": 32.673,
+      "p99_ms": 38.497,
+      "max_ms": 40.593
+    },
+    "export": {
+      "count": 12,
+      "p50_ms": 131.24,
+      "p95_ms": 195.596,
+      "p99_ms": 215.008,
+      "max_ms": 219.861
+    }
+  },
+  "status_counts": {
+    "200": 264
+  },
+  "request_error_count": 0,
+  "run_errors": [],
+  "wall_seconds": 13.173,
+  "observed_requests_per_second": 20.04,
+  "isolation": {
+    "passed_runs": 12,
+    "persisted_runs": 12,
+    "persisted_runs_verified": 12,
+    "unique_profiles_and_inputs_verified": true,
+    "correct_revision_and_elapsed_per_run": true,
+    "report_matches_run": true,
+    "physical_frames": 0,
+    "physical_commands": 0,
+    "server_stopped": true
+  },
+  "recovery_worker": {
+    "running_during_workload": true,
+    "hardware_commands_allowed": false,
+    "storage_failures": 0
+  },
+  "database_bytes_after_workload": 925696,
+  "machine": {
+    "os": "Windows",
+    "os_release": "11",
+    "architecture": "AMD64",
+    "processor": "Intel64 Family 6 Model 183 Stepping 1, GenuineIntel",
+    "logical_cpu_count": 20,
+    "python_version": "3.14.3",
+    "packages": {
+      "fastapi": "0.141.1",
+      "uvicorn": "0.44.0",
+      "httpx": "0.28.1",
+      "pydantic": "2.12.5"
+    },
+    "physical_memory_gib": 23.8
+  },
+  "contention_note": "The two project numerical benchmark processes had completed before this run. Other operating-system activity was not controlled or profiled.",
+  "source_sha256": {
+    "neuratwin/app.py": "f08eaeb6d53b4b2ad7d8343d620009b517fe06e0670a4ead9e1c8ae4c94b75c0",
+    "neuratwin/halo_api.py": "4df5345235ce2ffb8e499ce8f5982559d839909b3919234e456ea11c1240da51",
+    "neuratwin/halo_store.py": "eea7bf53ed639baa5f1d02a433972e600524a472340dba56d9d7c57a1cb08763",
+    "neuratwin/twin_api.py": "94a4b9d1ebaab8f2510e8cd9376839ce40acfb59899b7333ecabe74989a5ac8a",
+    "neuratwin/twin_core.py": "cf8eaf9fb21db69ea341f84133843ccc5b500b0c5f89968f4f680ebdd4d572bd",
+    "scripts/rehearse_api_performance.py": "2206b451640424fff6b0653908b888120aed3f5dbbb21cbb77f09d3061180b01"
+  },
+  "source_changed_during_run": [],
+  "limits": [
+    "Single local measured workload, not a capacity, security or production SLA claim.",
+    "No remote Supabase, WAN latency, browser rendering or physical acquisition was measured.",
+    "Four clients share one application process; this is not a multiprocess/fleet throughput test.",
+    "No invented pass/fail latency threshold; only workload correctness is asserted.",
+    "Percentiles use linear interpolation on this finite sample; repeat runs may differ."
+  ],
+  "runs": [
+    {
+      "run_index": 0,
+      "revision": 10,
+      "elapsed_s": 151.0,
+      "load_percent": 60.0,
+      "profile_matches": true,
+      "report_matches": true
+    },
+    {
+      "run_index": 1,
+      "revision": 10,
+      "elapsed_s": 152.0,
+      "load_percent": 62.0,
+      "profile_matches": true,
+      "report_matches": true
+    },
+    {
+      "run_index": 2,
+      "revision": 10,
+      "elapsed_s": 153.0,
+      "load_percent": 64.0,
+      "profile_matches": true,
+      "report_matches": true
+    },
+    {
+      "run_index": 3,
+      "revision": 10,
+      "elapsed_s": 154.0,
+      "load_percent": 66.0,
+      "profile_matches": true,
+      "report_matches": true
+    },
+    {
+      "run_index": 4,
+      "revision": 10,
+      "elapsed_s": 155.0,
+      "load_percent": 68.0,
+      "profile_matches": true,
+      "report_matches": true
+    },
+    {
+      "run_index": 5,
+      "revision": 10,
+      "elapsed_s": 156.0,
+      "load_percent": 70.0,
+      "profile_matches": true,
+      "report_matches": true
+    },
+    {
+      "run_index": 6,
+      "revision": 10,
+      "elapsed_s": 157.0,
+      "load_percent": 72.0,
+      "profile_matches": true,
+      "report_matches": true
+    },
+    {
+      "run_index": 7,
+      "revision": 10,
+      "elapsed_s": 158.0,
+      "load_percent": 74.0,
+      "profile_matches": true,
+      "report_matches": true
+    },
+    {
+      "run_index": 8,
+      "revision": 10,
+      "elapsed_s": 159.0,
+      "load_percent": 76.0,
+      "profile_matches": true,
+      "report_matches": true
+    },
+    {
+      "run_index": 9,
+      "revision": 10,
+      "elapsed_s": 160.0,
+      "load_percent": 78.0,
+      "profile_matches": true,
+      "report_matches": true
+    },
+    {
+      "run_index": 10,
+      "revision": 10,
+      "elapsed_s": 161.0,
+      "load_percent": 80.0,
+      "profile_matches": true,
+      "report_matches": true
+    },
+    {
+      "run_index": 11,
+      "revision": 10,
+      "elapsed_s": 162.0,
+      "load_percent": 82.0,
+      "profile_matches": true,
+      "report_matches": true
+    }
+  ]
+}

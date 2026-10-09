@@ -5,6 +5,17 @@ A distribution-transformer condition-monitoring prototype with an inspectable de
 
 Start with [the submission dossier](web/submission-guide.html), [the current hardware handoff](web/hardware-guide.html) and [the model specification](docs/DUAL_MODE_TWIN.md).
 
+The [synchronized operations workspace](docs/SYNCHRONIZED_OPERATIONS.md) adds a condition dial, illustrative phase waveforms, continuous simulation controls, an inline intervention comparison and recorded-state replay at `/app#operate`. Hardware remains single-phase and RMS-only; unavailable measurements stay unavailable.
+
+See the [v6 model and evidence release record](docs/MODEL_AND_EVIDENCE_UPGRADE_V6.md) for measured gains and remaining checks.
+
+## Current model and evidence upgrades
+
+- **Assess readings** in Digital twin runs the observation-only assessor on the selected run and revision. Scenario names, declared cooling, fault labels and future readings are excluded. A changed revision invalidates the review.
+- **Reviewed winding forecast reference** identifies rise and time constant from a healthy oil + reported hot-spot prefix, validates against two baselines, and applies only to qualified projections. Diagnostic holds are unchanged. Oil-only and surface-probe records cannot enable it. See [qualification and development results](docs/REVIEWED_WINDING_REFERENCE.md).
+- **External public-data forecasting** in Evidence executes frozen numeric models on the original ETTh1 recording. Validation selected gradient boosting, which was about 1% worse than persistence on the later test segment. All candidates, losses, provenance and a forecast/reveal demonstration remain visible. Results use source units, not verified degrees Celsius. See [the complete public-data experiment](docs/EXTERNAL_ETT_FORECAST.md).
+- The earlier v5 release and its evaluation remain historical; current source matching is checked separately. This release does not establish fivefold superiority, field accuracy or a guaranteed competition result.
+
 ## Run the project
 
 Python 3.12+:
@@ -36,13 +47,17 @@ The main navigation focuses on Digital twin, Action Lab, Maintenance, Evidence a
 
 ## Five-minute demonstration
 
-1. Rehearsal → **Prepare a new rehearsal run**: labelled simulation, 110% load, degraded cooling, 35 °C ambient. Review the warning and thermal trajectory.
-2. Evidence → freeze a 15-minute forecast, then advance three five-minute steps. Compare later observations against the original frozen curve and persistence.
-3. Action Lab → compare 60 minutes with zero delay. Inspect rejected candidates, sensitivity limits and curtailed energy; apply the selected demand reduction to simulation.
-4. Maintenance → record an owner, acceptance criteria, investigation and action. Closure requires later qualified readings and recovered operation. A continuing warning correctly blocks closure.
-5. Explicitly show Physical prototype. Use real data only after commissioning; otherwise show unavailable channels and outstanding checks. Return to Industrial Evidence, show benchmark misses and export the case.
+Keep **one selected industrial run** throughout this main story. Its source, run ID and clock stay visible. Independent recordings are a separately introduced experiment, never substituted for this asset.
 
-The dossier includes presenter notes and technical questions. Keep an exported rehearsal case and the precomputed `web/halo-fallback.html` walkthrough available. The latter is a static synthetic fallback, not the numerical application.
+1. **0:00–0:40 — Rehearsal → Prepare a new rehearsal run.** Identify the labelled simulation, warning, modelled hot-spot and critical reference. Open **Review this run** in Digital twin.
+2. **0:40–1:30 — Inspect signals and recorded response.** Distinguish immediate electrical response from delayed heating. Select **Assess readings** beside the warning and show its observation-only assessment, including any forecast hold. The review is invalidated when the run changes.
+3. **1:30–2:30 — Digital twin → Review scenario study.** Explain that this conditional action study uses declared cooling. Inspect a proposed reduction, peak and curtailed energy; apply it only when a nonzero proposal exists. Advance the same simulation five minutes. A 240-minute sensitivity study is not independently validated four-hour forecasting.
+4. **2:30–4:00 — Open run maintenance.** Record an owner, inspection, action and numerical acceptance rules. Demonstrate a hold or temporary stabilization while cooling is impaired. Only demonstrate closure after the configured stable recovery window and all checks pass. No invented repair or prefilled technician observations.
+5. **4:00–5:00 — Export this run and open Evidence's evaluation results.** Identify the dataset-level comparison separately from the selected run. Show additional warning lead time, false alarms, error tails and coverage together. The frozen fresh synthetic experiment and known-corpus regression remain distinct. Show the external ETTh1 experiment separately, including its loss against persistence.
+
+Optional technical follow-up: import an independently supplied recording using Evidence's source-bound workflow, freeze its assessment before revealing later rows, and export the review. A recording known to its uploader is a retrospective holdout. Show Physical prototype only when demonstrating actual commissioned acquisitions; otherwise its unavailable channels are the correct result.
+
+The dossier uses this same sequence. The offline walkthrough is a labelled synthetic fallback, not a replacement for recorded evidence.
 
 ## What is new in the submission workflow
 
@@ -50,7 +65,8 @@ The dossier includes presenter notes and technical questions. Keep an exported r
 - Sensor disagreement asks for an independent check and withholds the affected forecast.
 - Forecasts copy settings, inputs, origin and provenance before future observations. Scoring preserves failures, changed-input samples and missing evidence. Hashes detect changes relative to a retained record; they are not signatures.
 - Intervention studies enumerate demand reductions and delays, enforce declared thermal/load constraints and retain rejected candidates. Stale recommendations cannot be applied. Application only changes the selected simulation.
-- Maintenance records require investigation, action and subsequent recovered-operation evidence before closure.
+- Maintenance closure enforces a recorded stable duration, maximum load/temperature, qualified uninterrupted observations, restored cooling and a forward thermal corner check. Temporary stabilization is distinct from resolution. Legacy orders without structured rules retain their historical status and visibly fail current verification.
+- A committed blind experiment withholds seed, scenario and future observations until the observation-only assessment is frozen. Extra hidden-state fields cannot enter the assessor. Evidence displays fault-specific errors, misses, nuisance alarms and withheld forecast counts.
 - Reviewed oil-reference CSV fitting uses a bounded first-order model and chronological 70/30 validation. A surface-temperature file is rejected. Fitted oil parameters can initialize a new run; winding/rating/absolute-loss assumptions stay illustrative.
 - Run exports include all retained history, event trail, frozen predictions/scores, intervention studies and maintenance records in JSON, CSV and readable HTML with a SHA-256 manifest.
 
@@ -58,6 +74,8 @@ The dossier includes presenter notes and technical questions. Keep an exported r
 
 ```powershell
 python scripts/benchmark_submission.py
+python scripts/benchmark_pipeline.py
+python scripts/rehearse_submission.py
 python -m pip install -r requirements-dev.txt
 python -m pytest tests -q --junitxml=reports/halo-submission-tests.xml
 python scripts/package_submission.py
@@ -69,17 +87,16 @@ This machine has a legacy `pyreadline` conflict with Python 3.14; the process-lo
 python -c "import sys; sys.modules['readline']=None; import pytest; raise SystemExit(pytest.main(['tests','-q','--junitxml=reports/halo-submission-tests.xml']))"
 ```
 
-The independent synthetic benchmark contains 30 cases, six seeds and mild/severe overload, cooling degradation, sensor bias, dropout and healthy controls. It uses a different plant with noise, nonlinear cooling and parameter mismatch. The forecaster receives no future inputs; the detector receives no event labels.
+The current **observation-pipeline-5** has two separately identified evaluations:
 
-| Horizon | Model MAE | Persistence MAE | Scored / possible |
-| --- | ---: | ---: | ---: |
-| 5 min | 0.926 °C | 1.397 °C | 156 / 180 |
-| 15 min | 2.035 °C | 4.113 °C | 156 / 180 |
-| 30 min | 3.965 °C | 8.252 °C | 150 / 180 |
+- **Known-corpus regression:** `reports/pipeline-benchmark.json`, with paired lead-time, diagnostic coverage, nuisance-alarm burden and scored/unscored forecasts. Historical v4 outputs remain in `reports/pipeline-v4-before-v5-*`.
+- **Fresh frozen synthetic evaluation:** `reports/pipeline-v5-fresh-protocol.json` binds the source, unused randomly selected seeds, scenarios, horizons and metrics before generation. Its single consumed run and report are in `reports/pipeline-v5-fresh-protocol-run/`. These are internally generated synthetic cases, not external recordings or field validation; they become known after this run.
 
-Detection: **16/24 fault episodes**, correct-alert precision **93.4%** of alert minutes, false alarms **65/1,386 normal minutes (4.69%)**. Eight misses remain in the report. These test the oil-reference and residual-screening methods; they do not validate every industrial feature or establish field accuracy. Raw per-origin/per-minute CSV and fixed seeds are included.
+Evidence displays both results with source hashes and retained protocol/report integrity. Point forecasts have no calibrated safety interval. Independent forecast scoring stops at 30 minutes; the 240-minute scenario planner establishes model sensitivity and execution consistency only. False alarms, missed warnings, signed error tails, target availability and withheld predictions remain in the reports.
 
-The supplied CPRI spreadsheet provides 12 acceptance examples, not longitudinal labelled fault-training data. Laya's saved five-case evaluation abstained in all five cases; optional Laya integration is not claimed as established transformer diagnosis. An industrial forecast scored against its own model establishes internal consistency only. Actual remaining life and calibrated failure probability are unavailable.
+The [v5 method](docs/OBSERVATION_PROTOCOL_V5.md) describes voltage-aware oil fitting and complete RMS current observations. The [evaluation protocol and external recording guide](docs/EVALUATION_PROTOCOL_AND_EXTERNAL_RECORDINGS.md) explains reproduction and importing data without relabelling it as prospective or physical evidence. The [release record](docs/RELEASE_READINESS_2026-10-09.md) identifies final verification and remaining evidence boundaries.
+
+The supplied CPRI spreadsheet provides acceptance examples, not longitudinal labelled fault-training data. The saved Laya evaluation abstained in five demonstration cases; optional language interpretation is not established transformer diagnosis. Actual remaining life and calibrated failure probability are unavailable. The official brief permits simulated data and later sensor extension.
 
 ## Current hardware — must match the software
 
@@ -108,6 +125,24 @@ Qualified electrical review; controller and winding identification; reference ca
 
 The submission archive intentionally excludes `.env`, runtime databases, private recordings, model weights and compiler toolchains. No submission, public deployment or Git push is performed by building it.
 
-## Submission verification · 8 October 2026
+## Submission verification · 9 October 2026
 
-162 automated tests passed. Browser verification covers the complete industrial investigation, persistence after restart, source switching, rejected premature closure, oil-reference fitting, export integrity and 390 px responsive layout. The allowlisted archive starts from a clean extracted folder in isolated SQLite mode; ten smoke checks passed without loading private configuration. See `reports/halo-submission-tests.xml`, `reports/halo-submission-browser.json` and `reports/submission-package-smoke.json`. These are software checks; physical commissioning remains outstanding.
+Current test counts and browser results are recorded in `reports/halo-release-tests.xml`, `reports/halo-release-js-tests.txt`, `reports/halo-release-browser.json` and the [release record](docs/RELEASE_READINESS_2026-10-09.md). The earlier hardening reports remain historical evidence.
+
+Imported oil recordings now have their own immutable source/assessment → inspection → action → comparable follow-up → reference-review closure → export workflow. Its [rehearsal](reports/observation-workflow-rehearsal.json) uses labelled synthetic fixtures, never physical repair claims. Physical maintenance rejects calibration/configuration changes and inconsistent raw evidence. Frames retain their acquisition configuration; durable pending analysis drains continuously with leased claims, oldest-due-first scheduling, retry backoff and command-free recovery. See [hardware provenance](docs/HARDWARE_PROVENANCE_AND_RECOVERY.md).
+
+Run `python scripts/smoke_submission.py` after packaging to extract the allowlisted archive and validate its actual contents; `reports/submission-package-smoke-current.json` identifies the tested ZIP by SHA-256 and remains alongside the archive to avoid a self-referencing manifest. Physical commissioning and independent field evaluation remain outstanding.
+
+## Bench lab: capture → compare → replay
+
+Open `/app#lab`. The software emulator is isolated from physical acquisition, calibration activation and relay commands. Start an emulator experiment, freeze a three-minute surface forecast, advance 60 seconds three times, then inspect model error against persistence. Change the virtual load and freeze a second forecast to inspect recovery. Changed-input samples remain separate. Stop the experiment and export JSON, CSV, an interactive offline HTML replay and a SHA-256 manifest.
+
+For actual hardware, select Physical ESP32 only after fresh acquisition is available. Inspect chip/configuration agreement, sequence gaps, boot changes, raw RMS/bias/range values, channel flags and calibrated readings. Reference checks attach to an exact acquisition and retain entered tolerance, instrument and reviewer; scale proposals do not automatically activate a calibration. Use a physical proposal in the existing calibration draft and verify additional operating points before saving. Missing model/calibration/ambient or stale data blocks forecasting. Event annotations do not certify a repair. This workflow never issues physical load commands.
+
+```powershell
+python scripts/rehearse_bench_lab.py
+python scripts/rehearse_recovery.py
+python scripts/device_emulator.py --output reports/emulated-device.ndjson
+```
+
+The first script exercises the entire emulator workflow in disposable SQLite and writes `reports/bench-experiment-rehearsal.zip`. The recovery script terminates and restarts a separate loopback API process and reopens its durable bridge queue after a deliberately lost acknowledgement. Original acquisition time, exact-once storage, stale status and zero physical commands are checked. Unit regressions additionally cover stale configuration, USB silence, mismatched device/boot/chip, queued-command revocation and late acknowledgements. These are software checks; actual electrical contact state and physical watchdog timing remain unmeasured.

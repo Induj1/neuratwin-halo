@@ -1,0 +1,779 @@
+{
+  "scope": "Software emulator workflow; not hardware validation",
+  "status": "passed",
+  "checks": [
+    "Emulator records isolated from physical acquisition",
+    "Prospective surface forecast scored on 36 later observations",
+    "Changed inputs separated from comparable forecast error",
+    "Stopped experiment exported with self-contained offline replay",
+    "Zero physical commands and zero physical telemetry frames created"
+  ],
+  "forecasts": [
+    {
+      "status": "complete",
+      "all_observations": {
+        "count": 36,
+        "mae_c": 0.2764092883145561,
+        "rmse_c": 0.33498224177664304,
+        "persistence_mae_c": 1.4832423812345767
+      },
+      "assumptions_held": {
+        "count": 36,
+        "mae_c": 0.2764092883145561,
+        "rmse_c": 0.33498224177664304,
+        "persistence_mae_c": 1.4832423812345767
+      },
+      "baseline_comparison": "The model beats persistence in this unchanged-input window; this is not field validation.",
+      "changed_input_samples": 0,
+      "missing_samples": 0,
+      "gaps": 0,
+      "samples": [
+        {
+          "timestamp": "2026-10-08T09:20:05+00:00",
+          "minute": 0.08333333333333333,
+          "actual_c": 44.81594417117559,
+          "predicted_c": 44.81973282994363,
+          "error_c": 0.0037886587680446837,
+          "persistence_error_c": -0.09138313963153877,
+          "assumptions_changed": []
+        },
+        {
+          "timestamp": "2026-10-08T09:20:10+00:00",
+          "minute": 0.16666666666666666,
+          "actual_c": 44.87952533315699,
+          "predicted_c": 44.91489986986994,
+          "error_c": 0.035374536712950544,
+          "persistence_error_c": -0.15496430161294228,
+          "assumptions_changed": []
+        },
+        {
+          "timestamp": "2026-10-08T09:20:15+00:00",
+          "minute": 0.25,
+          "actual_c": 44.96817202488523,
+          "predicted_c": 45.01006215156076,
+          "error_c": 0.04189012667553271,
+          "persistence_error_c": -0.24361099334117853,
+          "assumptions_changed": []
+        },
+        {
+          "timestamp": "2026-10-08T09:20:20+00:00",
+          "minute": 0.3333333333333333,
+          "actual_c": 45.07542415892939,
+          "predicted_c": 45.10521967525392,
+          "error_c": 0.029795516324533367,
+          "persistence_error_c": -0.3508631273853382,
+          "assumptions_changed": []
+        },
+        {
+          "timestamp": "2026-10-08T09:20:25+00:00",
+          "minute": 0.4166666666666667,
+          "actual_c": 45.150458638315925,
+          "predicted_c": 45.200372441187255,
+          "error_c": 0.049913802871330404,
+          "persistence_error_c": -0.42589760677187627,
+          "assumptions_changed": []
+        },
+        {
+          "timestamp": "2026-10-08T09:20:30+00:00",
+          "minute": 0.5,
+          "actual_c": 45.21584623936878,
+          "predicted_c": 45.295520449598826,
+          "error_c": 0.07967421023004562,
+          "persistence_error_c": -0.4912852078247312,
+          "assumptions_changed": []
+        },
+        {
+          "timestamp": "2026-10-08T09:20:35+00:00",
+          "minute": 0.5833333333333334,
+          "actual_c": 45.315250548053086,
+          "predicted_c": 45.39066370072646,
+          "error_c": 0.07541315267337723,
+          "persistence_error_c": -0.5906895165090376,
+          "assumptions_changed": []
+        },
+        {
+          "timestamp": "2026-10-08T09:20:40+00:00",
+          "minute": 0.6666666666666666,
+          "actual_c": 45.41225385194775,
+          "predicted_c": 45.485802194808,
+          "error_c": 0.07354834286024925,
+          "persistence_error_c": -0.6876928204037043,
+          "assumptions_changed": []
+        },
+        {
+          "timestamp": "2026-10-08T09:20:45+00:00",
+          "minute": 0.75,
+          "actual_c": 45.474736861930445,
+          "predicted_c": 45.580935932081275,
+          "error_c": 0.1061990701508293,
+          "persistence_error_c": -0.7501758303863966,
+          "assumptions_changed": []
+        },
+        {
+          "timestamp": "2026-10-08T09:20:50+00:00",
+          "minute": 0.8333333333333334,
+          "actual_c": 45.549299038738766,
+          "predicted_c": 45.67606491278411,
+          "error_c": 0.126765874045347,
+          "persistence_error_c": -0.8247380071947177,
+          "assumptions_changed": []
+        },
+        {
+          "timestamp": "2026-10-08T09:20:55+00:00",
+          "minute": 0.9166666666666666,
+          "actual_c": 45.65328285569144,
+          "predicted_c": 45.77118913715435,
+          "error_c": 0.11790628146291482,
+          "persistence_error_c": -0.928721824147388,
+          "assumptions_changed": []
+        },
+        {
+          "timestamp": "2026-10-08T09:21:00+00:00",
+          "minute": 1.0,
+          "actual_c": 45.734588682553515,
+          "predicted_c": 45.86630860542982,
+          "error_c": 0.1317199228763073,
+          "persistence_error_c": -1.010027651009466,
+          "assumptions_changed": []
+        },
+        {
+          "timestamp": "2026-10-08T09:21:05+00:00",
+          "minute": 1.0833333333333333,
+          "actual_c": 45.79239176784771,
+          "predicted_c": 45.96142331784836,
+          "error_c": 0.1690315500006463,
+          "persistence_error_c": -1.0678307363036623,
+          "assumptions_changed": []
+        },
+        {
+          "timestamp": "2026-10-08T09:21:10+00:00",
+          "minute": 1.1666666666666667,
+          "actual_c": 45.879052337064586,
+          "predicted_c": 46.05653327464779,
+          "error_c": 0.17748093758320493,
+          "persistence_error_c": -1.154491305520537,
+          "assumptions_changed": []
+        },
+        {
+          "timestamp": "2026-10-08T09:21:15+00:00",
+          "minute": 1.25,
+          "actual_c": 45.97879297866838,
+          "predicted_c": 46.15163847606573,
+          "error_c": 0.172845497397347,
+          "persistence_error_c": -1.2542319471243317,
+          "assumptions_changed": []
+        },
+        {
+          "timestamp": "2026-10-08T09:21:20+00:00",
+          "minute": 1.3333333333333333,
+          "actual_c": 46.04425557120939,
+          "predicted_c": 46.24673892234,
+          "error_c": 0.2024833511306099,
+          "persistence_error_c": -1.319694539665342,
+          "assumptions_changed": []
+        },
+        {
+          "timestamp": "2026-10-08T09:21:25+00:00",
+          "minute": 1.4166666666666667,
+          "actual_c": 46.10623300379641,
+          "predicted_c": 46.34183461370844,
+          "error_c": 0.23560160991203105,
+          "persistence_error_c": -1.381671972252363,
+          "assumptions_changed": []
+        },
+        {
+          "timestamp": "2026-10-08T09:21:30+00:00",
+          "minute": 1.5,
+          "actual_c": 46.20232026286332,
+          "predicted_c": 46.43692555040866,
+          "error_c": 0.23460528754534238,
+          "persistence_error_c": -1.4777592313192685,
+          "assumptions_changed": []
+        },
+        {
+          "timestamp": "2026-10-08T09:21:35+00:00",
+          "minute": 1.5833333333333333,
+          "actual_c": 46.28980487602756,
+          "predicted_c": 46.532011732678484,
+          "error_c": 0.2422068566509239,
+          "persistence_error_c": -1.5652438444835113,
+          "assumptions_changed": []
+        },
+        {
+          "timestamp": "2026-10-08T09:21:40+00:00",
+          "minute": 1.6666666666666667,
+          "actual_c": 46.34463512232755,
+          "predicted_c": 46.62709316075552,
+          "error_c": 0.28245803842796846,
+          "persistence_error_c": -1.620074090783504,
+          "assumptions_changed": []
+        },
+        {
+          "timestamp": "2026-10-08T09:21:45+00:00",
+          "minute": 1.75,
+          "actual_c": 46.417150324375676,
+          "predicted_c": 46.722169834877604,
+          "error_c": 0.30501951050192844,
+          "persistence_error_c": -1.6925892928316273,
+          "assumptions_changed": []
+        },
+        {
+          "timestamp": "2026-10-08T09:21:50+00:00",
+          "minute": 1.8333333333333333,
+          "actual_c": 46.51544256161058,
+          "predicted_c": 46.81724175528234,
+          "error_c": 0.3017991936717621,
+          "persistence_error_c": -1.7908815300665282,
+          "assumptions_changed": []
+        },
+        {
+          "timestamp": "2026-10-08T09:21:55+00:00",
+          "minute": 1.9166666666666667,
+          "actual_c": 46.58660817311614,
+          "predicted_c": 46.91230892220733,
+          "error_c": 0.3257007490911903,
+          "persistence_error_c": -1.8620471415720914,
+          "assumptions_changed": []
+        },
+        {
+          "timestamp": "2026-10-08T09:22:00+00:00",
+          "minute": 2.0,
+          "actual_c": 46.639330511132364,
+          "predicted_c": 47.00737133589041,
+          "error_c": 0.36804082475804734,
+          "persistence_error_c": -1.9147694795883154,
+          "assumptions_changed": []
+        },
+        {
+          "timestamp": "2026-10-08T09:22:05+00:00",
+          "minute": 2.0833333333333335,
+          "actual_c": 46.72376185330129,
+          "predicted_c": 47.10242899656919,
+          "error_c": 0.3786671432678972,
+          "persistence_error_c": -1.999200821757242,
+          "assumptions_changed": []
+        },
+        {
+          "timestamp": "2026-10-08T09:22:10+00:00",
+          "minute": 2.1666666666666665,
+          "actual_c": 46.81531936408986,
+          "predicted_c": 47.197481904481265,
+          "error_c": 0.3821625403914055,
+          "persistence_error_c": -2.0907583325458106,
+          "assumptions_changed": []
+        },
+        {
+          "timestamp": "2026-10-08T09:22:15+00:00",
+          "minute": 2.25,
+          "actual_c": 46.87164729366035,
+          "predicted_c": 47.29253005986425,
+          "error_c": 0.42088276620389564,
+          "persistence_error_c": -2.1470862621163036,
+          "assumptions_changed": []
+        },
+        {
+          "timestamp": "2026-10-08T09:22:20+00:00",
+          "minute": 2.3333333333333335,
+          "actual_c": 46.930760347574775,
+          "predicted_c": 47.38757346295574,
+          "error_c": 0.45681311538096736,
+          "persistence_error_c": -2.2061993160307267,
+          "assumptions_changed": []
+        },
+        {
+          "timestamp": "2026-10-08T09:22:25+00:00",
+          "minute": 2.4166666666666665,
+          "actual_c": 47.02296375239039,
+          "predicted_c": 47.482612113993355,
+          "error_c": 0.45964836160296585,
+          "persistence_error_c": -2.2984027208463402,
+          "assumptions_changed": []
+        },
+        {
+          "timestamp": "2026-10-08T09:22:30+00:00",
+          "minute": 2.5,
+          "actual_c": 47.10063685649354,
+          "predicted_c": 47.57764601321492,
+          "error_c": 0.47700915672137967,
+          "persistence_error_c": -2.3760758249494884,
+          "assumptions_changed": []
+        },
+        {
+          "timestamp": "2026-10-08T09:22:35+00:00",
+          "minute": 2.5833333333333335,
+          "actual_c": 47.148576151217746,
+          "predicted_c": 47.67267516085781,
+          "error_c": 0.5240990096400608,
+          "persistence_error_c": -2.4240151196736974,
+          "assumptions_changed": []
+        },
+        {
+          "timestamp": "2026-10-08T09:22:40+00:00",
+          "minute": 2.6666666666666665,
+          "actual_c": 47.219225864590726,
+          "predicted_c": 47.76769955715963,
+          "error_c": 0.5484736925689049,
+          "persistence_error_c": -2.494664833046677,
+          "assumptions_changed": []
+        },
+        {
+          "timestamp": "2026-10-08T09:22:45+00:00",
+          "minute": 2.75,
+          "actual_c": 47.311164581695564,
+          "predicted_c": 47.862719202357994,
+          "error_c": 0.5515546206624293,
+          "persistence_error_c": -2.5866035501515157,
+          "assumptions_changed": []
+        },
+        {
+          "timestamp": "2026-10-08T09:22:50+00:00",
+          "minute": 2.8333333333333335,
+          "actual_c": 47.372402163909975,
+          "predicted_c": 47.957734096690274,
+          "error_c": 0.5853319327802993,
+          "persistence_error_c": -2.647841132365926,
+          "assumptions_changed": []
+        },
+        {
+          "timestamp": "2026-10-08T09:22:55+00:00",
+          "minute": 2.9166666666666665,
+          "actual_c": 47.4208477888916,
+          "predicted_c": 48.05274424039408,
+          "error_c": 0.6318964515024774,
+          "persistence_error_c": -2.6962867573475506,
+          "assumptions_changed": []
+        },
+        {
+          "timestamp": "2026-10-08T09:23:00+00:00",
+          "minute": 3.0,
+          "actual_c": 47.50281694742814,
+          "predicted_c": 48.14774963370701,
+          "error_c": 0.6449326862788709,
+          "persistence_error_c": -2.7782559158840883,
+          "assumptions_changed": []
+        }
+      ],
+      "expected_end_at": "2026-10-08T09:23:00+00:00",
+      "coverage_note": "Metrics cover available observations only. Changed inputs are scored separately; missing channels are not interpolated."
+    },
+    {
+      "status": "complete",
+      "all_observations": {
+        "count": 36,
+        "mae_c": 1.2627278743568247,
+        "rmse_c": 1.5507107020880955,
+        "persistence_mae_c": 0.49435546977241507
+      },
+      "assumptions_held": {
+        "count": 0,
+        "mae_c": null,
+        "rmse_c": null,
+        "persistence_mae_c": null
+      },
+      "baseline_comparison": "Too few unchanged-input observations for a baseline comparison.",
+      "changed_input_samples": 36,
+      "missing_samples": 0,
+      "gaps": 0,
+      "samples": [
+        {
+          "timestamp": "2026-10-08T09:23:05+00:00",
+          "minute": 0.08333333333333333,
+          "actual_c": 47.58219723642154,
+          "predicted_c": 47.597849836432715,
+          "error_c": 0.015652600011172524,
+          "persistence_error_c": -0.07938028899340566,
+          "assumptions_changed": [
+            "current_a"
+          ]
+        },
+        {
+          "timestamp": "2026-10-08T09:23:10+00:00",
+          "minute": 0.16666666666666666,
+          "actual_c": 47.62311353517669,
+          "predicted_c": 47.69287797390916,
+          "error_c": 0.06976443873247007,
+          "persistence_error_c": -0.12029658774855534,
+          "assumptions_changed": [
+            "current_a"
+          ]
+        },
+        {
+          "timestamp": "2026-10-08T09:23:15+00:00",
+          "minute": 0.25,
+          "actual_c": 47.66966854784071,
+          "predicted_c": 47.78790136009502,
+          "error_c": 0.11823281225431259,
+          "persistence_error_c": -0.16685160041257063,
+          "assumptions_changed": [
+            "current_a"
+          ]
+        },
+        {
+          "timestamp": "2026-10-08T09:23:20+00:00",
+          "minute": 0.3333333333333333,
+          "actual_c": 47.7439920097575,
+          "predicted_c": 47.882919995227894,
+          "error_c": 0.13892798547039575,
+          "persistence_error_c": -0.24117506232936137,
+          "assumptions_changed": [
+            "current_a"
+          ]
+        },
+        {
+          "timestamp": "2026-10-08T09:23:25+00:00",
+          "minute": 0.4166666666666667,
+          "actual_c": 47.795197544898436,
+          "predicted_c": 47.97793387954539,
+          "error_c": 0.18273633464695394,
+          "persistence_error_c": -0.29238059747029865,
+          "assumptions_changed": [
+            "current_a"
+          ]
+        },
+        {
+          "timestamp": "2026-10-08T09:23:30+00:00",
+          "minute": 0.5,
+          "actual_c": 47.81751750454465,
+          "predicted_c": 48.072943013284885,
+          "error_c": 0.25542550874023817,
+          "persistence_error_c": -0.31470055711650957,
+          "assumptions_changed": [
+            "current_a"
+          ]
+        },
+        {
+          "timestamp": "2026-10-08T09:23:35+00:00",
+          "minute": 0.5833333333333334,
+          "actual_c": 47.863889905274476,
+          "predicted_c": 48.167947396683985,
+          "error_c": 0.3040574914095089,
+          "persistence_error_c": -0.3610729578463392,
+          "assumptions_changed": [
+            "current_a"
+          ]
+        },
+        {
+          "timestamp": "2026-10-08T09:23:40+00:00",
+          "minute": 0.6666666666666666,
+          "actual_c": 47.923515759503346,
+          "predicted_c": 48.262947029980296,
+          "error_c": 0.33943127047695043,
+          "persistence_error_c": -0.42069881207520865,
+          "assumptions_changed": [
+            "current_a"
+          ]
+        },
+        {
+          "timestamp": "2026-10-08T09:23:45+00:00",
+          "minute": 0.75,
+          "actual_c": 47.94709439646881,
+          "predicted_c": 48.357941913411196,
+          "error_c": 0.41084751694238264,
+          "persistence_error_c": -0.44427744904067623,
+          "assumptions_changed": [
+            "current_a"
+          ]
+        },
+        {
+          "timestamp": "2026-10-08T09:23:50+00:00",
+          "minute": 0.8333333333333334,
+          "actual_c": 47.961265014265045,
+          "predicted_c": 48.45293204721406,
+          "error_c": 0.49166703294901737,
+          "persistence_error_c": -0.4584480668369082,
+          "assumptions_changed": [
+            "current_a"
+          ]
+        },
+        {
+          "timestamp": "2026-10-08T09:23:55+00:00",
+          "minute": 0.9166666666666666,
+          "actual_c": 48.007086155064925,
+          "predicted_c": 48.5479174316265,
+          "error_c": 0.5408312765615761,
+          "persistence_error_c": -0.5042692076367885,
+          "assumptions_changed": [
+            "current_a"
+          ]
+        },
+        {
+          "timestamp": "2026-10-08T09:24:00+00:00",
+          "minute": 1.0,
+          "actual_c": 48.045100187665064,
+          "predicted_c": 48.64289806688612,
+          "error_c": 0.597797879221055,
+          "persistence_error_c": -0.5422832402369266,
+          "assumptions_changed": [
+            "current_a"
+          ]
+        },
+        {
+          "timestamp": "2026-10-08T09:24:05+00:00",
+          "minute": 1.0833333333333333,
+          "actual_c": 48.046954556380925,
+          "predicted_c": 48.737873953230064,
+          "error_c": 0.6909193968491394,
+          "persistence_error_c": -0.5441376089527878,
+          "assumptions_changed": [
+            "current_a"
+          ]
+        },
+        {
+          "timestamp": "2026-10-08T09:24:10+00:00",
+          "minute": 1.1666666666666667,
+          "actual_c": 48.061287586101905,
+          "predicted_c": 48.832845090895944,
+          "error_c": 0.7715575047940391,
+          "persistence_error_c": -0.5584706386737679,
+          "assumptions_changed": [
+            "current_a"
+          ]
+        },
+        {
+          "timestamp": "2026-10-08T09:24:15+00:00",
+          "minute": 1.25,
+          "actual_c": 48.1012173021165,
+          "predicted_c": 48.92781148012136,
+          "error_c": 0.8265941780048607,
+          "persistence_error_c": -0.5984003546883656,
+          "assumptions_changed": [
+            "current_a"
+          ]
+        },
+        {
+          "timestamp": "2026-10-08T09:24:20+00:00",
+          "minute": 1.3333333333333333,
+          "actual_c": 48.11412895408518,
+          "predicted_c": 49.02277312114347,
+          "error_c": 0.9086441670582914,
+          "persistence_error_c": -0.6113120066570445,
+          "assumptions_changed": [
+            "current_a"
+          ]
+        },
+        {
+          "timestamp": "2026-10-08T09:24:25+00:00",
+          "minute": 1.4166666666666667,
+          "actual_c": 48.10376556718907,
+          "predicted_c": 49.11773001419988,
+          "error_c": 1.0139644470108067,
+          "persistence_error_c": -0.6009486197609348,
+          "assumptions_changed": [
+            "current_a"
+          ]
+        },
+        {
+          "timestamp": "2026-10-08T09:24:30+00:00",
+          "minute": 1.5,
+          "actual_c": 48.12172998034042,
+          "predicted_c": 49.21268215952773,
+          "error_c": 1.0909521791873118,
+          "persistence_error_c": -0.6189130329122818,
+          "assumptions_changed": [
+            "current_a"
+          ]
+        },
+        {
+          "timestamp": "2026-10-08T09:24:35+00:00",
+          "minute": 1.5833333333333333,
+          "actual_c": 48.1480887720957,
+          "predicted_c": 49.307629557364635,
+          "error_c": 1.1595407852689377,
+          "persistence_error_c": -0.6452718246675602,
+          "assumptions_changed": [
+            "current_a"
+          ]
+        },
+        {
+          "timestamp": "2026-10-08T09:24:40+00:00",
+          "minute": 1.6666666666666667,
+          "actual_c": 48.13772649720051,
+          "predicted_c": 49.40257220794774,
+          "error_c": 1.264845710747231,
+          "persistence_error_c": -0.6349095497723738,
+          "assumptions_changed": [
+            "current_a"
+          ]
+        },
+        {
+          "timestamp": "2026-10-08T09:24:45+00:00",
+          "minute": 1.75,
+          "actual_c": 48.12504457723002,
+          "predicted_c": 49.49751011151466,
+          "error_c": 1.3724655342846361,
+          "persistence_error_c": -0.6222276298018841,
+          "assumptions_changed": [
+            "current_a"
+          ]
+        },
+        {
+          "timestamp": "2026-10-08T09:24:50+00:00",
+          "minute": 1.8333333333333333,
+          "actual_c": 48.14441088964644,
+          "predicted_c": 49.59244326830253,
+          "error_c": 1.4480323786560945,
+          "persistence_error_c": -0.6415939422183001,
+          "assumptions_changed": [
+            "current_a"
+          ]
+        },
+        {
+          "timestamp": "2026-10-08T09:24:55+00:00",
+          "minute": 1.9166666666666667,
+          "actual_c": 48.15068352211314,
+          "predicted_c": 49.68737167854874,
+          "error_c": 1.536688156435602,
+          "persistence_error_c": -0.6478665746850041,
+          "assumptions_changed": [
+            "current_a"
+          ]
+        },
+        {
+          "timestamp": "2026-10-08T09:25:00+00:00",
+          "minute": 2.0,
+          "actual_c": 48.12396031184365,
+          "predicted_c": 49.78229534249067,
+          "error_c": 1.6583350306470166,
+          "persistence_error_c": -0.6211433644155164,
+          "assumptions_changed": [
+            "current_a"
+          ]
+        },
+        {
+          "timestamp": "2026-10-08T09:25:05+00:00",
+          "minute": 2.0833333333333335,
+          "actual_c": 48.11584285376183,
+          "predicted_c": 49.87721426036569,
+          "error_c": 1.7613714066038568,
+          "persistence_error_c": -0.6130259063336965,
+          "assumptions_changed": [
+            "current_a"
+          ]
+        },
+        {
+          "timestamp": "2026-10-08T09:25:10+00:00",
+          "minute": 2.1666666666666665,
+          "actual_c": 48.130018378801076,
+          "predicted_c": 49.972128432410955,
+          "error_c": 1.8421100536098791,
+          "persistence_error_c": -0.6272014313729386,
+          "assumptions_changed": [
+            "current_a"
+          ]
+        },
+        {
+          "timestamp": "2026-10-08T09:25:15+00:00",
+          "minute": 2.25,
+          "actual_c": 48.11385900109129,
+          "predicted_c": 50.067037858863614,
+          "error_c": 1.953178857772322,
+          "persistence_error_c": -0.6110420536631551,
+          "assumptions_changed": [
+            "current_a"
+          ]
+        },
+        {
+          "timestamp": "2026-10-08T09:25:20+00:00",
+          "minute": 2.3333333333333335,
+          "actual_c": 48.08050348250336,
+          "predicted_c": 50.161942539961274,
+          "error_c": 2.0814390574579136,
+          "persistence_error_c": -0.5776865350752232,
+          "assumptions_changed": [
+            "current_a"
+          ]
+        },
+        {
+          "timestamp": "2026-10-08T09:25:25+00:00",
+          "minute": 2.4166666666666665,
+          "actual_c": 48.07855031796738,
+          "predicted_c": 50.256842475941085,
+          "error_c": 2.178292157973708,
+          "persistence_error_c": -0.5757333705392398,
+          "assumptions_changed": [
+            "current_a"
+          ]
+        },
+        {
+          "timestamp": "2026-10-08T09:25:30+00:00",
+          "minute": 2.5,
+          "actual_c": 48.07958526655746,
+          "predicted_c": 50.3517376670402,
+          "error_c": 2.2721524004827387,
+          "persistence_error_c": -0.5767683191293216,
+          "assumptions_changed": [
+            "current_a"
+          ]
+        },
+        {
+          "timestamp": "2026-10-08T09:25:35+00:00",
+          "minute": 2.5833333333333335,
+          "actual_c": 48.044149299957326,
+          "predicted_c": 50.44662811349599,
+          "error_c": 2.4024788135386643,
+          "persistence_error_c": -0.5413323525291887,
+          "assumptions_changed": [
+            "current_a"
+          ]
+        },
+        {
+          "timestamp": "2026-10-08T09:25:40+00:00",
+          "minute": 2.6666666666666665,
+          "actual_c": 48.0132950712176,
+          "predicted_c": 50.54151381554561,
+          "error_c": 2.528218744328015,
+          "persistence_error_c": -0.5104781237894613,
+          "assumptions_changed": [
+            "current_a"
+          ]
+        },
+        {
+          "timestamp": "2026-10-08T09:25:45+00:00",
+          "minute": 2.75,
+          "actual_c": 48.01358976630911,
+          "predicted_c": 50.63639477342622,
+          "error_c": 2.6228050071171083,
+          "persistence_error_c": -0.510772818880973,
+          "assumptions_changed": [
+            "current_a"
+          ]
+        },
+        {
+          "timestamp": "2026-10-08T09:25:50+00:00",
+          "minute": 2.8333333333333335,
+          "actual_c": 47.99567887054011,
+          "predicted_c": 50.731270987374955,
+          "error_c": 2.7355921168348445,
+          "persistence_error_c": -0.49286192311197397,
+          "assumptions_changed": [
+            "current_a"
+          ]
+        },
+        {
+          "timestamp": "2026-10-08T09:25:55+00:00",
+          "minute": 2.9166666666666665,
+          "actual_c": 47.948762593075834,
+          "predicted_c": 50.8261424576292,
+          "error_c": 2.877379864553369,
+          "persistence_error_c": -0.4459456456476971,
+          "assumptions_changed": [
+            "current_a"
+          ]
+        },
+        {
+          "timestamp": "2026-10-08T09:26:00+00:00",
+          "minute": 3.0,
+          "actual_c": 47.92573580421284,
+          "predicted_c": 50.92100918442611,
+          "error_c": 2.99527338021327,
+          "persistence_error_c": -0.42291885678470464,
+          "assumptions_changed": [
+            "current_a"
+          ]
+        }
+      ],
+      "expected_end_at": "2026-10-08T09:26:00+00:00",
+      "coverage_note": "Metrics cover available observations only. Changed inputs are scored separately; missing channels are not interpolated."
+    }
+  ]
+}

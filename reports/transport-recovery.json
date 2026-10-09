@@ -1,0 +1,11 @@
+{
+  "status": "passed",
+  "scope": "Real disposable API process restart and durable outbox; no physical hardware or cloud outage injection",
+  "checks": [
+    "Backend process terminated after accepting a frame; bridge acknowledgment deliberately lost",
+    "Network loss retained the original pending acquisition",
+    "New API process and reopened bridge spool recovered exactly one frame with original acquisition time",
+    "Restarted historical frame is visibly stale, never live",
+    "No physical relay command generated"
+  ]
+}

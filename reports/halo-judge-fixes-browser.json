@@ -1,0 +1,22 @@
+{
+  "status": "pass",
+  "date": "2026-10-08",
+  "scope": "Browser verification of the revised local application with the configured backend; synthetic writes only",
+  "checks": [
+    "Operations shows WARNING and future thermal action ahead of the condition index",
+    "Legacy closed maintenance record visibly lacks structured acceptance rules",
+    "Blind case forbids reveal before assessment, freezes channel disagreement, reveals sensor bias with verified commitment and withholds the forecast (0/30 scored)",
+    "Independent benchmark displays current-source match, per-fault misses and forecast coverage",
+    "Rehearsal creates a separate labelled run without deleting prior cases",
+    "110 percent load / degraded cooling proposal selects 30 percent demand reduction and 77 percent resulting load",
+    "Applied plan is retained and disabled for duplicate application; operations displays 77 percent load",
+    "Declared cooling impairment keeps WARNING active after mitigation",
+    "Physical source shows UNKNOWN, disconnected, missing measurements and disabled relay commands; no hardware command issued",
+    "Source selector is disabled during initialization and source transitions; switches successfully after readiness",
+    "Desktop and 390 px operations layout checked; 375 px document width in a 390 px viewport, no page overflow",
+    "390 px Evidence layout checked without horizontal page overflow",
+    "Final page console inspection reported no JavaScript errors or warnings"
+  ],
+  "screenshots": ["halo-judge-fixes-desktop.jpg", "halo-judge-fixes-mobile.jpg"],
+  "limits": "No physical rig, calibration, electrical safety, field accuracy or external delivery was validated. The isolated complete maintenance workflow is recorded separately in workflow-rehearsal.json."
+}

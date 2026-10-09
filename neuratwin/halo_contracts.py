@@ -25,6 +25,8 @@ class Frame(Contract):
     relay_states: tuple[bool, bool, bool, bool] = (False, False, False, False)
     relay_output_configured: bool = False
     calibration_id: str | None = Field(default=None, max_length=80)
+    config_id: str | None = Field(default=None, pattern=r'^CFG-[a-f0-9]{64}$')
+    hardware_config_status: Literal['reported_match','mismatch','unverified'] = 'unverified'
     quality_flags: list[str] = Field(default_factory=list, max_length=16)
     raw: dict[str, float | None] = Field(default_factory=dict, max_length=20)
 

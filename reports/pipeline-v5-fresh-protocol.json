@@ -1,0 +1,123 @@
+{
+  "version": "halo-prospective-synthetic-protocol-1",
+  "created_at": "2026-10-08T19:18:36.296682+00:00",
+  "scope": "Previously unused internally generated synthetic seeds under a local frozen protocol. Not externally supplied data, third-party preregistration, field validation, or a prospective physical trial.",
+  "no_tuning_rule": "Do not modify numerical code, thresholds, metrics or scenarios using this result. Once viewed, these seeds become known regression cases. Report every miss, hold and failed run.",
+  "source_sha256": {
+    "neuratwin/twin_core.py": "cf8eaf9fb21db69ea341f84133843ccc5b500b0c5f89968f4f680ebdd4d572bd",
+    "neuratwin/twin_studies.py": "07d37c0a8572611285f942a172fa45ba0ad09076d5da489a66bd33b36ca5e8a6",
+    "neuratwin/twin_observer.py": "2d3d0f5115dfea187d1d87b7e6a3c6dfb760bac4c17e6bd75e707c59cdbd43a9",
+    "neuratwin/thermal_reference.py": "f13de8362d0b3e53c327ee788a720ad862cb562d10829462dd08e4c17401f38d",
+    "neuratwin/validation_plant.py": "ef8b3a57c78a06a7a8c2b3b0016b35f0226252f5d8ca9ec0f15de9150092f358",
+    "scripts/benchmark_pipeline.py": "12aed65be0fceecedfaf1ddf55c728c8c5663dd3f3c3203ea751f425b3a5e7fc",
+    "scripts/evaluation_metrics.py": "91386000325788cb70c6d52234329c4197fc965a096b33164fb9faed2898cb24",
+    "scripts/prospective_evaluation.py": "65adcd3c21b994b3c2167bedf8c7305540c8e5098eb8579ada0124e96f537b7a"
+  },
+  "pipeline_version": "observation-pipeline-5",
+  "seeds": [
+    121694788,
+    232729987,
+    408430916,
+    434603441,
+    545825653,
+    619098105,
+    746500537,
+    783604795,
+    793153539,
+    910470875,
+    1026962036,
+    1111339007,
+    1122174063,
+    1221642709,
+    1298068217,
+    1300107595,
+    1326342961,
+    1354167723,
+    1494481981,
+    1590647797,
+    1689414106,
+    1856511585,
+    1891735217,
+    1986963217
+  ],
+  "seed_selection": "Cryptographically random unused integer seeds selected before generation; excludes reported seeds and explicit historical/development ranges.",
+  "known_seed_count_at_freeze": 91,
+  "known_seed_set_sha256": "1f1e14ad9cccfef262d1b6f142d3a9d3b7e0cfdfb06306719b4b210226449266",
+  "method": {
+    "families": [
+      "nonlinear",
+      "radiator_lag"
+    ],
+    "scenarios": [
+      "healthy",
+      "overload",
+      "cooling",
+      "sensor_bias",
+      "dropout",
+      "voltage",
+      "overload_sensor_bias",
+      "overload_dropout",
+      "voltage_sensor_bias",
+      "cooling_overload"
+    ],
+    "case_count": 480,
+    "origins_min": [
+      75,
+      90,
+      105,
+      120,
+      135,
+      150
+    ],
+    "horizons_min": [
+      5,
+      15,
+      30
+    ],
+    "decision_minutes_inclusive": [
+      70,
+      180
+    ],
+    "healthy_prefix_rows": 70,
+    "initial_settings": {
+      "rated_kva": 630,
+      "primary_v": 11000,
+      "secondary_v": 433,
+      "core_loss_w": 1000,
+      "copper_loss_w": 6500,
+      "rated_oil_rise_c": 55,
+      "rated_winding_rise_c": 23,
+      "oil_tau_min": 120,
+      "winding_tau_min": 7,
+      "reference_life_hours": 180000,
+      "load_warning": 100,
+      "load_critical": 125,
+      "load_trip": 160,
+      "temperature_warning": 110,
+      "temperature_critical": 125,
+      "temperature_trip": 140,
+      "recovery_temperature": 95,
+      "voltage_warning_pu": 0.1,
+      "voltage_critical_pu": 0.2,
+      "voltage_trip_pu": 0.3,
+      "critical_delay_s": 120,
+      "recovery_hold_s": 60,
+      "health_watch": 75,
+      "health_degraded": 50,
+      "health_high_risk": 25
+    },
+    "comparators": [
+      "full_pipeline",
+      "without_cusum",
+      "threshold_only"
+    ],
+    "reported_outcomes": [
+      "paired critical-warning lead time and missing warnings",
+      "expected signal-set completion and any-warning recall",
+      "inactive alarm burden",
+      "forecast coverage, paired persistence, absolute/signed error tails and subgroups"
+    ],
+    "validation_scope": "Only 5/15/30-minute observation forecasts are scored against independent synthetic plants. Scenario-informed 240-minute action planning remains a separate internal consistency exercise. No confidence interval, economic effect or field safety claim."
+  },
+  "sha256": "40a5e88c54daba826a7e4e83715b90744fd9d478b37403beaff12a8ab212d612"
+}

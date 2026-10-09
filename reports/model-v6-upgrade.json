@@ -1,0 +1,52 @@
+{
+  "scope": "Paired known-corpus regression, not fresh evidence or a competitor accuracy comparison.",
+  "forecast_identity_rows": 17280,
+  "coverage_changed_rows": 0,
+  "diagnostic_decision_rows": 53280,
+  "changed_screening_decisions": 0,
+  "reported_hotspot": [
+    {
+      "horizon_min": 5,
+      "same_scored_targets": 2031,
+      "possible": 2880,
+      "v5_mae_c": 1.6287766922050693,
+      "v6_mae_c": 1.3900490431049433,
+      "mae_reduction_percent": 14.656867957567092
+    },
+    {
+      "horizon_min": 15,
+      "same_scored_targets": 1999,
+      "possible": 2880,
+      "v5_mae_c": 3.7532343041451623,
+      "v6_mae_c": 3.4203851749751277,
+      "mae_reduction_percent": 8.868328012520509
+    },
+    {
+      "horizon_min": 30,
+      "same_scored_targets": 1911,
+      "possible": 2880,
+      "v5_mae_c": 7.807498558206157,
+      "v6_mae_c": 7.557957253330894,
+      "mae_reduction_percent": 3.196174844156449
+    }
+  ],
+  "source_files": {
+    "old_forecasts": {
+      "file": "reports/pipeline-v5-before-v6-forecasts.csv",
+      "sha256": "2950f901d13366c3c6b3d00e7d7a39f9dcfef55249b5bc3b41ea8ffa4d1d3017"
+    },
+    "new_forecasts": {
+      "file": "reports/pipeline-forecasts.csv",
+      "sha256": "ea5982506fab41445c4ad9f0a07bf34356e4005fb45ea22c64c1e7d9c6e587f8"
+    },
+    "old_decisions": {
+      "file": "reports/pipeline-v5-before-v6-decisions.csv",
+      "sha256": "1079e3f24293e26b7213aaa5e437819c34cae9c5831d6d650b57b0bee178cb06"
+    },
+    "new_decisions": {
+      "file": "reports/pipeline-decisions.csv",
+      "sha256": "2e8be87af5814f1a736d87a54a21898f89954d186b41563374659ca2a1ca972b"
+    }
+  },
+  "limits": "Only eligible reported-hotspot projections change. All target identities are paired; error gains do not establish safe countdowns, field performance or fivefold superiority."
+}

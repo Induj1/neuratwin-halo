@@ -1,0 +1,69 @@
+{
+  "status": "passed",
+  "checked_at": "2026-10-08T18:53:11.703852+00:00",
+  "browser": "Codex in-app browser; actual rendered UI",
+  "url": "http://127.0.0.1:8765/app#operate",
+  "checks": [
+    {
+      "name": "Paused step",
+      "result": "Advanced selected synthetic run from 15 to 20 minutes and returned to paused state."
+    },
+    {
+      "name": "Intervention synchronization",
+      "result": "Applied 20% demand reduction: 112% to 89.6%; current changed immediately while hot-spot remained 98.9 C at the action instant."
+    },
+    {
+      "name": "Held health",
+      "result": "Active warning shows Review / Health unavailable; operating stress is separate, not substituted as health."
+    },
+    {
+      "name": "Thermal contribution",
+      "result": "Selection highlights radiator geometry and explanatory temperature label, explicitly not fault localization."
+    },
+    {
+      "name": "Replay",
+      "result": "Entered recorded history, used Home to inspect first frame; clock changed to original observation and Advance 5 min remained disabled. Exit returned to current paused state."
+    },
+    {
+      "name": "Physical source isolation",
+      "result": "Disconnected prototype showed no fabricated V/I/temperature, no available health, disabled load ON buttons and K4 locked. No hardware operation."
+    },
+    {
+      "name": "Imported review",
+      "result": "Imported synthetic-before CSV, bound reviewed source, froze assessment, created work, recorded inspection/action, imported and froze after CSV, compared and closed reference review."
+    },
+    {
+      "name": "Reference acceptance",
+      "result": "Same declared synthetic asset and inputs; means54.5 to48.5 C; explicitly no physical repair or causal proof."
+    },
+    {
+      "name": "Persistence/navigation",
+      "result": "Maintenance Imported recordings and browser reload retained the same closed review."
+    },
+    {
+      "name": "Raw export integrity",
+      "result": "Actual browser-downloaded file re-read by Python and verified against stored bundle SHA-256; earlier JSON reserialization defect fixed and retested.",
+      "sha256": "2ce3017c6b7debea0cd12538fa60768a5695c2645e18ead22f45323bb12f99a9"
+    },
+    {
+      "name": "Mobile",
+      "result": "390x844 viewport: operations and maintenance forms readable; document scrollWidth375 <= viewport390. Override reset."
+    },
+    {
+      "name": "Desktop",
+      "result": "1280x720 viewport: document scrollWidth1265; model/waveform/dial visible together in scrollable operating workspace."
+    }
+  ],
+  "browser_console_errors": [],
+  "synthetic_fixtures_only": true,
+  "physical_commands_issued": 0,
+  "artifacts": [
+    "halo-hardening-desktop.jpg",
+    "halo-hardening-mobile.jpg"
+  ],
+  "notes": [
+    "Browser download-event automation timed out, but the file was saved. Actual saved bytes were independently verified.",
+    "Transient browser input timeouts were resolved by inspecting resulting UI state, not duplicating actions.",
+    "No competition score or real-device validation is established."
+  ]
+}

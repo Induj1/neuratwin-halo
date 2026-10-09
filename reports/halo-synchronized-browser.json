@@ -1,0 +1,82 @@
+{
+  "date": "2026-10-08",
+  "status": "passed",
+  "scope": "Local software validation; no physical device operated",
+  "application": "http://127.0.0.1:8765/app#operate",
+  "checks": [
+    {
+      "name": "Synchronized electrical input with thermal lag",
+      "result": "Load112%, imbalance12%: phase RMS1053.7/940.8/827.9A, neutral195.5A; temperature remained79C with clock paused."
+    },
+    {
+      "name": "Inline intervention",
+      "result": "30% reduction changed demand to78.4%; phase RMS737.6/658.6/579.5A, neutral136.9A; instantaneous temperature remained79C. Advancing simulation changed temperature to83C after10 simulated minutes; no instantaneous cooling was fabricated."
+    },
+    {
+      "name": "Replay baseline/fault/current separation",
+      "result": "Scrubbing baseline restored70% load, balanced588A phases, neutral0A and score100. Fault snapshot restored112% load,12% imbalance and a CRITICAL health-withheld state. Actions disabled in replay; exit retained paused live state."
+    },
+    {
+      "name": "Component selection",
+      "result": "Selecting electrical/thermal highlighted corresponding readings and explicitly labelled whole-asset model context."
+    },
+    {
+      "name": "Waveform inspection",
+      "result": "Keyboard time inspection paused visual sweep, updated exact illustrative values and preserved RMS units. Nameplate-based current scale displayed."
+    },
+    {
+      "name": "Prototype missing measurements",
+      "result": "Disconnected prototype displayed no health score; all contributions unavailable, including oil and accumulated insulation stress. No simulated phase channels or intervention actions were exposed."
+    },
+    {
+      "name": "Responsive layout",
+      "result": "Desktop three instrument columns; mobile390x844 had scrollWidth375 with no horizontal overflow. Dial, controls and waveform visually inspected."
+    },
+    {
+      "name": "Runtime",
+      "result": "No console errors during exercised workflow. Initial startup async controls correctly disabled until ready."
+    }
+  ],
+  "automated_evidence": {
+    "python": "halo-synchronized-tests.xml",
+    "javascript": "halo-synchronized-js-tests.txt",
+    "benchmark": "pipeline-benchmark.json"
+  },
+  "captures": [
+    "halo-synchronized-desktop.jpg",
+    "halo-synchronized-mobile.jpg"
+  ],
+  "limitations": [
+    "No hardware acquisition or physical relay operation was tested.",
+    "Real touch-device and assistive-technology testing remain outside this browser check.",
+    "RMS-derived waveforms are illustrative, not captured sample buffers.",
+    "Historical prototype/legacy component snapshots may be unavailable and are not reconstructed with live settings."
+  ],
+  "final_demonstration": {
+    "run_suffix": "8F3BC328",
+    "elapsed_simulated_minutes": 15,
+    "load_percent": 112,
+    "phase_imbalance_percent": 6,
+    "phase_currents_rms_a": [
+      997.28,
+      940.83,
+      884.38
+    ],
+    "neutral_rms_a": 97.77,
+    "hotspot_c": 96.8,
+    "electrical_stress": 12,
+    "operating_stress_index": 87,
+    "status": "WARNING",
+    "intervention_reduction_percent": 20,
+    "running": false
+  },
+  "source_sha256": {
+    "web/halo-operate.js": "a1939c22957090a3879b59204f5a25bca705f07b3b3dc986d7091a848f645212",
+    "web/halo-command.js": "b2bcaad8c1e94b7b706704fa993273bc7f001f39da2948e1c60e38260fb3c39e",
+    "web/halo-waveform.js": "04bd095cee86011a5fb8bb89e10df5822c469fe99b3e383c4c8a83a87f00409b",
+    "web/halo-command.css": "1ecd2a0676137bf2330bec3388a11e47f779be559e80e0f1ca0c5a9e34492b09",
+    "web/halo-twin.js": "788144b4218f946311f2ba017bb3048f4ae57fa44b1ffe1cc5b9f1278b67c540",
+    "neuratwin/twin_core.py": "cf8eaf9fb21db69ea341f84133843ccc5b500b0c5f89968f4f680ebdd4d572bd",
+    "neuratwin/twin_observer.py": "3fa144583895370c09597a1f49062a01a4dcc16901481a518b6d879e6b1d5f0b"
+  }
+}

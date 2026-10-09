@@ -1,0 +1,79 @@
+{
+  "review_date": "2026-10-08",
+  "repository": "https://github.com/helloween1947/powernxt-ai-transformer-sentinel",
+  "main_sha": "26efab6259524686199ef6a64ca66b541c7eda78",
+  "frontend_pr": "https://github.com/helloween1947/powernxt-ai-transformer-sentinel/pull/5",
+  "frontend_sha": "a55478654d5cb945ccf4d7134add131314e5a7cd",
+  "method": "Read-only source audit. Refs confirmed using git ls-remote. No competitor code executed, dependencies installed, or tests rerun. Public main and PR5 inspected independently; PR5 is not merged into main.",
+  "association": "Hackathon entrant association unconfirmed; repository name suggests PowerNext but no team-registration mapping was verified.",
+  "implemented_strengths": [
+    {
+      "feature": "Append-only asset configuration with per-parameter provenance",
+      "evidence": "Registry serializes writers per asset. A configuration records measurement side, voltage convention, ratings, cooling class, optional thermal parameters and exact source for each supplied parameter. Unknown thermal values remain absent. Each reading references an existing asset/configuration pair through a composite foreign key.",
+      "source": "https://github.com/helloween1947/powernxt-ai-transformer-sentinel/blob/26efab6259524686199ef6a64ca66b541c7eda78/backend/app/schemas/assets.py#L105",
+      "additional_source": "https://github.com/helloween1947/powernxt-ai-transformer-sentinel/blob/26efab6259524686199ef6a64ca66b541c7eda78/backend/app/models/telemetry.py#L29",
+      "halo_comparison": "Halo has immutable calibration IDs and archived bench configs, so versioning is not absent. However its bench frames have no exact per-asset configuration_version binding; current bench configuration is consulted by processing. Consolidate provenance across calibration, nameplate and model versions instead of adding a second disconnected registry.",
+      "acceptance": "Process a recording with config v1, change rating to v2, reopen old analysis: original version, normalized values and verdict remain reproducible. New analyses explicitly choose a version and retain per-parameter source. No unconfirmed ratings become defaults without labels."
+    },
+    {
+      "feature": "Original parsed payload and normalized telemetry retained separately",
+      "evidence": "Original object is fingerprinted and stored; normalized channels retain missing as null, explicit zero as zero, quality flags and implausible finite values. Sanity anomalies are flagged instead of silently clamped. These are parsed-object provenance, not byte-identical wire capture.",
+      "source": "https://github.com/helloween1947/powernxt-ai-transformer-sentinel/blob/26efab6259524686199ef6a64ca66b541c7eda78/backend/app/services/telemetry.py#L54",
+      "halo_comparison": "Halo already stores raw ADC values plus acquisition/receipt timestamps, strict schemas and calibration references. Its accepted Frame is normalized before storing; out-of-range schema values are rejected. Add a bounded quarantine/audit envelope and per-channel quality where useful, preserving the strict decision path. Do not call raw telemetry wholly missing.",
+      "acceptance": "Missing, genuine zero, malformed, implausible and quality-bad channels have distinguishable persisted outcomes. Invalid channels cannot contribute to health/forecast arithmetic. Original content and transformations can be inspected without leaking credentials."
+    },
+    {
+      "feature": "Atomic telemetry admission and pending-processing outbox",
+      "evidence": "Raw/normalized reading and one pending processing job commit in the same database transaction. Parent-row locks serialize deduplication and event-time checks across workers. DB constraints enforce uniqueness.",
+      "source": "https://github.com/helloween1947/powernxt-ai-transformer-sentinel/blob/26efab6259524686199ef6a64ca66b541c7eda78/backend/app/services/telemetry.py#L88",
+      "halo_comparison": "Halo has accepted-frame deduplication and a separately tested bridge retry outbox. Those are valuable but distinct from durable server-side analysis scheduling. Local ingestion commits the frame before process_prototype; an HTTP retry invokes processing again, but there is no explicit server pending-job ledger. Add recovery semantics only if preserving idempotent incidents/commands, not a needless new service.",
+      "acceptance": "Kill the server after frame commit and before analysis, restart without a new packet, and complete exactly one durable analysis. Repeated analysis cannot duplicate incidents or commands. Do not depend on a browser tab or a subsequent sensor frame."
+    },
+    {
+      "feature": "Stream isolation and event-time history policy",
+      "evidence": "Database uniqueness keys include asset/source/run/message. Device source requires no run ID; simulator/replay require one. Late events are retained as historical_only and cannot advance current model state. Latest means greatest measurement_time, not latest arrival.",
+      "source": "https://github.com/helloween1947/powernxt-ai-transformer-sentinel/blob/26efab6259524686199ef6a64ca66b541c7eda78/backend/app/models/telemetry.py",
+      "halo_comparison": "Halo separates industrial/prototype sources and preserves acquisition time, but device ingestion rejects old frames to protect state; separate imported cases make provenance fragmented. Add a deliberate historical/quarantine path rather than relaxing live-state protection.",
+      "acceptance": "Inject a current device packet, an older replay packet and a packet from another run. All appropriate records remain accessible, live state is unchanged by replay/backfill, and UI always identifies selected asset/source/run."
+    },
+    {
+      "feature": "Phase-resolved measurement contract with explicit voltage convention",
+      "evidence": "Nine optional channels include R/Y/B voltage/current, oil temperature, ambient and oil level. Each can have good/suspect/bad/missing quality. Ratings identify primary/secondary side and line-to-line/phase-to-neutral convention.",
+      "source": "https://github.com/helloween1947/powernxt-ai-transformer-sentinel/blob/26efab6259524686199ef6a64ca66b541c7eda78/backend/app/schemas/telemetry.py#L48",
+      "halo_comparison": "Halo's industrial model primarily used scalar loading and voltage, and its physical bench is single phase. Phase measurements and magnitude-imbalance indicators are useful extensions for official three-phase datasets, but must never be invented from the single-phase bench.",
+      "acceptance": "Preserve independently supplied phase data and channel availability; label modeled phase values. Do not compute symmetrical components, actual PF or THD from RMS magnitudes alone. Missing phase data must disable those claims."
+    },
+    {
+      "feature": "Database-focused concurrency and migration tests",
+      "evidence": "Source includes eight simultaneous identical deliveries, conflicting deliveries, stream isolation, out-of-order ties, actual job-insert failure rollback, and registry-preserving migration downgrade/upgrade tests. Author reports 87 passing tests; audit did not rerun them.",
+      "source": "https://github.com/helloween1947/powernxt-ai-transformer-sentinel/blob/26efab6259524686199ef6a64ca66b541c7eda78/backend/tests/test_telemetry.py#L184",
+      "additional_source": "https://github.com/helloween1947/powernxt-ai-transformer-sentinel/blob/26efab6259524686199ef6a64ca66b541c7eda78/docs/telemetry-ingestion-verification.md",
+      "halo_comparison": "Halo has 197 passing tests in its existing report and a real recovery rehearsal; simple test counts do not rank systems. Add database failure-window/concurrent-worker cases for the exact unified workflow being submitted.",
+      "acceptance": "Idempotency, rollback, restart, tenant/source separation, migration and recovery checks pass against both supported storage modes; results record environment and source revision."
+    },
+    {
+      "feature": "Honest backend-reading UI and accessible chart data",
+      "evidence": "Frontend PR5 preserves null versus zero, source/run/config/time identity, pending analytics and explicit channel quality; no fixture substitution on missing backend results. Trend chart gaps remain gaps, SVG is labeled and an exact-value table is available.",
+      "source": "https://github.com/helloween1947/powernxt-ai-transformer-sentinel/blob/a55478654d5cb945ccf4d7134add131314e5a7cd/frontend/src/components/BackendReadings.jsx",
+      "additional_source": "https://github.com/helloween1947/powernxt-ai-transformer-sentinel/blob/a55478654d5cb945ccf4d7134add131314e5a7cd/frontend/src/components/TrendChart.jsx#L29",
+      "halo_comparison": "Halo already has labeled source modes, missing-state handling and gap-aware SVG. Its evidence chart lacks an adjacent exact-value table; add accessible values, meaningful labels and consistent context instead of copying Sentinel's separate backend debug screen.",
+      "acceptance": "Keyboard-only user can inspect every plotted series and exact value. Null is unavailable, zero stays zero, missing intervals are not connected, and failed live fetch never reveals simulated values as real."
+    }
+  ],
+  "limits_not_to_copy_or_overclaim": [
+    "No processing worker exists in inspected main; jobs are constrained to pending. A durable outbox alone does not deliver analytics.",
+    "Analytics and event contracts are proposed documentation. Thermal prediction, symmetrical components, anomaly detection and maintenance are not implemented in inspected main analytics directory.",
+    "Frontend PR5 has six screens but its original dashboard, alerts and what-if curves use fixtures. Tasks persist only in browser localStorage. Live requests are explicitly unverified by the author.",
+    "Current frontend actual-reading screen has manual loading, not verified polling/reconnection. Demo alert acknowledgement resets when fixtures reload.",
+    "Registry and ingestion routes inspected do not have authentication dependencies. Halo's existing operator/device authorization should be preserved; CORS is not authorization.",
+    "RMS-only telemetry cannot establish phasor sequence components, real/reactive power, harmonic distortion or measured phase relationships. Sentinel lists these in proposed analytics, not verified outputs.",
+    "No evidence supports calling Sentinel an official shortlisted team, a deployed production system, or a more accurate predictive model than Halo."
+  ],
+  "local_files_inspected": [
+    "neuratwin/halo_contracts.py",
+    "neuratwin/halo_store.py",
+    "neuratwin/halo_api.py",
+    "neuratwin/twin_api.py",
+    "web/halo-case.js"
+  ]
+}

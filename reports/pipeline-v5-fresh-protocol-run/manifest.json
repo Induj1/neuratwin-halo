@@ -1,0 +1,25 @@
+{
+  "run_id": "EVAL-738d5bf6676f4fee9499b082c4cfcffc",
+  "started_at": "2026-10-08T19:18:49.768494+00:00",
+  "protocol_sha256": "40a5e88c54daba826a7e4e83715b90744fd9d478b37403beaff12a8ab212d612",
+  "scope": "Previously unused internally generated synthetic seeds under a local frozen protocol. Not externally supplied data, third-party preregistration, field validation, or a prospective physical trial.",
+  "completed_at": "2026-10-08T19:24:56.875448+00:00",
+  "status": "complete",
+  "source_sha256": {
+    "neuratwin/twin_core.py": "cf8eaf9fb21db69ea341f84133843ccc5b500b0c5f89968f4f680ebdd4d572bd",
+    "neuratwin/twin_studies.py": "07d37c0a8572611285f942a172fa45ba0ad09076d5da489a66bd33b36ca5e8a6",
+    "neuratwin/twin_observer.py": "2d3d0f5115dfea187d1d87b7e6a3c6dfb760bac4c17e6bd75e707c59cdbd43a9",
+    "neuratwin/thermal_reference.py": "f13de8362d0b3e53c327ee788a720ad862cb562d10829462dd08e4c17401f38d",
+    "neuratwin/validation_plant.py": "ef8b3a57c78a06a7a8c2b3b0016b35f0226252f5d8ca9ec0f15de9150092f358",
+    "scripts/benchmark_pipeline.py": "12aed65be0fceecedfaf1ddf55c728c8c5663dd3f3c3203ea751f425b3a5e7fc",
+    "scripts/evaluation_metrics.py": "91386000325788cb70c6d52234329c4197fc965a096b33164fb9faed2898cb24",
+    "scripts/prospective_evaluation.py": "65adcd3c21b994b3c2167bedf8c7305540c8e5098eb8579ada0124e96f537b7a"
+  },
+  "files": {
+    "benchmark.json": "f8aa4425b54149088ed27d94a3e247167283e7ba4a5519a57658ff2b4657fea8",
+    "decisions.csv": "a5f4ed1c7eae180b76292fe6331663650c8fc5e89f1df13da04d2af93f6ab398",
+    "forecasts.csv": "30334e89f8d0121ae04d90908a7f43625cd9a2c00eb2762dade6906eafff815e"
+  },
+  "note": "Protocol, claim and report bind one local run. Hashes detect changes against retained copies, not authorship. The result is now known; do not tune and rerun these seeds as fresh.",
+  "sha256": "14f4f3e410fdc65201f70013edc6dff6e12c86593a8f021e042113399b43a476"
+}

@@ -1,0 +1,42 @@
+{
+  "status": "pass",
+  "scope": "Observation pipeline v3 UI verification on localhost; no hardware actuation",
+  "desktop": {
+    "viewport": [
+      1280,
+      720
+    ],
+    "document_width": 1265
+  },
+  "mobile": {
+    "viewport": [
+      390,
+      844
+    ],
+    "document_width": 375,
+    "button_height_px": 44,
+    "chart_axis_font_px": 15,
+    "viewport_reset": true
+  },
+  "checks": [
+    "Concealed oil-only case created without fault label or future observations",
+    "Assessment frozen before reveal; missing data plus overload withheld forecast",
+    "Revealed decision survived reload with verified commitment",
+    "CSV file chooser import completed using labelled synthetic healthy data",
+    "Imported oil forecast froze and scored 30 held-out observations",
+    "Oil MAE 1.69 C versus persistence 3.86 C in this browser rehearsal",
+    "Imported revealed result survived reload",
+    "Fresh 480-case evaluation visible and source hashes match",
+    "Declared cooling impairment shows condition index unavailable, not 100/100",
+    "No document overflow at mobile breakpoint",
+    "No warning or error console entries on final page"
+  ],
+  "limits": [
+    "Synthetic recordings only; no physical commissioning or field-accuracy claim",
+    "Sample-level forecast errors are not calibrated safety margins"
+  ],
+  "screenshots": [
+    "halo-decision-v3-desktop.jpg",
+    "halo-decision-v3-mobile.jpg"
+  ]
+}

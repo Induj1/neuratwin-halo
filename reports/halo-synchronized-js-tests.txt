@@ -1,0 +1,154 @@
+TAP version 13
+# Subtest: industrial components retain valid zero and reported stress values
+ok 1 - industrial components retain valid zero and reported stress values
+  ---
+  duration_ms: 1.2008
+  type: 'test'
+  ...
+# Subtest: prototype never presents oil or accumulated insulation stress as measured
+ok 2 - prototype never presents oil or accumulated insulation stress as measured
+  ---
+  duration_ms: 0.1429
+  type: 'test'
+  ...
+# Subtest: unqualified physical channels do not produce available component bars
+ok 3 - unqualified physical channels do not produce available component bars
+  ---
+  duration_ms: 0.1792
+  type: 'test'
+  ...
+# Subtest: component availability requires actual numbers and corresponding observations
+ok 4 - component availability requires actual numbers and corresponding observations
+  ---
+  duration_ms: 0.138
+  type: 'test'
+  ...
+# Subtest: prototype electrical availability uses secondary channel rather than primary voltage
+ok 5 - prototype electrical availability uses secondary channel rather than primary voltage
+  ---
+  duration_ms: 0.099
+  type: 'test'
+  ...
+# Subtest: change note excludes same-time and future observations from comparison
+ok 6 - change note excludes same-time and future observations from comparison
+  ---
+  duration_ms: 0.2169
+  type: 'test'
+  ...
+# Subtest: change note distinguishes thermal lag, demand changes, imbalance and missing evidence
+ok 7 - change note distinguishes thermal lag, demand changes, imbalance and missing evidence
+  ---
+  duration_ms: 0.1473
+  type: 'test'
+  ...
+# Subtest: legacy replay does not substitute latest health, settings, inputs, age or forecast
+ok 8 - legacy replay does not substitute latest health, settings, inputs, age or forecast
+  ---
+  duration_ms: 0.3262
+  type: 'test'
+  ...
+# Subtest: recorded replay uses the analysis and configuration retained at that observation
+ok 9 - recorded replay uses the analysis and configuration retained at that observation
+  ---
+  duration_ms: 0.2764
+  type: 'test'
+  ...
+# Subtest: legacy replay cannot inherit a future fault or trip from the live state
+ok 10 - legacy replay cannot inherit a future fault or trip from the live state
+  ---
+  duration_ms: 0.3267
+  type: 'test'
+  ...
+# Subtest: replay slices observations and events causally without mutating the source
+ok 11 - replay slices observations and events causally without mutating the source
+  ---
+  duration_ms: 0.3233
+  type: 'test'
+  ...
+# Subtest: replay does not import later actions at the same simulation instant
+ok 12 - replay does not import later actions at the same simulation instant
+  ---
+  duration_ms: 0.1519
+  type: 'test'
+  ...
+# Subtest: change note uses an earlier identified action while simulation time is paused
+ok 13 - change note uses an earlier identified action while simulation time is paused
+  ---
+  duration_ms: 0.1027
+  type: 'test'
+  ...
+# Subtest: 50 Hz sinusoid uses RMS-to-peak conversion and a 20 ms period
+ok 14 - 50 Hz sinusoid uses RMS-to-peak conversion and a 20 ms period
+  ---
+  duration_ms: 1.0505
+  type: 'test'
+  ...
+# Subtest: balanced three-phase currents cancel at every sampled point
+ok 15 - balanced three-phase currents cancel at every sampled point
+  ---
+  duration_ms: 0.316
+  type: 'test'
+  ...
+# Subtest: unbalanced neutral is a phasor sum, not a sum of RMS magnitudes
+ok 16 - unbalanced neutral is a phasor sum, not a sum of RMS magnitudes
+  ---
+  duration_ms: 0.2644
+  type: 'test'
+  ...
+# Subtest: zero is valid data; missing, negative, strings and nonfinite values are unavailable
+ok 17 - zero is valid data; missing, negative, strings and nonfinite values are unavailable
+  ---
+  duration_ms: 0.9308
+  type: 'test'
+  ...
+# Subtest: prototype does not manufacture three-phase channels or missing primary current
+ok 18 - prototype does not manufacture three-phase channels or missing primary current
+  ---
+  duration_ms: 0.7025
+  type: 'test'
+  ...
+# Subtest: industrial phase data is required; scalar current and line voltage do not create phase traces
+ok 19 - industrial phase data is required; scalar current and line voltage do not create phase traces
+  ---
+  duration_ms: 0.1597
+  type: 'test'
+  ...
+# Subtest: neutral trace requires supplied, consistent neutral RMS and complete phase currents
+ok 20 - neutral trace requires supplied, consistent neutral RMS and complete phase currents
+  ---
+  duration_ms: 0.1943
+  type: 'test'
+  ...
+# Subtest: axis stays finite for missing and zero channels and contains nonzero peaks
+ok 21 - axis stays finite for missing and zero channels and contains nonzero peaks
+  ---
+  duration_ms: 0.1283
+  type: 'test'
+  ...
+# Subtest: industrial current scale holds its rated reference as loading changes
+ok 22 - industrial current scale holds its rated reference as loading changes
+  ---
+  duration_ms: 0.3743
+  type: 'test'
+  ...
+# Subtest: current scale expands only when an available peak exceeds the rated reference
+ok 23 - current scale expands only when an available peak exceeds the rated reference
+  ---
+  duration_ms: 0.2722
+  type: 'test'
+  ...
+# Subtest: prototype, voltage and missing-rating views retain explicit auto scaling
+ok 24 - prototype, voltage and missing-rating views retain explicit auto scaling
+  ---
+  duration_ms: 0.1798
+  type: 'test'
+  ...
+1..24
+# tests 24
+# suites 0
+# pass 24
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 90.1335

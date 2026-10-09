@@ -1,0 +1,81 @@
+{
+  "version": "observation-pipeline-3",
+  "frozen_at_utc": "2026-10-08T13:44:48.453023+00:00",
+  "development_seeds": [
+    3101,
+    3102,
+    3103,
+    3104,
+    3105,
+    3106,
+    3107,
+    3108,
+    3109,
+    3110,
+    3111,
+    3112
+  ],
+  "evaluation_seeds": [
+    91001,
+    91002,
+    91003,
+    91004,
+    91005,
+    91006,
+    91007,
+    91008,
+    91009,
+    91010,
+    91011,
+    91012,
+    91013,
+    91014,
+    91015,
+    91016,
+    91017,
+    91018,
+    91019,
+    91020,
+    91021,
+    91022,
+    91023,
+    91024
+  ],
+  "families": [
+    "nonlinear",
+    "radiator_lag"
+  ],
+  "event_onset_min": [
+    90,
+    115
+  ],
+  "target_modes": [
+    "oil_only",
+    "oil_and_hotspot"
+  ],
+  "holds": [
+    "missing_data",
+    "outside_model_domain",
+    "invalid_timebase",
+    "channel_disagreement",
+    "insufficient_evidence",
+    "thermal_deviation"
+  ],
+  "partitions": [
+    "healthy",
+    "before_disturbance",
+    "crosses_disturbance",
+    "after_disturbance"
+  ],
+  "cadence": "Actual intervals <=120 s; CUSUM 60 minute reference, normalised five-minute blocks, disabled after history gaps. No interpolated observations.",
+  "scoring": "Retain all eligible forecasts, future disturbances included; expose disjoint timing partitions, coverage, withheld reasons and true-plant errors as separate targets. Critical warning requires expected signals before true synthetic hotspot >=125 C.",
+  "limits": "Two synthetic model families, no field evidence, no calibrated confidence. CUSUM shows discrepancy, not a cooling diagnosis. Oil-only mode cannot confirm winding hotspot or give a hotspot deadline. v2 cases were inspected during audit and are now historical regressions.",
+  "source_sha256": {
+    "neuratwin/twin_core.py": "8b2c2ab6d599bb20e47ec1b1cc72d28e4406b43ddc04a527af49897d0cf30615",
+    "neuratwin/twin_studies.py": "cf5a59dcaa003fe0f8f51174b65bd1f568f2df8062218eaa8bf2a3a08dfc9aa7",
+    "neuratwin/twin_observer.py": "8ac18aeaa9d0dbcb7e662393b1ed20bd76d66607de8619b7b19ddbe60a811c2c",
+    "neuratwin/thermal_reference.py": "cd31d218cdbb1317244f49a2a5112da4f1e2bc8f95cd3126358f2b83f3f50eb8",
+    "neuratwin/validation_plant.py": "ef8b3a57c78a06a7a8c2b3b0016b35f0226252f5d8ca9ec0f15de9150092f358",
+    "scripts/benchmark_pipeline.py": "c629a215f639a36aba92ecf4e47f78cf650536cc8dd3041fe472a760de36117f"
+  }
+}

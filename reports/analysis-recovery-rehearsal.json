@@ -1,0 +1,36 @@
+{
+  "status": "passed",
+  "recorded_on": "2026-10-09",
+  "scope": "Disposable SQLite transaction/lifecycle tests and mocked Supabase transport; no physical hardware or remote mutation.",
+  "command": "python -c \"import sys; sys.modules['readline']=None; import pytest; raise SystemExit(pytest.main(['tests/test_analysis_reliability.py','tests/test_cloud_analysis_reliability.py','tests/test_hardware_provenance.py','tests/test_recovery.py','tests/test_cloud.py','-q','--tb=short']))\"",
+  "result": {"passed": 51, "failed": 0, "elapsed_seconds": 27.49},
+  "backlog_case": {
+    "accepted_fixture_jobs": 153,
+    "batch_size": 17,
+    "processing_order": "0 through 152, oldest due first",
+    "attempts_per_job": 1,
+    "terminal_complete": 1,
+    "terminal_superseded": 152,
+    "physical_commands": 0,
+    "note": "Older jobs are explicitly superseded by the newest admitted frame; this is not a claim of retrospective modelling of 153 observations."
+  },
+  "verified_behaviors": [
+    "Durable capped failure backoff does not starve newer ready jobs.",
+    "Partial result/event writes roll back on computation failure or expired lease.",
+    "Eight competing local threads commit one job outcome.",
+    "Expired ownership is reclaimable; active ownership is skipped.",
+    "An old device job cannot relabel a replacement device's acquisition that reuses its boot and sequence identity.",
+    "Read and write outages back off without ending the continuous worker.",
+    "Shutdown wakes a sleeping worker and waits only for its current job before stopping a batch.",
+    "The actual application lifespan starts and stops recovery; diagnostics require operator authorization.",
+    "Mock-cloud CAS rejects competing claims and stale outcomes atomically.",
+    "Durable cloud queue commits survive an outer HTTP-unit-of-work rollback.",
+    "Physical decisions and their events record explicit analyzer and rule versions."
+  ],
+  "limits": [
+    "Supabase tests use mock HTTP transport, not an operational deployed database.",
+    "No fleet-capacity, live hardware or electrical protection claim.",
+    "A lease expiry may allow repeated computation, while fencing prevents duplicate committed outcomes.",
+    "Local API throughput is measured separately by scripts/rehearse_api_performance.py."
+  ]
+}

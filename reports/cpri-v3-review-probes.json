@@ -1,0 +1,629 @@
+{
+  "source_hashes_current": true,
+  "forecasts": [
+    {
+      "horizon_min": 5,
+      "scored": 2031,
+      "possible": 2880,
+      "model_mae_c": 1.6287766922050693,
+      "persistence_mae_c": 2.3780195235202886,
+      "true_temperature_mae_c": 1.2784818377434863,
+      "withheld_reasons": {
+        "thermal_deviation": 141,
+        "channel_disagreement": 348,
+        "insufficient_evidence": 36,
+        "missing_data": 292,
+        "future_observation_missing": 32
+      },
+      "p95_error_c": 4.279053470287209
+    },
+    {
+      "horizon_min": 15,
+      "scored": 1999,
+      "possible": 2880,
+      "model_mae_c": 3.7532343041451623,
+      "persistence_mae_c": 6.728654596932649,
+      "true_temperature_mae_c": 2.594785052861072,
+      "withheld_reasons": {
+        "thermal_deviation": 141,
+        "channel_disagreement": 348,
+        "insufficient_evidence": 36,
+        "missing_data": 292,
+        "future_observation_missing": 64
+      },
+      "p95_error_c": 15.90747639083824
+    },
+    {
+      "horizon_min": 30,
+      "scored": 1911,
+      "possible": 2880,
+      "model_mae_c": 7.807498558206157,
+      "persistence_mae_c": 13.337000987357449,
+      "true_temperature_mae_c": 5.442513816059801,
+      "withheld_reasons": {
+        "thermal_deviation": 141,
+        "channel_disagreement": 348,
+        "future_observation_missing": 152,
+        "insufficient_evidence": 36,
+        "missing_data": 292
+      },
+      "p95_error_c": 29.580442072403983
+    }
+  ],
+  "oil_forecasts": [
+    {
+      "horizon_min": 5,
+      "scored": 2367,
+      "possible": 2880,
+      "model_mae_c": 0.683167479500086,
+      "persistence_mae_c": 1.3107598726513285,
+      "true_temperature_mae_c": 0.47401525728028615,
+      "withheld_reasons": {
+        "thermal_deviation": 153,
+        "insufficient_evidence": 36,
+        "missing_data": 292,
+        "future_observation_missing": 32
+      },
+      "p95_error_c": 2.243225263488931
+    },
+    {
+      "horizon_min": 15,
+      "scored": 2335,
+      "possible": 2880,
+      "model_mae_c": 1.2054588977214105,
+      "persistence_mae_c": 3.485660083465654,
+      "true_temperature_mae_c": 1.0741663234472765,
+      "withheld_reasons": {
+        "thermal_deviation": 153,
+        "insufficient_evidence": 36,
+        "missing_data": 292,
+        "future_observation_missing": 64
+      },
+      "p95_error_c": 3.535898992414232
+    },
+    {
+      "horizon_min": 30,
+      "scored": 2247,
+      "possible": 2880,
+      "model_mae_c": 2.6536227480932415,
+      "persistence_mae_c": 7.106860305495791,
+      "true_temperature_mae_c": 2.562597890976199,
+      "withheld_reasons": {
+        "thermal_deviation": 153,
+        "future_observation_missing": 152,
+        "insufficient_evidence": 36,
+        "missing_data": 292
+      },
+      "p95_error_c": 7.985700119122654
+    }
+  ],
+  "partitions_30min": {
+    "oil_c": {
+      "healthy": {
+        "horizon_min": 30,
+        "scored": 287,
+        "possible": 288,
+        "model_mae_c": 1.3372520442954616,
+        "persistence_mae_c": 4.194381592392091,
+        "true_temperature_mae_c": 1.1906191581058114,
+        "withheld_reasons": {
+          "thermal_deviation": 1
+        },
+        "p95_error_c": 3.2674806283851012
+      },
+      "before_disturbance": {
+        "horizon_min": 30,
+        "scored": 180,
+        "possible": 180,
+        "model_mae_c": 0.9455325241039947,
+        "persistence_mae_c": 5.762635007629287,
+        "true_temperature_mae_c": 0.9019937271973092,
+        "withheld_reasons": {},
+        "p95_error_c": 2.183248813275327
+      },
+      "crosses_disturbance": {
+        "horizon_min": 30,
+        "scored": 714,
+        "possible": 846,
+        "model_mae_c": 4.681740446801191,
+        "persistence_mae_c": 9.016136036797255,
+        "true_temperature_mae_c": 4.605125237064106,
+        "withheld_reasons": {
+          "future_observation_missing": 132
+        },
+        "p95_error_c": 14.871357875869123
+      },
+      "after_disturbance": {
+        "horizon_min": 30,
+        "scored": 1066,
+        "possible": 1566,
+        "model_mae_c": 1.938030436114397,
+        "persistence_mae_c": 6.839148365652909,
+        "true_temperature_mae_c": 1.8443071974557819,
+        "withheld_reasons": {
+          "thermal_deviation": 152,
+          "insufficient_evidence": 36,
+          "missing_data": 292,
+          "future_observation_missing": 20
+        },
+        "p95_error_c": 5.17616269133552
+      }
+    },
+    "hotspot_c": {
+      "healthy": {
+        "horizon_min": 30,
+        "scored": 287,
+        "possible": 288,
+        "model_mae_c": 2.0800540889178505,
+        "persistence_mae_c": 4.920962073056451,
+        "true_temperature_mae_c": 1.934511121446836,
+        "withheld_reasons": {
+          "thermal_deviation": 1
+        },
+        "p95_error_c": 4.748449206657753
+      },
+      "before_disturbance": {
+        "horizon_min": 30,
+        "scored": 180,
+        "possible": 180,
+        "model_mae_c": 2.136740277423859,
+        "persistence_mae_c": 10.121186506716779,
+        "true_temperature_mae_c": 1.8730982866156674,
+        "withheld_reasons": {},
+        "p95_error_c": 5.587565704817962
+      },
+      "crosses_disturbance": {
+        "horizon_min": 30,
+        "scored": 714,
+        "possible": 846,
+        "model_mae_c": 14.81761588628148,
+        "persistence_mae_c": 21.160426150018814,
+        "true_temperature_mae_c": 10.345378512724253,
+        "withheld_reasons": {
+          "future_observation_missing": 132
+        },
+        "p95_error_c": 43.18163420274399
+      },
+      "after_disturbance": {
+        "horizon_min": 30,
+        "scored": 730,
+        "possible": 1566,
+        "model_mae_c": 4.601045518453796,
+        "persistence_mae_c": 9.786760177466343,
+        "true_temperature_mae_c": 2.9064126862453437,
+        "withheld_reasons": {
+          "thermal_deviation": 140,
+          "channel_disagreement": 348,
+          "insufficient_evidence": 36,
+          "missing_data": 292,
+          "future_observation_missing": 20
+        },
+        "p95_error_c": 14.620060480692842
+      }
+    }
+  },
+  "critical_incomplete": [
+    {
+      "scenario": "cooling_overload",
+      "event_min": 112,
+      "severity": 0.8,
+      "noise_c": 0.5,
+      "seed": 91012,
+      "family": "radiator_lag",
+      "fit_qualified": false,
+      "detected": true,
+      "first_correct_min": 170,
+      "baseline_detected": false,
+      "baseline_delay_min": null,
+      "baseline_false_alarm_episodes": 0,
+      "blocked_forecasts": 15,
+      "validity_violations": 0,
+      "delay_min": 58,
+      "false_alarm_minutes": 0,
+      "false_alarm_episodes": 0,
+      "critical_min": 160,
+      "lead_to_critical_min": -10,
+      "first_threshold_min": 112,
+      "gain_over_threshold_min": -58
+    },
+    {
+      "scenario": "cooling_overload",
+      "event_min": 112,
+      "severity": 0.8,
+      "noise_c": 0.15,
+      "seed": 91016,
+      "family": "radiator_lag",
+      "fit_qualified": false,
+      "detected": true,
+      "first_correct_min": 160,
+      "baseline_detected": false,
+      "baseline_delay_min": null,
+      "baseline_false_alarm_episodes": 0,
+      "blocked_forecasts": 21,
+      "validity_violations": 0,
+      "delay_min": 48,
+      "false_alarm_minutes": 0,
+      "false_alarm_episodes": 0,
+      "critical_min": 154,
+      "lead_to_critical_min": -6,
+      "first_threshold_min": 112,
+      "gain_over_threshold_min": -48
+    },
+    {
+      "scenario": "cooling_overload",
+      "event_min": 110,
+      "severity": 0.8,
+      "noise_c": 1.0,
+      "seed": 91021,
+      "family": "radiator_lag",
+      "fit_qualified": true,
+      "detected": false,
+      "first_correct_min": null,
+      "baseline_detected": false,
+      "baseline_delay_min": null,
+      "baseline_false_alarm_episodes": 0,
+      "blocked_forecasts": 0,
+      "validity_violations": 0,
+      "delay_min": null,
+      "false_alarm_minutes": 0,
+      "false_alarm_episodes": 0,
+      "critical_min": 165,
+      "lead_to_critical_min": null,
+      "first_threshold_min": 110,
+      "gain_over_threshold_min": null
+    },
+    {
+      "scenario": "cooling_overload",
+      "event_min": 100,
+      "severity": 0.8,
+      "noise_c": 1.0,
+      "seed": 91023,
+      "family": "radiator_lag",
+      "fit_qualified": true,
+      "detected": true,
+      "first_correct_min": 149,
+      "baseline_detected": true,
+      "baseline_delay_min": 49,
+      "baseline_false_alarm_episodes": 0,
+      "blocked_forecasts": 32,
+      "validity_violations": 0,
+      "delay_min": 49,
+      "false_alarm_minutes": 0,
+      "false_alarm_episodes": 0,
+      "critical_min": 132,
+      "lead_to_critical_min": -17,
+      "first_threshold_min": 100,
+      "gain_over_threshold_min": -49
+    }
+  ],
+  "archive_matches_tested": true,
+  "verified_manifest_entries": 191,
+  "old_counterexample": {
+    "available": false,
+    "hypotheses": [
+      "thermal_deviation",
+      "overload"
+    ],
+    "minutes_to_critical": null
+  },
+  "hot_current_risk": {
+    "oil_and_hotspot": {
+      "available": true,
+      "hypotheses": [],
+      "hypothesis": "no_anomaly_established",
+      "minutes_to_critical": 0,
+      "inferred_hotspot_c": null,
+      "next_action": "Use the conditional trajectory with current alerts; reassess on each observation.",
+      "analysis_status": "CRITICAL",
+      "alerts": [
+        {
+          "code": "transformer_temperature",
+          "severity": "CRITICAL",
+          "parameter": "transformer_temperature",
+          "value": 131.0,
+          "threshold": 125,
+          "timestamp": "2026-01-01T00:30:00+00:00",
+          "detail": "Thermal threshold exceeded.",
+          "category": "threshold",
+          "action": "Monitor / investigate"
+        }
+      ]
+    },
+    "oil_only": {
+      "available": true,
+      "hypotheses": [],
+      "hypothesis": "no_anomaly_established",
+      "minutes_to_critical": null,
+      "inferred_hotspot_c": 130.90597616742542,
+      "next_action": "Review active electrical signals and monitor measured oil; no validated hot-spot deadline is available.",
+      "analysis_status": "NORMAL",
+      "alerts": []
+    }
+  },
+  "missed_cooling_probes": [
+    {
+      "seed": 91012,
+      "origin": 145,
+      "event": 112,
+      "actual_critical_min": 160,
+      "hotspot_now": 114.79970435162247,
+      "oil_now": 76.56094259242352,
+      "available": true,
+      "hypotheses": [
+        "overload"
+      ],
+      "minutes_to_critical": 13,
+      "forecast_15": 126.15650929605155,
+      "actual_15": 123.67766056352241,
+      "residual": 1.4082773499135186,
+      "noise": 0.5545803751503392
+    },
+    {
+      "seed": 91012,
+      "origin": 155,
+      "event": 112,
+      "actual_critical_min": 160,
+      "hotspot_now": 123.06440814085958,
+      "oil_now": 82.93866893373384,
+      "available": true,
+      "hypotheses": [
+        "overload"
+      ],
+      "minutes_to_critical": 3,
+      "forecast_15": 132.00870417165885,
+      "actual_15": 130.15111777206428,
+      "residual": 2.2400356992270694,
+      "noise": 0.5545803751503392
+    },
+    {
+      "seed": 91012,
+      "origin": 160,
+      "event": 112,
+      "actual_critical_min": 160,
+      "hotspot_now": 123.67766056352241,
+      "oil_now": 85.24215179119811,
+      "available": true,
+      "hypotheses": [
+        "overload"
+      ],
+      "minutes_to_critical": 2,
+      "forecast_15": 133.84315014965227,
+      "actual_15": 132.04742437181122,
+      "residual": 1.7039517908182944,
+      "noise": 0.5545803751503392
+    },
+    {
+      "seed": 91016,
+      "origin": 139,
+      "event": 112,
+      "actual_critical_min": 154,
+      "hotspot_now": 116.52979569359866,
+      "oil_now": 75.89806998898884,
+      "available": true,
+      "hypotheses": [
+        "overload"
+      ],
+      "minutes_to_critical": 14,
+      "forecast_15": 125.84908993541832,
+      "actual_15": 125.44000587656252,
+      "residual": 1.280365792066026,
+      "noise": 0.16473894096414268
+    },
+    {
+      "seed": 91016,
+      "origin": 149,
+      "event": 112,
+      "actual_critical_min": 154,
+      "hotspot_now": 122.6654896603938,
+      "oil_now": 81.4141926106193,
+      "available": true,
+      "hypotheses": [
+        "overload"
+      ],
+      "minutes_to_critical": 4,
+      "forecast_15": 130.79433429835132,
+      "actual_15": 130.74119778118947,
+      "residual": 1.2708370961590703,
+      "noise": 0.16473894096414268
+    },
+    {
+      "seed": 91016,
+      "origin": 154,
+      "event": 112,
+      "actual_critical_min": 154,
+      "hotspot_now": 125.44000587656252,
+      "oil_now": 84.46098879713003,
+      "available": true,
+      "hypotheses": [
+        "overload"
+      ],
+      "minutes_to_critical": 0,
+      "forecast_15": 133.45216166028962,
+      "actual_15": 133.3040397459245,
+      "residual": 1.3031253520209134,
+      "noise": 0.16473894096414268
+    },
+    {
+      "seed": 91021,
+      "origin": 150,
+      "event": 110,
+      "actual_critical_min": 165,
+      "hotspot_now": 117.1839709655093,
+      "oil_now": 76.18317878118441,
+      "available": true,
+      "hypotheses": [
+        "overload"
+      ],
+      "minutes_to_critical": 15,
+      "forecast_15": 125.36371355934418,
+      "actual_15": 125.96214618428739,
+      "residual": -1.0301187478839846,
+      "noise": 0.9870730949328277
+    },
+    {
+      "seed": 91021,
+      "origin": 160,
+      "event": 110,
+      "actual_critical_min": 165,
+      "hotspot_now": 119.19794094700327,
+      "oil_now": 80.62043040749835,
+      "available": true,
+      "hypotheses": [
+        "overload"
+      ],
+      "minutes_to_critical": 7,
+      "forecast_15": 129.22927898117098,
+      "actual_15": 128.69770074132362,
+      "residual": 1.146473373193416,
+      "noise": 0.9870730949328277
+    },
+    {
+      "seed": 91021,
+      "origin": 165,
+      "event": 110,
+      "actual_critical_min": 165,
+      "hotspot_now": 125.96214618428739,
+      "oil_now": 81.4125912113271,
+      "available": true,
+      "hypotheses": [
+        "overload"
+      ],
+      "minutes_to_critical": 0,
+      "forecast_15": 130.67016971272346,
+      "actual_15": 132.5370543175577,
+      "residual": -0.502915213117717,
+      "noise": 0.9870730949328277
+    },
+    {
+      "seed": 91023,
+      "origin": 117,
+      "event": 100,
+      "actual_critical_min": 132,
+      "hotspot_now": 111.35708661475535,
+      "oil_now": 72.2256211905059,
+      "available": true,
+      "hypotheses": [
+        "overload"
+      ],
+      "minutes_to_critical": 16,
+      "forecast_15": 124.9222758754278,
+      "actual_15": 125.61674320762384,
+      "residual": 1.6035399148384262,
+      "noise": 0.8092180484601548
+    },
+    {
+      "seed": 91023,
+      "origin": 127,
+      "event": 100,
+      "actual_critical_min": 132,
+      "hotspot_now": 119.74534080473971,
+      "oil_now": 81.43498168486576,
+      "available": true,
+      "hypotheses": [
+        "overload"
+      ],
+      "minutes_to_critical": 5,
+      "forecast_15": 132.18247207668455,
+      "actual_15": 131.05928306766842,
+      "residual": 0.5435843393302898,
+      "noise": 0.8092180484601548
+    },
+    {
+      "seed": 91023,
+      "origin": 132,
+      "event": 100,
+      "actual_critical_min": 132,
+      "hotspot_now": 125.61674320762384,
+      "oil_now": 84.48001125968486,
+      "available": true,
+      "hypotheses": [
+        "overload"
+      ],
+      "minutes_to_critical": 0,
+      "forecast_15": 134.9478367128121,
+      "actual_15": 135.92122890917614,
+      "residual": -0.27460160369237485,
+      "noise": 0.8092180484601548
+    }
+  ],
+  "warm_after_gap_critical_probe": {
+    "description": "Reviewed synthetic healthy commissioning prefix, one telemetry dropout, then 31 consecutive hot observations. At origin 101 minutes.",
+    "available": false,
+    "hypothesis": "thermal_deviation",
+    "analysis_status": "CRITICAL",
+    "analysis_alerts": [
+      {
+        "code": "transformer_temperature",
+        "severity": "CRITICAL",
+        "parameter": "transformer_temperature",
+        "value": 131.0,
+        "threshold": 125,
+        "timestamp": "2026-01-01T01:41:00+00:00",
+        "detail": "Thermal threshold exceeded.",
+        "category": "threshold",
+        "action": "Monitor / investigate"
+      }
+    ],
+    "minutes_to_critical": null,
+    "cusum_reason": "Commissioning continuity lost; CUSUM stays unavailable until a reviewed new reference is supplied."
+  },
+  "default_after_gap_critical_probe": {
+    "description": "Healthy radiator-lag commissioning prefix from seed 91012; unqualified fit retains default parameters as implemented. One gap, then 31 consecutive hot samples.",
+    "fit_qualified": false,
+    "available": true,
+    "hypothesis": "no_anomaly_established",
+    "analysis_status": "CRITICAL",
+    "minutes_to_critical": 0,
+    "observations": {
+      "oil_c": 109,
+      "hotspot_c": 131,
+      "ambient_c": 45,
+      "load_percent": 97,
+      "voltage_pu": 1
+    }
+  },
+  "review": {
+    "score": 80,
+    "maximum": 100,
+    "rubric": "Reviewer-defined college-hackathon rubric, not official CPRI scoring.",
+    "categories": {
+      "problem_alignment": {
+        "earned": 18,
+        "maximum": 20
+      },
+      "modelling": {
+        "earned": 15,
+        "maximum": 20
+      },
+      "prediction_and_detection": {
+        "earned": 13,
+        "maximum": 20
+      },
+      "maintenance": {
+        "earned": 9,
+        "maximum": 10
+      },
+      "presentation": {
+        "earned": 8,
+        "maximum": 10
+      },
+      "engineering": {
+        "earned": 9,
+        "maximum": 10
+      },
+      "novelty": {
+        "earned": 8,
+        "maximum": 10
+      }
+    },
+    "code_modified": false,
+    "findings": [
+      "Current critical thermal alert can be omitted from the observation card verdict while no_anomaly_established is displayed.",
+      "Imported observation case has no direct handoff to the run-scoped planner and maintenance workflow.",
+      "Forecast withholding fixes a validity contradiction but does not identify or adapt the faulty thermal dynamics.",
+      "Oil-only mode lacks independently observed hotspot validation and no health index is computed without the temperature channel.",
+      "Most radiator-lag family cases fall back to defaults, and scientific evidence remains synthetic.",
+      "Four combined critical cases lack the complete expected diagnosis before threshold crossing; all four do have earlier threshold alerts."
+    ]
+  }
+}

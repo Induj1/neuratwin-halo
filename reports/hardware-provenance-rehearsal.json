@@ -1,0 +1,53 @@
+{
+  "status": "passed",
+  "generated_at": "2026-10-08T18:37:55.115450+00:00",
+  "scope": "Fresh isolated regression rehearsal using temporary SQLite and actual HTTP/API/lifespan workflow. No hardware, serial port, credentials, production database or remote migration is used.",
+  "tests": [
+    {
+      "name": "test_cal_a_cal_b_offset_cannot_receive_physical_repair_credit",
+      "duration_s": 2.423,
+      "status": "passed"
+    },
+    {
+      "name": "test_old_acquisition_retains_immutable_limits_after_edit",
+      "duration_s": 0.617,
+      "status": "passed"
+    },
+    {
+      "name": "test_app_startup_recovers_pending_analysis_without_new_packet_or_control",
+      "duration_s": 0.369,
+      "status": "passed"
+    }
+  ],
+  "exit_code": 0,
+  "test_command": [
+    "python",
+    "-c",
+    "import sys; sys.modules['readline']=None; import pytest; raise SystemExit(pytest.main(sys.argv[1:]))",
+    "tests/test_hardware_provenance.py::test_cal_a_cal_b_offset_cannot_receive_physical_repair_credit",
+    "tests/test_hardware_provenance.py::test_old_acquisition_retains_immutable_limits_after_edit",
+    "tests/test_hardware_provenance.py::test_app_startup_recovers_pending_analysis_without_new_packet_or_control",
+    "-q",
+    "--tb=short"
+  ],
+  "checks": [
+    {
+      "name": "Calibration offset cannot be credited as physical repair",
+      "assertion": "CAL-A/CAL-B equivalent fixture retains unchanged raw 50 C but changes calibrated 50 to 46 C; verification is insufficient_evidence and actual incident closure route rejects stale improvement."
+    },
+    {
+      "name": "Immutable configuration remains attached to the acquisition",
+      "assertion": "Editing current limits creates a different config_id; existing frame/history thresholds and load interpretation remain unchanged; enabling load under the old acquisition configuration returns 423."
+    },
+    {
+      "name": "Accepted acquisition survives analysis failure and startup recovery",
+      "assertion": "Injected processing interruption leaves accepted frame and pending analysis; a real application lifespan restart without another packet completes analysis and latches the decision without creating any relay command, even with automatic-cutoff settings enabled in the isolated fixture."
+    }
+  ],
+  "limitations": [
+    "All measured-source packets are explicitly constructed software test fixtures, not a live hardware recording.",
+    "This rehearsal validates application behavior and recovery, not transformer calibration, electrical safety, cloud trigger execution or fleet-scale capacity.",
+    "Startup recovery is bounded to 100 pending jobs and never operates hardware."
+  ],
+  "pytest_summary": "3 passed in 5.26s"
+}

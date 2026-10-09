@@ -1,0 +1,36 @@
+{
+  "date": "2026-10-08",
+  "scope": "Software fixture only; no physical telemetry or relay actuation",
+  "status": "passed_with_documented_browser_limit",
+  "checks": [
+    "Experiment creation and saved-record restoration",
+    "First frozen forecast scored against 36 later unchanged-input observations",
+    "Second forecast excludes 36 changed-input observations from comparable MAE",
+    "Reference check bound to EMU-276; emulator calibration activation disabled",
+    "Recovery note retained as observation, not certified repair",
+    "Historical replay disables experiment mutations",
+    "Stopped experiment survives backend restart and page reload",
+    "Missing physical acquisition refuses physical experiment with actionable message",
+    "Browser export downloaded; 314 rows and two frozen forecasts; every manifest hash verified",
+    "Responsive chart labels remain readable at phone width; no document horizontal overflow; all visible lab buttons at least 44px tall"
+  ],
+  "desktop": {
+    "chartViewBox": "0 0 971 300",
+    "documentWidth": 1265,
+    "height": 720,
+    "viewport": 1280
+  },
+  "mobile": {
+    "chartWidth": 306,
+    "documentWidth": 375,
+    "minimumButtonHeight": 44,
+    "viewBox": "0 0 306 300",
+    "viewport": 390
+  },
+  "console": [],
+  "offline_replay": {
+    "download_and_integrity": "passed",
+    "javascript_syntax": "passed",
+    "interactive_browser_preview": "not run: in-app browser disallows file URLs; no workaround used"
+  }
+}

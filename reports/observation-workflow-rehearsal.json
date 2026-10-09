@@ -1,0 +1,52 @@
+{
+  "status": "passed",
+  "source": "synthetic only",
+  "database": "temporary isolated SQLite; removed after rehearsal",
+  "case_id": "RECORDING-synthetic-review-before",
+  "followup_case_id": "RECORDING-synthetic-review-after",
+  "work_status": "closed_reference_review",
+  "verification": {
+    "eligible": true,
+    "holds": [],
+    "metrics": {
+      "origin_mean_oil_c": 54.45557578796038,
+      "followup_mean_oil_c": 48.45557578796038,
+      "oil_drop_c": 6.0,
+      "load_difference_pct": 0.0,
+      "ambient_difference_c": 0.0,
+      "voltage_difference_pu": 0.0,
+      "followup_peak_load_percent": 70.0,
+      "followup_peak_oil_c": 49.24511689271838,
+      "samples": 11
+    },
+    "classification": "reference_acceptance_met",
+    "physical_repair_verified": false,
+    "causal_benefit_established": false,
+    "criteria_basis": "Operator-declared review criteria; not manufacturer limits or a safety certification.",
+    "note": "Imported recordings are retrospective references. Acceptance closes an evidence review; it does not establish a prospective forecast, causal maintenance benefit or verified physical repair."
+  },
+  "export_sha256": "4330cf041f97ed6b3e20311e14c0f9e5fce0fce9af482742fc8c1718c2d674a7",
+  "physical_repair_verified": false,
+  "hardware_commands_issued": 0,
+  "browser_inputs": {
+    "before_file": "web/synthetic-review-before.csv",
+    "after_file": "web/synthetic-review-after.csv",
+    "origin_index": 90,
+    "temperature_mode": "oil_only",
+    "provenance": {
+      "asset_id": "SYNTHETIC-REVIEW-001",
+      "source_class": "synthetic",
+      "units_verified": true,
+      "calibration_reference": "Synthetic generator scale v1; no physical sensor",
+      "calibration_reviewed": true,
+      "configuration_reference": "Synthetic reference model 55C-rise/100min v1",
+      "configuration_reviewed": true,
+      "reviewer": "Synthetic rehearsal reviewer",
+      "note": "Generated reference demonstration only; no field measurement or physical repair."
+    },
+    "before_started_at": "2026-01-01T00:00:00Z",
+    "after_started_at": "2026-01-02T00:00:00Z",
+    "inspection_at": "2026-01-01T01:31:00Z",
+    "action_at": "2026-01-01T01:32:00Z"
+  }
+}

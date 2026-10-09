@@ -1,0 +1,230 @@
+{
+  "forecasts": [
+    {
+      "horizon_min": 5,
+      "scored": 2031,
+      "possible": 2880,
+      "coverage_fraction": 0.7052083333333333,
+      "model_mae_c": 1.3900490431049433,
+      "persistence_mae_c": 2.3780195235202886,
+      "true_temperature_mae_c": 0.9420874715943635,
+      "withheld_reasons": {
+        "thermal_deviation": 141,
+        "channel_disagreement": 348,
+        "insufficient_evidence": 36,
+        "missing_data": 292,
+        "future_observation_missing": 32
+      },
+      "p95_error_c": 4.758011636712482,
+      "error_distribution_c": {
+        "count": 2031,
+        "mean": 1.3900490431049433,
+        "median": 0.7682961373800765,
+        "p95": 4.758011636712482,
+        "min": 0.00033219030487430246,
+        "max": 17.981827394480774
+      },
+      "rmse_c": 2.3865376769741427,
+      "underprediction_c": {
+        "count": 2031,
+        "mean": 0.9867205346459004,
+        "median": 0.19076131531198826,
+        "p95": 4.758011636712482,
+        "min": 0.0,
+        "max": 17.981827394480774
+      },
+      "signed_error_c": {
+        "count": 2031,
+        "mean": -0.5833920261868574,
+        "median": -0.19076131531198826,
+        "p95": 1.8473817787214983,
+        "min": -17.981827394480774,
+        "max": 4.154571472919912
+      },
+      "paired_absolute_error_improvement_c": {
+        "count": 2031,
+        "mean": 0.9879704804153451,
+        "median": 0.9716723864235917,
+        "p95": 3.7942902449408535,
+        "min": -4.754120577975485,
+        "max": 17.520965823613977
+      },
+      "paired_model_wins": 1510,
+      "paired_ties": 0,
+      "paired_model_losses": 521,
+      "scoring_note": "Signed error is prediction minus observation; negative is underprediction. Missing targets are not imputed. Errors and baseline comparison use the same scored rows. P95 uses sorted[min(n-1, floor(.95*n))], retaining the historical report definition."
+    },
+    {
+      "horizon_min": 15,
+      "scored": 1999,
+      "possible": 2880,
+      "coverage_fraction": 0.6940972222222223,
+      "model_mae_c": 3.4203851749751277,
+      "persistence_mae_c": 6.728654596932649,
+      "true_temperature_mae_c": 2.1134597877912986,
+      "withheld_reasons": {
+        "thermal_deviation": 141,
+        "channel_disagreement": 348,
+        "insufficient_evidence": 36,
+        "missing_data": 292,
+        "future_observation_missing": 64
+      },
+      "p95_error_c": 15.967285635816708,
+      "error_distribution_c": {
+        "count": 1999,
+        "mean": 3.4203851749751277,
+        "median": 1.335961741671852,
+        "p95": 15.967285635816708,
+        "min": 0.000523784545947592,
+        "max": 51.90003200634045
+      },
+      "rmse_c": 6.73611415754554,
+      "underprediction_c": {
+        "count": 1999,
+        "mean": 3.0441559515208936,
+        "median": 0.8157843023222568,
+        "p95": 15.967285635816708,
+        "min": 0.0,
+        "max": 51.90003200634045
+      },
+      "signed_error_c": {
+        "count": 1999,
+        "mean": -2.667926728066659,
+        "median": -0.8157843023222568,
+        "p95": 2.251561211975954,
+        "min": -51.90003200634045,
+        "max": 6.513635661969047
+      },
+      "paired_absolute_error_improvement_c": {
+        "count": 1999,
+        "mean": 3.308269421957521,
+        "median": 3.1611725198721388,
+        "p95": 8.798605160339314,
+        "min": -7.213162836981539,
+        "max": 35.570121839773435
+      },
+      "paired_model_wins": 1717,
+      "paired_ties": 0,
+      "paired_model_losses": 282,
+      "scoring_note": "Signed error is prediction minus observation; negative is underprediction. Missing targets are not imputed. Errors and baseline comparison use the same scored rows. P95 uses sorted[min(n-1, floor(.95*n))], retaining the historical report definition."
+    },
+    {
+      "horizon_min": 30,
+      "scored": 1911,
+      "possible": 2880,
+      "coverage_fraction": 0.6635416666666667,
+      "model_mae_c": 7.557957253330894,
+      "persistence_mae_c": 13.337000987357449,
+      "true_temperature_mae_c": 5.076756143475611,
+      "withheld_reasons": {
+        "thermal_deviation": 141,
+        "channel_disagreement": 348,
+        "future_observation_missing": 152,
+        "insufficient_evidence": 36,
+        "missing_data": 292
+      },
+      "p95_error_c": 28.972823611502434,
+      "error_distribution_c": {
+        "count": 1911,
+        "mean": 7.557957253330894,
+        "median": 3.076680682032631,
+        "p95": 28.972823611502434,
+        "min": 0.00029285218815289227,
+        "max": 99.47882836284002
+      },
+      "rmse_c": 13.432713912258485,
+      "underprediction_c": {
+        "count": 1911,
+        "mean": 7.15588138298251,
+        "median": 2.5416231332612824,
+        "p95": 28.972823611502434,
+        "min": 0.0,
+        "max": 99.47882836284002
+      },
+      "signed_error_c": {
+        "count": 1911,
+        "mean": -6.753805512634125,
+        "median": -2.5416231332612824,
+        "p95": 2.77602092065095,
+        "min": -99.47882836284002,
+        "max": 7.950776723466362
+      },
+      "paired_absolute_error_improvement_c": {
+        "count": 1911,
+        "mean": 5.779043734026555,
+        "median": 5.480545586096312,
+        "p95": 13.662354559439024,
+        "min": -7.91638801390701,
+        "max": 48.98963438987404
+      },
+      "paired_model_wins": 1702,
+      "paired_ties": 0,
+      "paired_model_losses": 209,
+      "scoring_note": "Signed error is prediction minus observation; negative is underprediction. Missing targets are not imputed. Errors and baseline comparison use the same scored rows. P95 uses sorted[min(n-1, floor(.95*n))], retaining the historical report definition."
+    }
+  ],
+  "detection": [
+    {
+      "scenario": "healthy",
+      "detected": 0,
+      "total": 48,
+      "false_alarm_episodes": 2
+    },
+    {
+      "scenario": "overload",
+      "detected": 48,
+      "total": 48,
+      "false_alarm_episodes": 0
+    },
+    {
+      "scenario": "cooling",
+      "detected": 32,
+      "total": 48,
+      "false_alarm_episodes": 0
+    },
+    {
+      "scenario": "sensor_bias",
+      "detected": 42,
+      "total": 48,
+      "false_alarm_episodes": 0
+    },
+    {
+      "scenario": "dropout",
+      "detected": 48,
+      "total": 48,
+      "false_alarm_episodes": 0
+    },
+    {
+      "scenario": "voltage",
+      "detected": 48,
+      "total": 48,
+      "false_alarm_episodes": 0
+    },
+    {
+      "scenario": "overload_sensor_bias",
+      "detected": 40,
+      "total": 48,
+      "false_alarm_episodes": 0
+    },
+    {
+      "scenario": "overload_dropout",
+      "detected": 48,
+      "total": 48,
+      "false_alarm_episodes": 0
+    },
+    {
+      "scenario": "voltage_sensor_bias",
+      "detected": 42,
+      "total": 48,
+      "false_alarm_episodes": 0
+    },
+    {
+      "scenario": "cooling_overload",
+      "detected": 33,
+      "total": 48,
+      "false_alarm_episodes": 0
+    }
+  ],
+  "interventions_passed": 24,
+  "feasible": 24
+}

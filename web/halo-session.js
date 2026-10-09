@@ -6,6 +6,9 @@
   let run=null;
   function paint(){
     document.body.dataset.twinSource=source;
+    if(document.getElementById('view-lab')?.classList.contains('active')){
+      const status=document.getElementById('connection');if(status)status.textContent='Bench lab · source shown below';return;
+    }
     const label=document.getElementById('session-context');
     if(label)label.textContent=source==='industrial'?(run?`${run.profile?.name||'Distribution transformer'} · ${run.id.slice(-8).toUpperCase()} · ${Math.round(run.elapsed_s/60)} simulated min`:'Industrial simulation · select or create a run'):
       source==='prototype'?'BENCH-001 · physical ESP32 · measurements only':'Independent reference studies · replay source selected below';

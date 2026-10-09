@@ -1,0 +1,30 @@
+{
+  "status": "pass",
+  "review_date_local": "2026-10-09",
+  "method": "Manual CUA browser interaction and DOM/screenshot inspection against the local application",
+  "url": "http://127.0.0.1:8765/app#operate",
+  "source": "industrial_simulation",
+  "preserved_existing_run": "IND-9ffaa16b-e2c4-4e58-a6a0-b43f8f3bc328",
+  "new_rehearsal_run": "IND-85b46b7f-c032-43db-9940-4b08fe5da6fd",
+  "checks": [
+    "Desktop 1280x720: critical readings, controls, model, waveform and health review visible without horizontal overflow",
+    "Mobile 390x844: document client and scroll width both 375px; navigation, reading grid, controls and model stack without horizontal overflow",
+    "Temporary mobile viewport reset to the default desktop viewport",
+    "Review this run retained the exact simulation ID and selected the simulation maintenance tab despite a previously selected imported recording",
+    "Evidence view showed fresh protocol/report/source binding match, 6/87 earlier warnings, 81 ties, 2 nuisance episodes and the 35.04C hot-spot P95 error",
+    "Rehearsal view displayed the same five-step one-run sequence as the dossier",
+    "New labelled simulation created successfully through the browser; previous run retained",
+    "Apply 30% reduction changed load from 110% to 77% and phase RMS current from 924.03A to 646.82A immediately",
+    "At the intervention instant hot-spot remained 79C; after five simulated minutes it was 81C with oil 66.4C, demonstrating thermal state continuity rather than instant recovery",
+    "Declared degraded-cooling warning remained after load reduction; no physical repair was claimed",
+    "Zero additional reduction state displayed one unchanged-input trajectory and no apply button",
+    "Captured browser error log contained no errors at the end of the reviewed flows"
+  ],
+  "evidence": ["halo-release-desktop.jpg", "halo-release-mobile.jpg"],
+  "hardware_operated": false,
+  "limitations": [
+    "This is a local browser rehearsal of selected flows, not an exhaustive browser/device matrix or cloud soak test",
+    "Simulation actions do not establish physical accuracy or successful commissioning",
+    "Screenshot states contain generated simulation readings, not physical measurements"
+  ]
+}

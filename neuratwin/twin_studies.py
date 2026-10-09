@@ -8,9 +8,39 @@ from datetime import datetime, timedelta
 import hashlib
 import json
 import math
+from itertools import product
 from . import twin_core as core
 
-VERSION = 'halo-study-1'
+VERSION = 'halo-study-2'
+
+
+def observation_projection(settings, observation, phase, initial_hotspot, horizon_min):
+    """Short conditional forecast from observed channels, never scenario state.
+
+    Equal-resistance RMS copper heating and maximum-phase winding rise. No
+    knowledge of cooling faults, future inputs, phase angles or true plant state.
+    Energy is deliberately unavailable: current magnitudes do not establish PF.
+    """
+    if not isinstance(horizon_min,int) or not 1<=horizon_min<=30:
+        raise ValueError('Observation projection supports 1–30 minutes only.')
+    if not phase['valid']:raise ValueError('Qualified phase scope is required.')
+    p=settings;r=observation
+    oil=r['oil_c'];winding=initial_hotspot-oil
+    loss=p['core_loss_w']*r['voltage_pu']**2+p['copper_loss_w']*(phase['thermal_load_percent']/100)**2
+    oil_target=r['ambient_c']+p['rated_oil_rise_c']*(loss/(p['core_loss_w']+p['copper_loss_w']))**.8
+    winding_target=p['rated_winding_rise_c']*(phase['max_load_percent']/100)**1.6
+    points=[];exposure=0.
+    for minute in range(horizon_min+1):
+        points.append({'minute':minute,'temperature_c':oil+winding,'oil_c':oil,
+                       'load_percent':r['load_percent']})
+        if minute<horizon_min:
+            oil+=(oil_target-oil)*(1-math.exp(-1/p['oil_tau_min']))
+            winding+=(winding_target-winding)*(1-math.exp(-1/p['winding_tau_min']))
+            exposure+=max(0,oil+winding-p['temperature_warning'])
+    return {'points':points,'peak_c':max(x['temperature_c'] for x in points),
+            'thermal_exposure_c_min':exposure,'served_kwh':None,
+            'method':'observed_rms_thermal_reference','scenario_inputs_used':False,
+            'uncertainty':'No calibrated interval; future input changes and unmodelled faults are not bounded.'}
 
 
 def digest(value):
@@ -28,49 +58,55 @@ def qualification(s):
     return reasons
 
 
-def projection(s, horizon_min, reduction_pct=0, delay_min=0, parameter_scale=1.):
-    """Independent closed-form forecast from the origin. No future rows are read.
+def projection(s, horizon_min, reduction_pct=0, delay_min=0, parameter_scale=1., scales=None):
+    """Hold current inputs/disturbance; use the same demand action as execution.
 
-    Operating inputs and any thermal/cooling disturbance are held constant.
-    Automatic protection is ignored so that the consequence of inaction is visible.
+    Independent scales are oil rise, winding rise, oil tau, winding tau.
+    Protection is ignored only for this explicitly unprotected consequence study.
     """
-    p=s['settings']; i=deepcopy(s['inputs']); e=core.electrical(s)
-    oil=s['telemetry']['oil_temperature']
-    winding=s['telemetry']['hotspot_temperature']-oil
-    original_load=e['load_pu']; points=[]; energy=0.; exposure=0.
+    p=s['settings']; i=s['inputs']; e=core.electrical(s)
+    changed={**s,'inputs':deepcopy(s['inputs'])};core.reduce_demand(changed,reduction_pct);after=core.electrical(changed)
+    ro,rw,to,tw=scales or (parameter_scale,parameter_scale,parameter_scale,1.)
+    oil=s['telemetry']['oil_temperature'];winding=s['telemetry']['hotspot_temperature']-oil
+    points=[];energy=0.;exposure=0.
     for minute in range(horizon_min+1):
-        load=original_load*(1-reduction_pct/100 if minute>=delay_min else 1)
-        cooling={'normal':1.,'degraded':.6,'failed':.3}[i['cooling']]
-        if e['event']=='cooling':cooling=.3
-        losses=p['core_loss_w']*e['voltage_pu']**2+p['copper_loss_w']*load**2
-        oil_target=i['ambient_c']+p['rated_oil_rise_c']*parameter_scale*(losses/(p['core_loss_w']+p['copper_loss_w']))**.8/cooling
-        if e['event']=='thermal':oil_target+=70
-        winding_target=p['rated_winding_rise_c']*parameter_scale*load**1.6
-        kw=p['rated_kva']*load*e['voltage_pu']*(1-.035*load)
-        points.append({'minute':minute,'temperature_c':oil+winding,'oil_c':oil,'load_percent':load*100,'served_kw':kw})
+        active=after if minute>=delay_min else e
+        load=active['load_pu'];cooling={'normal':1.,'degraded':.6,'failed':.3}[i['cooling']]
+        if e['event'] in ('cooling','combined'):cooling=.3
+        oil_target=i['ambient_c']+p['rated_oil_rise_c']*ro*(active['losses_w']/(p['core_loss_w']+p['copper_loss_w']))**.8/cooling
+        if e['event'] in ('thermal','combined'):oil_target+=70
+        winding_target=p['rated_winding_rise_c']*rw*active['max_phase_load_pu']**1.6
+        kw=math.sqrt(3)*active['secondary_voltage']*active['secondary_current']/1000
+        points.append({'minute':minute,'temperature_c':oil+winding,'oil_c':oil,'load_percent':load*100,'served_kw':kw,
+                       **{k:active[k] for k in core.PHASE_FIELDS}})
         if minute<horizon_min:
-            oil+=(oil_target-oil)*(1-math.exp(-1/(p['oil_tau_min']*parameter_scale)))
-            winding+=(winding_target-winding)*(1-math.exp(-1/p['winding_tau_min']))
-            energy+=kw/60
-            exposure+=max(0,oil+winding-p['temperature_warning'])
+            oil+=(oil_target-oil)*(1-math.exp(-1/(p['oil_tau_min']*to)))
+            winding+=(winding_target-winding)*(1-math.exp(-1/(p['winding_tau_min']*tw)))
+            energy+=kw/60;exposure+=max(0,oil+winding-p['temperature_warning'])
     return {'points':points,'served_kwh':energy,'thermal_exposure_c_min':exposure,
             'peak_c':max(x['temperature_c'] for x in points)}
+
+
+def sensitivity(s,horizon,reduction=0,delay=0):
+    return [projection(s,horizon,reduction,delay,scales=corner)
+            for corner in product((.85,1.15),repeat=4)]
 
 
 def freeze(s, horizon):
     holds=qualification(s)
     if holds:raise ValueError(' '.join(holds))
-    central=projection(s,horizon);low=projection(s,horizon,parameter_scale=.85);high=projection(s,horizon,parameter_scale=1.15)
-    points=[{**p,'lower_c':min(lo['temperature_c'],hi['temperature_c'],p['temperature_c']),
-             'upper_c':max(lo['temperature_c'],hi['temperature_c'],p['temperature_c'])}
-            for p,lo,hi in zip(central['points'],low['points'],high['points'])]
+    central=projection(s,horizon);variants=sensitivity(s,horizon)
+    points=[{**p,'lower_c':min(p['temperature_c'],*(v['points'][n]['temperature_c'] for v in variants)),
+             'upper_c':max(p['temperature_c'],*(v['points'][n]['temperature_c'] for v in variants))}
+            for n,p in enumerate(central['points'])]
     proof={'version':VERSION,'run_id':s['id'],'source':'industrial','origin':s['telemetry']['timestamp'],
            'origin_elapsed_s':s['elapsed_s'],'origin_revision':s['revision'],'horizon_min':horizon,
            'initial_temperature_c':s['telemetry']['transformer_temperature'],'input_signature':core.input_signature(s),
            'settings':deepcopy(s['settings']),'inputs':deepcopy(s['inputs']),'profile':core.summary(s)['profile'],
+           'phase_model':deepcopy(core.PHASE_MODEL),
            'points':points,'target':'transformer_temperature',
            'assumptions':['Inputs and active cooling/heating disturbance held constant; protection ignored.',
-                          'Shaded bounds vary thermal-rise parameters and oil time constant by ±15%; they are not confidence intervals.',
+                          'Bounds test all 16 independent ±15% corners of oil/winding rise and time constants. No probability coverage or unmodelled-fault guarantee.',
                           'Scoring against this simulated plant establishes internal consistency, not field accuracy.']}
     proof['sha256']=digest(proof)
     return proof
@@ -111,39 +147,82 @@ def score(proof, s):
 
 def plan(s, horizon, max_delay):
     holds=qualification(s)
-    if holds:return {'available':False,'holds':holds,'candidates':[],'recommendation':None}
-    baseline=projection(s,horizon);candidates=[];p=s['settings']
-    for reduction in (0,10,20,30,40,50,60,70,80,90,100):
+    context={'version':VERSION,'run_id':s['id'],'origin_revision':s['revision'],'origin_elapsed_s':s['elapsed_s'],
+             'inputs':deepcopy(s['inputs']),'phase_model':deepcopy(core.PHASE_MODEL),
+             'decision_scope':{'method':'scenario_sensitivity_study','declared_cooling_used':True,
+                'observation_benchmark_max_horizon_min':30,'assessment_horizon_validated':False,
+                'calibrated_prediction_interval':False,'physical_action':False,
+                'note':'Declared scenario inputs inform this study. It is not observation-only diagnosis or a guaranteed safe operating window.'}}
+    if holds:return {**context,'available':False,'holds':holds,'candidates':[],'recommendation':None}
+    # A short energy-comparison window cannot conceal an imminent later breach.
+    assessment=max(240,horizon);baseline=projection(s,horizon);candidates=[];p=s['settings']
+    for reduction in range(0,101,10):
         for delay in sorted(set((0,min(5,max_delay),max_delay))):
             if delay>=horizon:continue
             central=projection(s,horizon,reduction,delay)
-            variants=[projection(s,horizon,reduction,delay,scale) for scale in (.85,1.15)]
-            upper=max(central['peak_c'],*(v['peak_c'] for v in variants));reasons=[]
-            post_load=s['telemetry']['loading_percent']*(1-reduction/100)
-            if upper>=p['temperature_critical']:reasons.append('Thermal sensitivity envelope reaches the critical limit.')
-            if post_load>=p['load_critical']:reasons.append('Post-action load remains at or above the critical level.')
+            variants=sensitivity(s,assessment,reduction,delay)
+            check=projection(s,assessment,reduction,delay)
+            upper=max(check['peak_c'],*(v['peak_c'] for v in variants));reasons=[]
+            changed={**s,'inputs':deepcopy(s['inputs'])};outcome=core.reduce_demand(changed,reduction);post_load=outcome['loading_percent']
+            if upper>=p['temperature_critical']:reasons.append('A tested thermal corner reaches the critical limit in the 240-minute assessment.')
+            if outcome['max_phase_loading_percent']>=p['load_warning']:reasons.append('Post-action maximum phase loading does not recover below the warning level.')
+            if outcome['phase_imbalance_percent']>=core.PHASE_CRITICAL:
+                reasons.append('Critical phase imbalance remains after demand reduction; rebalance phases or remove the energised demand.')
             if s['analysis']['status'] in ('CRITICAL','TRIP') and delay*60>=max(0,p['critical_delay_s']-s['critical_s']):
                 reasons.append('The configured protection delay expires before this action.')
             candidates.append({'reduction_pct':reduction,'delay_min':delay,'peak_c':central['peak_c'],
-                'sensitivity_peak_c':upper,'curtailed_kwh':max(0,baseline['served_kwh']-central['served_kwh']),
+                'post_load_percent':post_load,'post_max_phase_loading_percent':outcome['max_phase_loading_percent'],
+                'post_thermal_loading_percent':outcome['thermal_loading_percent'],
+                'post_phase_imbalance_percent':outcome['phase_imbalance_percent'],
+                'post_neutral_current':outcome['neutral_current'],
+                'sensitivity_peak_c':upper,'assessment_horizon_min':assessment,
+                'curtailed_kwh':max(0,baseline['served_kwh']-central['served_kwh']),
                 'served_kwh':central['served_kwh'],'thermal_exposure_c_min':central['thermal_exposure_c_min'],
                 'passes':not reasons,'reasons':reasons,'points':central['points']})
     passing=[c for c in candidates if c['passes']]
     chosen=min(passing,key=lambda c:(c['curtailed_kwh'],c['reduction_pct'],c['delay_min'])) if passing else None
-    return {'available':True,'run_id':s['id'],'origin_revision':s['revision'],'origin_elapsed_s':s['elapsed_s'],
-            'horizon_min':horizon,'max_delay_min':max_delay,'baseline':baseline,'recommendation':chosen,'candidates':candidates,
-            'note':'Selects the least curtailed simulated energy among enumerated candidates. Unity power factor, constant inputs and ±15% parameter sensitivity; no hardware commands or guaranteed safe operating limits.'}
+    return {**context,'available':True,
+            'horizon_min':horizon,'assessment_horizon_min':assessment,'max_delay_min':max_delay,
+            'baseline':baseline,'recommendation':chosen,'candidates':candidates,
+            'note':'Least curtailed energy among enumerated actions; energy horizon is shown separately from the 240-minute thermal check. All 16 independent parameter corners are tested. Phase-current ratios and current disturbance persist; reducing demand is mitigation, not rebalancing or repair. No hardware commands or guaranteed safe limits.'}
+
+
+def closure_check(s,w):
+    """Structured, inspectable acceptance rules; free text is never machine proof."""
+    rules=w.get('acceptance_rules')
+    if not rules:return {'eligible':False,'holds':['Legacy work order has no structured acceptance rules. Create a reviewed follow-up.'],'rules':None}
+    holds=[];started=next((x['elapsed_s'] for x in reversed(w['trail']) if x['status']=='verification_pending'),None)
+    if started is None:return {'eligible':False,'holds':['Record investigation and action before verification.'],'rules':rules}
+    begin=s['elapsed_s']-rules['stable_minutes']*60
+    rows={r['elapsed_s']:r for r in s['history'] if begin<=r['elapsed_s']<=s['elapsed_s']}
+    rows[s['elapsed_s']]={**s['telemetry'],'elapsed_s':s['elapsed_s'],'status':core.summary(s)['analysis']['status'],
+                         'breaker':s['breaker'],'channel_qualified':not qualification(s)}
+    rows=[rows[k] for k in sorted(rows)]
+    if begin<started or not rows or rows[0]['elapsed_s']>begin or any(b['elapsed_s']-a['elapsed_s']>65 for a,b in zip(rows,rows[1:])):
+        holds.append(f"Collect an uninterrupted {rules['stable_minutes']}-minute recovery window after the action.")
+    if any(r.get('status')!='NORMAL' or r.get('breaker')!='CLOSED' or not r.get('channel_qualified') or r.get('max_phase_loading_percent',r.get('loading_percent',999))>rules['max_load_percent'] or r.get('transformer_temperature',999)>rules['max_temperature_c'] for r in rows):
+        holds.append('Recovery observations must remain normal, qualified and within the recorded load/temperature limits.')
+    if qualification(s):holds.extend(qualification(s))
+    if s['fault']:holds.append('An active disturbance remains. Stabilisation does not establish resolution.')
+    if rules['require_cooling_restored'] and s['inputs']['cooling']!='normal':holds.append('Cooling has not been restored; record temporary stabilisation instead of closing.')
+    worst=max(v['peak_c'] for v in sensitivity(s,rules['forecast_horizon_min']))
+    if worst>=s['settings']['temperature_critical']:holds.append('The forward thermal corner check still reaches the critical limit.')
+    return {'eligible':not holds,'holds':list(dict.fromkeys(holds)),'rules':rules,'worst_forecast_c':worst,
+            'checked_at_elapsed_s':s['elapsed_s'],'samples':len(rows)}
 
 
 def investigation(s):
+    from . import twin_observer
+    s=deepcopy(s);core.add_forward_risk(s)
+    observed=twin_observer.assess(twin_observer.from_history(s),s['settings'])
     a=s['analysis']; t=s['telemetry'];codes={x['code'] for x in a['alerts']}
-    if 'sensor_residual' in codes:
+    if 'sensor_residual' in codes or 'channel_disagreement' in observed.get('hypotheses',[]):
         title='Resolve a temperature-channel disagreement';next_check='Compare the suspect channel with an independent temperature reference; check wiring and calibration.'
         alternatives=['Sensor offset or connection problem','Reference-model error or an unobserved local thermal gradient']
-    elif s['inputs']['cooling']!='normal' or core.electrical(s)['event']=='cooling':
-        title='Cooling capability is reduced in this scenario';next_check='Compare temperature rise with loading and inspect the cooling path.'
-        alternatives=['Configured cooling degradation','Load or ambient changes','Temperature measurement error']
-    elif 'loading_percent' in codes:
+    elif 'thermal_deviation' in observed.get('hypotheses',[]):
+        title='Thermal response differs from the reference';next_check='Check cooling and confirm the temperature channels against an independent reference.'
+        alternatives=['Cooling degradation','Reference parameter mismatch','Temperature measurement error']
+    elif codes & {'loading_percent','max_phase_loading_percent'}:
         title='Loading is outside its configured operating band';next_check='Evaluate a demand reduction and record the resulting current and thermal response.'
         alternatives=['Sustained demand increase','Incorrect rating or current measurement']
     elif s['breaker']=='OPEN':
@@ -156,5 +235,6 @@ def investigation(s):
         alternatives=['Unobserved internal faults are not excluded by these channels']
     return {'title':title,'next_check':next_check,'alternatives':alternatives,'alerts':deepcopy(a['alerts']),
             'forecast_holds':qualification(s),'source':'industrial','run_id':s['id'],'timestamp':t['timestamp'],
-            'provenance':'Deterministic evidence rules. Scenario settings are known; this is not a blind root-cause diagnosis.',
+            'observation_assessment':observed,
+            'provenance':'Observation assessment excludes fault labels and cooling settings. Hypotheses need independent confirmation; the industrial operator forecast separately uses its declared inputs.',
             'ai_status':'Laya is optional and is not used to make this protection or planning decision. The recorded five-case evaluation abstained on every case.'}

@@ -19,6 +19,8 @@ from .halo_api import operator, device, WRITE_LOCK, ingest, relay_command
 from .storage import now
 
 router=APIRouter(prefix='/api/halo')
+PHYSICAL_ANALYZER_VERSION='halo-prototype-analysis-2'
+PHYSICAL_RULE_VERSION='bench-limits-1'
 
 
 class AssetProfile(Contract):
@@ -80,6 +82,7 @@ def new_run(payload:NewRun,actor=Depends(operator)):
             return core.summary(prior)
         s=core.create_state(key,payload.settings);s['initial_settings']=payload.settings.model_dump()
         s['profile']=payload.profile.model_dump();s['initial_profile']=payload.profile.model_dump()
+        s['history'][0]['input_context']['profile']=deepcopy(s['profile'])
         s['events'][0]['actor']=actor
         store.put('twin_run',key,s);store.event(key,'twin_created',{'source':'industrial','actor':actor})
         return core.summary(s)
@@ -101,6 +104,8 @@ def apply_action(key:str,payload:Action,actor=Depends(operator)):
         if payload.revision!=s['revision']:raise HTTPException(409,'This run changed in another tab. Refresh and retry.')
         if len(s['commands'])>=5000:raise HTTPException(422,'Export this run and create a new session.')
         first_event=len(s['events']);action=payload.action
+        # All observations made by this atomic command carry its resulting revision.
+        s['revision']+=1
         try:
             if action in ('start','pause'):
                 s['running']=action=='start';core.log(s,action,'Simulation '+('started.' if s['running'] else 'paused.'))
@@ -145,7 +150,8 @@ def apply_action(key:str,payload:Action,actor=Depends(operator)):
                 core.log(s,'reconnected','Operator reclosed the simulated breaker after investigation and recovery checks.')
                 core.evaluate(s,0);core.remember(s)
         except ValueError as error:raise HTTPException(422,str(error))
-        s['revision']+=1;s['commands'][payload.request_id]=digest
+        if action in ('start','pause','settings','profile','clear_fault'):core.remember(s)
+        s['commands'][payload.request_id]=digest
         for event in s['events'][first_event:]:event['actor']=actor
         store.put('twin_run',key,s)
         store.event(key,'twin_action',{'request_id':payload.request_id,'action':action,'revision':s['revision'],
@@ -157,19 +163,28 @@ def prototype_view(rows=None):
     cfg=bench.config();rows=store.frames(cfg.device_id) if rows is None else rows
     snap=bench.snapshot(rows,c=cfg);r=snap['current'] or {}
     complete=all(r.get(k) is not None for k in ('secondary_v','current_a','surface_c'))
-    quality='qualified' if snap['connection']=='live' and complete and snap['quality']['calibration']=='reference recorded' and not r.get('quality_flags') else 'unverified' if snap['connection']=='live' else snap['connection']
+    bound=snap.get('configuration_binding',{}).get('state')=='bound'
+    current_binding=bound and r.get('config_id')==bench.config_identity(cfg)
+    quality='qualified' if snap['connection']=='live' and bound and r.get('hardware_config_status')=='reported_match' and complete and snap['quality']['calibration']=='reference recorded' and not r.get('quality_flags') else 'unverified' if snap['connection']=='live' else snap['connection']
     t=core.Telemetry(timestamp=r.get('timestamp',now()),source='prototype',transformer_id='BENCH-001',
         primary_voltage=r.get('primary_v'),primary_current=r.get('primary_current_a'),secondary_voltage=r.get('secondary_v'),
         secondary_current=r.get('current_a'),loading_percent=snap['metrics']['load_pct'],
         transformer_temperature=r.get('surface_c'),temperature_kind='surface',ambient_temperature=r.get('ambient_c'),quality=quality).model_dump(mode='json')
     limits={'load_warning':90,'load_critical':100,'load_trip':100,
-            'temperature_warning':cfg.surface_limit_c-5 if cfg.surface_limit_c else None,
-            'temperature_critical':cfg.surface_limit_c,'temperature_trip':cfg.surface_limit_c,
-            'nominal_voltage':cfg.nominal_secondary_v,'voltage_warning_pu':.1,'voltage_critical_pu':.2,'voltage_trip_pu':.25}
+            'temperature_warning':snap['limits']['surface_c']-5 if snap['limits']['surface_c'] else None,
+            'temperature_critical':snap['limits']['surface_c'],'temperature_trip':snap['limits']['surface_c'],
+            'nominal_voltage':snap['limits']['nominal_secondary_v'],'voltage_warning_pu':.1,'voltage_critical_pu':.2,'voltage_trip_pu':.25}
+    configs={}
+    def row_load(row):
+        key=row.get('config_id')
+        if key not in configs:configs[key]=bench.recorded_config(row)[0]
+        c=configs[key]
+        return 100*row['current_a']/c.current_limit_a if c and c.current_limit_a and row.get('current_a') is not None else None
     previous=None
     if len(rows)>1:previous={'timestamp':rows[-2]['timestamp'],'transformer_temperature':rows[-2].get('surface_c'),
                               'secondary_voltage':rows[-2].get('secondary_v'),'secondary_current':rows[-2].get('current_a'),
-                              'loading_percent':100*rows[-2]['current_a']/cfg.current_limit_a if cfg.current_limit_a and rows[-2].get('current_a') is not None else None}
+                              'loading_percent':row_load(rows[-2])}
+    if len(rows)>1 and any(rows[-2].get(k)!=r.get(k) for k in ('config_id','calibration_id')):previous=None
     state=store.get('twin_prototype','BENCH-001',{})
     a=core.analyse(t,limits,previous,state.get('historical_damage',0))
     # Keep the channel-specific bench checks: K4, acquisition integrity, resistor mismatch.
@@ -178,7 +193,7 @@ def prototype_view(rows=None):
             a['status']='TRIP'
             if alert['code']=='k4':a['alerts'].append({'code':'k4','severity':'TRIP','parameter':'relay_K4','value':True,'threshold':False,
                 'timestamp':t['timestamp'],'detail':alert['evidence'],'category':'hardware_constraint','action':'Request all loads OFF'})
-    configured=bool(cfg.automatic_cutoff_enabled and os.getenv('HALO_ALLOW_CONTROL')=='1' and not snap['holds'])
+    configured=bool(current_binding and quality=='qualified' and cfg.automatic_cutoff_enabled and os.getenv('HALO_ALLOW_CONTROL')=='1' and not bench.holds(cfg) and not snap['holds'])
     command=store.get('command',state.get('command_id','')) or {}
     if command.get('status')=='pending' and bench.timestamp(command['expires_at'])<=datetime.now(timezone.utc):
         command={**command,'status':'expired'}
@@ -188,49 +203,67 @@ def prototype_view(rows=None):
         a['maintenance'].insert(0,'Investigate the latched trip and independently verify the physical rig before resetting the decision. No automatic reconnection.')
     if command.get('status')=='acknowledged':status='OFF ACKNOWLEDGED · contacts unverified'
     elif state.get('latched') and command.get('status') in ('rejected','expired','cancelled'):status='CUTOFF UNCONFIRMED'
+    a['operating_stress_index']=a.get('operating_stress_index',a['health_index'])
+    if a['status']!='NORMAL' or a['alerts'] or state.get('latched'):
+        a['health_index']=None
+        a['health_evidence']={'state':'review_required',
+            'holds':[alert['code'] for alert in a['alerts']]+(['trip_latch'] if state.get('latched') else []),
+            'calibrated_failure_probability':False,
+            'note':'Condition index withheld while signal, evidence or trip holds remain. The operating stress score does not establish physical asset health.'}
     history=[{'timestamp':row['timestamp'],'transformer_temperature':row.get('surface_c'),
               'secondary_voltage':row.get('secondary_v'),'secondary_current':row.get('current_a'),
-              'loading_percent':100*row['current_a']/cfg.current_limit_a if cfg.current_limit_a and row.get('current_a') is not None else None,
-              'health_index':None,'oil_temperature':None,'source':'prototype'} for row in rows[-240:]]
+              'loading_percent':row_load(row),'config_id':row.get('config_id'),'calibration_id':row.get('calibration_id'),
+              'health_index':None,'oil_temperature':None,'source':'prototype',
+              'component_data_available':False,'analysis':None,
+              'component_data_note':'Historical component analysis was not retained for this measured prototype observation.',
+              **{k:None for k in core.PHASE_FIELDS}} for row in rows[-240:]]
     return {'id':'BENCH-001','source':'prototype','telemetry':t,'analysis':a,'history':history,'history_count':len(rows),
             'events':list(reversed(store.events('BENCH-001',100))),'protection_state':status,
             'breaker':'UNKNOWN · no contact feedback','trip':state.get('trip'),'connection':snap['connection'],
             'holds':snap['holds'],'relay_states':r.get('relay_states'),'command':command,
             'control_enabled':configured,'latched':bool(state.get('latched')),
-            'load_control_available':bool(os.getenv('HALO_ALLOW_CONTROL')=='1' and not snap['holds'] and quality=='qualified' and not state.get('latched') and r.get('relay_output_configured')),
+            'load_control_available':bool(current_binding and os.getenv('HALO_ALLOW_CONTROL')=='1' and not bench.holds(cfg) and not snap['holds'] and quality=='qualified' and not state.get('latched') and r.get('relay_output_configured')),
             'condition':{'conditional_life_years':None,'life_note':'Oil, insulation ageing and remaining life are unavailable on this surface-sensing prototype.'},
             'assumptions':snap['notes']+['Primary current is optional and requires its own sensor, reviewed ADC pin and calibration. Missing measurements stay unavailable.'],
-            'evidence':snap['evidence'],'settings':limits,'inputs':None,'running':False}
+            'evidence':snap['evidence'],'configuration_binding':snap['configuration_binding'],'hardware_configuration':snap['hardware_configuration'],'calibration_id':r.get('calibration_id'),
+            'settings':limits,'inputs':None,'running':False,
+            'analyzer_version':PHYSICAL_ANALYZER_VERSION,'rule_version':PHYSICAL_RULE_VERSION}
 
 
-def process_prototype(frame):
+def process_prototype(frame,*,allow_control=True):
     """Called by authenticated ingestion, independent of the dashboard being open.
 
     Latches once per incident. Only requests ALL OFF; it never automatically recloses.
     The physical source remains live; relay acknowledgments do not establish isolation.
     """
-    with WRITE_LOCK:
+    with WRITE_LOCK, store.transaction():
         cfg=bench.config();rows=store.frames(cfg.device_id)
-        if not rows:return
+        if not rows:return {'status':'unavailable','reason':'No stored acquisition'}
         latest=rows[-1]
-        if (latest['boot_id'],latest['sequence'])!=(frame.boot_id,frame.sequence):return
+        if (latest['device_id'],latest['boot_id'],latest['sequence'])!=(frame.device_id,frame.boot_id,frame.sequence):
+            return {'status':'superseded','reason':'A newer acquisition or different active device is available; live state was not rewound.'}
         state=store.get('twin_prototype','BENCH-001',{})
-        identity=f'{frame.boot_id}:{frame.sequence}'
-        if state.get('last_frame')==identity:return
+        identity=f'{frame.device_id}:{frame.boot_id}:{frame.sequence}'
+        if state.get('last_frame')==identity:return {'status':'complete','duplicate':True}
         v=prototype_view(rows);a=v['analysis'];state['last_frame']=identity
+        provenance={'config_id':frame.config_id,'calibration_id':frame.calibration_id,'frame':identity,
+                    'configuration_binding':v['configuration_binding'],'hardware_configuration':v['hardware_configuration'],
+                    'analyzer_version':PHYSICAL_ANALYZER_VERSION,'rule_version':PHYSICAL_RULE_VERSION}
+        state['provenance']=provenance
         if a['status']=='TRIP' and not state.get('latched'):
             state.update(latched=True,historical_damage=min(100,state.get('historical_damage',0)+2),
                          trip={'timestamp':frame.timestamp.isoformat(),'reason':'Configured physical limit exceeded',
-                               'telemetry':v['telemetry'],'alerts':a['alerts']})
+                               'telemetry':v['telemetry'],'alerts':a['alerts'],'provenance':provenance})
             store.event('BENCH-001','twin_trip_decision',state['trip'])
-            if v['control_enabled'] and frame.relay_output_configured:
+            if allow_control and v['control_enabled'] and frame.relay_output_configured:
                 key='cutoff-'+uuid.uuid4().hex
                 command=relay_command(RelayRequest(states=(False,False,False,False),request_id=key),actor='automatic cutoff · authenticated telemetry')
                 state['command_id']=command['id']
-            else:store.event('BENCH-001','twin_cutoff_withheld',{'reason':'Commissioning, output verification or automatic cutoff enablement is incomplete. No physical command issued.'})
+            else:store.event('BENCH-001','twin_cutoff_withheld',{'reason':'Recovery is analysis-only, or commissioning/output/automatic-cutoff permission is incomplete. No physical command issued.'})
         elif a['status']!=state.get('last_status'):
-            store.event('BENCH-001','twin_condition',{'status':a['status'],'telemetry':v['telemetry'],'health_index':a['health_index']})
+            store.event('BENCH-001','twin_condition',{'status':a['status'],'telemetry':v['telemetry'],'health_index':a['health_index'],'provenance':provenance})
         state['last_status']=a['status'];store.put('twin_prototype','BENCH-001',state)
+        return {'status':'complete','provenance':provenance,'condition':a['status'],'recovery':not allow_control}
 
 
 @router.get('/twin/prototype')
@@ -273,6 +306,9 @@ class PrototypeTelemetry(Contract):
     ambient_source: Literal['not_measured','probe','manual'] = 'not_measured'
     ambient_observed_at: datetime | None = None
     calibration_id: str | None = None
+    config_id: str | None = Field(default=None,pattern=r'^CFG-[a-f0-9]{64}$')
+    hardware_config_status: Literal['reported_match','mismatch','unverified'] = 'unverified'
+    raw: dict[str,float|None] = Field(default_factory=dict,max_length=20)
     relay_states: tuple[bool,bool,bool,bool] = (False,False,False,False)
     relay_output_configured: bool = False
     quality_flags: list[str] = Field(default_factory=list)
@@ -282,7 +318,7 @@ class PrototypeTelemetry(Contract):
 def normalized_ingest(payload:PrototypeTelemetry,actor=Depends(device)):
     try:
         frame=Frame(**payload.model_dump(include={'device_id','boot_id','sequence','uptime_ms','timestamp','ambient_source',
-                         'ambient_observed_at','calibration_id','relay_states','relay_output_configured','quality_flags'}),
+                         'ambient_observed_at','calibration_id','config_id','hardware_config_status','raw','relay_states','relay_output_configured','quality_flags'}),
                     primary_v=payload.primary_voltage,primary_current_a=payload.primary_current,secondary_v=payload.secondary_voltage,
                     current_a=payload.secondary_current,surface_c=payload.transformer_temperature,ambient_c=payload.ambient_temperature)
     except ValueError as error:raise HTTPException(422,str(error))
@@ -292,16 +328,18 @@ def normalized_ingest(payload:PrototypeTelemetry,actor=Depends(device)):
 @router.get('/twin/runs/{key}/report')
 def report(key:str):
     s=run_or_404(key);v=core.summary(s);buf=io.BytesIO()
-    rows=s['history'];metrics={
+    rows=core.history_view(s['history']);metrics={
         'duration_hours':s['elapsed_s']/3600,'mean_sampled_load_percent':sum(r['loading_percent'] for r in rows)/len(rows),
         'peak_load_percent':max(r['loading_percent'] for r in rows),
         'peak_hotspot_c':max(r['hotspot_temperature'] for r in rows),
         'peak_oil_c':max(r['oil_temperature'] for r in rows),'fault_count':s['fault_count'],'trip_count':s['trip_count'],
-        'electrical_events':s['electrical_events'],'health_change':rows[-1]['health_index']-rows[0]['health_index']}
+        'electrical_events':s['electrical_events'],
+        'health_change':rows[-1]['health_index']-rows[0]['health_index']
+            if rows[-1]['health_index'] is not None and rows[0]['health_index'] is not None else None}
     from . import twin_studies as studies
     proofs=[p for p in store.records('twin_proof') if p['run_id']==key]
     plans=[p for p in store.records('twin_plan') if p['run_id']==key]
-    work=[p for p in store.records('twin_work') if p['run_id']==key]
+    work=[{**p,'current_verification':studies.closure_check(s,p)} for p in store.records('twin_work') if p['run_id']==key]
     report={'summary':v,'metrics':metrics,'full_history':rows,'full_events':s['events'],'initial_settings':s['initial_settings'],
             'forecasts':[{'proof':p,'score':studies.score(p,s)} for p in proofs],'interventions':plans,'work_orders':work}
     text=json.dumps(report,indent=2,allow_nan=False)
@@ -309,12 +347,19 @@ def report(key:str):
     esc=html.escape
     body='<h1>NeuraTwin · Transformer run report</h1><p>INDUSTRIAL SIMULATION · '+esc(key)+'</p>'
     body+='<p>All values are model outputs. This report does not establish field accuracy or electrical safety.</p><h2>Operating summary</h2><dl>'
-    for k,value in metrics.items():body+=f'<dt>{esc(k.replace("_"," "))}</dt><dd>{value:.3f}</dd>'
+    for k,value in metrics.items():
+        display=f'{value:.3f}' if value is not None else 'Unavailable while condition evidence is withheld'
+        body+=f'<dt>{esc(k.replace("_"," "))}</dt><dd>{esc(display)}</dd>'
     body+='</dl><h2>Maintenance recommendations</h2><ul>'+''.join('<li>'+esc(x)+'</li>' for x in v['analysis']['maintenance'])+'</ul>'
     body+='<h2>Linked evidence</h2><p>'+str(len(proofs))+' frozen forecasts; '+str(len(plans))+' intervention studies; '+str(len(work))+' maintenance work orders. Complete records and scores are in run.json.</p>'
     for p in proofs:
         scored=studies.score(p,s);m=scored['unchanged_inputs']
         body+='<p>'+esc(p['id'])+': '+esc(scored['verdict'])+'. Comparable samples: '+str(m['count'])+'; model MAE '+esc(str(m['mae_c']))+' °C; persistence MAE '+esc(str(m['persistence_mae_c']))+' °C.</p>'
+    body+='<h2>Maintenance acceptance</h2>'
+    for w in work:
+        check=w['current_verification']
+        body+='<p><strong>'+esc(w['title'])+'</strong> — recorded status: '+esc(w['status'])+'. Current assessment: '+esc('eligible under recorded rules' if check['eligible'] else '; '.join(check['holds']))+'</p>'
+    body+='<p>Historical closure is retained. Current acceptance is assessed separately; no record proves a physical repair.</p>'
     body+='<h2>Assumptions</h2><ul>'+''.join('<li>'+esc(x)+'</li>' for x in v['assumptions'])+'</ul><h2>Event timeline</h2><table><tr><th>Time</th><th>Event</th><th>Finding</th></tr>'
     body+=''.join('<tr><td>'+esc(e['timestamp'])+'</td><td>'+esc(e['kind'])+'</td><td>'+esc(e['detail'])+'</td></tr>' for e in s['events'])+'</table>'
     document='<!doctype html><html lang="en"><meta charset="utf-8"><title>Transformer run report</title><style>body{font:16px/1.6 system-ui;max-width:1050px;margin:40px auto;padding:24px;color:#182c32}h1,h2{line-height:1.2}dt{font-weight:600}dd{margin-bottom:12px}table{border-collapse:collapse;width:100%}td,th{padding:10px;border-bottom:1px solid #ddd;text-align:left}@media print{body{margin:0}}</style>'+body+'</html>'

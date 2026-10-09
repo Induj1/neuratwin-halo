@@ -1,9 +1,11 @@
 """Maintenance is a traceable sequence, not an acknowledgement-to-resolved toggle."""
 import statistics
+import math
 import uuid
 from datetime import datetime, timezone
 from . import halo_store as store
-from .halo_engine import timestamp
+from .halo_engine import timestamp, recorded_config, holds
+from .halo_contracts import Calibration
 from .storage import now
 
 STATES=['open','acknowledged','inspected','action_recorded','verification_pending','resolved']
@@ -49,7 +51,7 @@ def observe(incident,payload,actor):
 
 
 def verify(incident,snap,actor):
-    reason=None; result='insufficient_evidence'; delta=None
+    reason=None; result='insufficient_evidence'; delta=None; comparability=None
     if incident['state'] not in ('verification_pending','resolved'):
         raise ValueError('Record an action and follow-up observation before verification.')
     if snap['asset_id']!=incident['asset_id'] or snap['source']!=incident['source']:
@@ -70,16 +72,61 @@ def verify(incident,snap,actor):
         elif (timestamp(after[-1]['timestamp'])-timestamp(after[0]['timestamp'])).total_seconds()<60:
             reason='Post-action window must span at least 60 seconds.'
         else:
+            comparability=compare_acquisition_provenance(before,after)
             avg=lambda rows,key:statistics.mean(r[key] for r in rows)
-            if abs(avg(before,'current_a')-avg(after,'current_a'))>.05 or abs(avg(before,'ambient_c')-avg(after,'ambient_c'))>1:
+            if not comparability['comparable']:reason=comparability['reason']
+            elif abs(avg(before,'current_a')-avg(after,'current_a'))>.05 or abs(avg(before,'ambient_c')-avg(after,'ambient_c'))>1:
                 reason='Loading or ambient differs; a temperature drop cannot establish maintenance improvement.'
             elif snap['alerts']: reason='Active warnings remain; verified resolution is withheld.'
             else:
                 delta=avg(before,'surface_c')-avg(after,'surface_c')
                 result='improvement' if delta>=2 else 'no_clear_change'
-                reason='Prototype comparison: ≥2 °C surface decrease, current within 0.05 A and ambient within 1 °C. Not proof of restored insulation or asset life.'
+                reason='Same reviewed calibration/configuration and consistent raw evidence: ≥2 °C surface decrease, current within 0.05 A and ambient within 1 °C. A comparable bench response, not proof of restored insulation or asset life.'
     incident['verification']={'result':result,'reason':reason,'surface_decrease_c':delta,'actor':actor,'at':now(),
-                              'evidence_ids':[e['id'] for e in snap['evidence']]}
+                              'evidence_ids':[e['id'] for e in snap['evidence']],'comparability':comparability}
     store.put('incident',incident['id'],incident)
     store.event(incident['asset_id'],'verification',incident['verification'])
     return incident
+
+
+def compare_acquisition_provenance(before,after):
+    """Changing a conversion/limit is never credited as a physical repair."""
+    rows=before+after
+    evidence={'comparable':False,'calibration_id':None,'config_id':None,
+              'before_evidence_ids':[r.get('evidence_id') for r in before],
+              'after_evidence_ids':[r.get('evidence_id') for r in after],
+              'before_samples':len(before),'after_samples':len(after)}
+    def failed(reason):return {**evidence,'reason':reason}
+    ids={r.get('calibration_id') for r in rows}
+    if len(ids)!=1 or None in ids or '' in ids:
+        return failed('Calibration identity changed or is absent across the comparison windows. Recalibration cannot verify a physical repair; acquire comparable before/after evidence under one reviewed calibration.')
+    key=next(iter(ids));evidence['calibration_id']=key
+    record=store.get('calibration',key)
+    try:
+        cal=Calibration.model_validate({k:v for k,v in (record or {}).items() if k in Calibration.model_fields})
+    except ValueError:return failed('Referenced calibration review is unavailable or invalid.')
+    if not all((cal.secondary_v_per_mv,cal.current_a_per_mv,cal.surface_reference,cal.ambient_reference)):
+        return failed('Reviewed reference checks for voltage, current, surface and ambient are required.')
+    configs={r.get('config_id') for r in rows}
+    if len(configs)!=1 or None in configs or '' in configs:
+        return failed('Configuration identity changed or is absent. Legacy/unbound or differently configured windows cannot verify a physical intervention.')
+    evidence['config_id']=next(iter(configs))
+    bound=[recorded_config(r)[0] for r in rows]
+    if any(c is None for c in bound):
+        return failed('Referenced immutable configuration is missing, modified or bound to another device.')
+    if holds(bound[0]):return failed('The bound configuration has incomplete commissioning review; physical repair credit is withheld.')
+    if any(r.get('hardware_config_status')!='reported_match' for r in rows):return failed('Firmware configuration is mismatched or unverified in the comparison window.')
+    if any(not r.get('evidence_id') for r in rows):return failed('Acquisition evidence identities are missing from the comparison window.')
+    for r in rows:
+        raw=r.get('raw') or {}
+        fields=('surface_raw_c','current_rms_mv','secondary_rms_mv')
+        if any(not isinstance(raw.get(k),(int,float)) or isinstance(raw.get(k),bool) or not math.isfinite(raw[k]) for k in fields):
+            return failed('Raw surface, secondary-voltage and current evidence is missing or invalid; physical repair credit is withheld.')
+        reconstructed={'surface_c':raw['surface_raw_c']+cal.surface_offset_c,
+                       'secondary_v':raw['secondary_rms_mv']*cal.secondary_v_per_mv,
+                       'current_a':math.sqrt(max(0,raw['current_rms_mv']**2-cal.current_noise_mv**2))*cal.current_a_per_mv}
+        if any(r.get(k) is None or not math.isclose(r[k],value,rel_tol=1e-6,abs_tol=1e-6) for k,value in reconstructed.items()):
+            return failed('Converted measurements do not match the retained raw evidence and reviewed calibration.')
+    evidence.update(comparable=True,reason='One immutable configuration and reviewed calibration; every retained raw conversion is consistent.',
+        raw_surface_decrease_c=statistics.mean(r['raw']['surface_raw_c'] for r in before)-statistics.mean(r['raw']['surface_raw_c'] for r in after))
+    return evidence

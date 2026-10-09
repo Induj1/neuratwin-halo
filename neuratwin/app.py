@@ -1,5 +1,6 @@
 """Offline-capable prototype API. Bind to loopback for the local demonstration."""
 import csv
+from contextlib import asynccontextmanager
 from functools import lru_cache
 import hashlib
 import io
@@ -17,7 +18,24 @@ from .simulation import SCENARIOS, scenario
 from . import storage
 
 ROOT = Path(__file__).resolve().parents[1]
-app = FastAPI(title='NeuraTwin Halo', version='2.0.0', description='Bench evidence and separate distribution-transformer studies. Physical control is disabled by default and subject to commissioning.')
+
+
+@asynccontextmanager
+async def lifespan(application):
+    from .halo_api import AnalysisRecoveryWorker
+    worker=AnalysisRecoveryWorker()
+    application.state.analysis_worker=worker
+    application.state.acquisition_recovery=worker.state
+    try:
+        await worker.start()
+        yield
+    finally:
+        # Stop taking work immediately, let the current fenced transaction finish,
+        # and wake any polling delay. No serial or hardware operations are started.
+        await worker.stop()
+
+
+app = FastAPI(title='NeuraTwin Halo', version='2.0.0', lifespan=lifespan, description='Bench evidence and separate distribution-transformer studies. Physical control is disabled by default and subject to commissioning.')
 from .halo_api import router as halo_router
 from . import halo_telegram
 app.include_router(halo_router)
@@ -31,6 +49,12 @@ from .twin_api import router as twin_router
 app.include_router(twin_router)
 from .twin_study_api import router as twin_study_router
 app.include_router(twin_study_router)
+from .twin_challenge import router as twin_challenge_router
+app.include_router(twin_challenge_router)
+from .evidence_workflow import router as observation_workflow_router
+app.include_router(observation_workflow_router)
+from .bench_lab import router as bench_lab_router
+app.include_router(bench_lab_router)
 from .auth import router as auth_router
 app.include_router(auth_router)
 from .cloud_middleware import CloudMiddleware
@@ -225,6 +249,7 @@ def operations_console():
     page=page.replace('<!-- HALO_DEMO -->',(ROOT/'web/halo-demo.html').read_text(encoding='utf-8'))
     page=page.replace('<!-- HALO_ARENA -->',(ROOT/'web/halo-arena.html').read_text(encoding='utf-8'))
     page=page.replace('<!-- HALO_OPERATE -->',(ROOT/'web/halo-operate.html').read_text(encoding='utf-8'))
+    page=page.replace('<!-- HALO_LAB -->',(ROOT/'web/halo-lab.html').read_text(encoding='utf-8'))
     return Response(page,media_type='text/html')
 
 

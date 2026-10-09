@@ -1,6 +1,7 @@
 from datetime import datetime, timezone, timedelta
 import importlib.util
 import json
+import os
 from pathlib import Path
 import uuid
 import httpx
@@ -27,8 +28,19 @@ def post(c,path,data):return c.post('/api/halo'+path,json=data,headers=OP)
 def ctx(scenario='normal',**more):return dict(mode='replay',scenario=scenario,cursor=180,**more)
 def frame(**changes):
     t=datetime.now(timezone.utc)-timedelta(seconds=1)
-    return {'device_id':'HALO-ESP32','boot_id':'boot-test','sequence':1,'uptime_ms':1000,'timestamp':t.isoformat(),
+    row={'device_id':'HALO-ESP32','boot_id':'boot-test','sequence':1,'uptime_ms':1000,'timestamp':t.isoformat(),
             'secondary_v':12.,'current_a':.3,'surface_c':30.,'relay_states':[True,False,False,False],'relay_output_configured':True,**changes}
+    # Explicit software fixture provenance; unconfigured/legacy fixtures stay unbound.
+    if 'config_id' not in changes and os.getenv('NEURATWIN_DB'):
+        key=engine.config_identity(engine.config())
+        if store.get('config_version',key):
+            row['config_id']=key
+            if 'hardware_config_status' not in changes:row['hardware_config_status']='reported_match'
+    if 'raw' not in changes:
+        row['raw']={k:v for k,v in {'surface_raw_c':row['surface_c'],
+            'current_rms_mv':row['current_a']*1000 if row['current_a'] is not None else None,
+            'secondary_rms_mv':row['secondary_v']*100 if row['secondary_v'] is not None else None}.items() if v is not None}
+    return row
 def calibration(c):
     assert post(c,'/calibrations',{'id':'CAL-TEST','reviewer':'Tester','note':'Synthetic test fixture only','references':['fixture reference'],
                                  'secondary_v_per_mv':.01,'current_a_per_mv':.001,'surface_reference':'Synthetic reference fixture','ambient_reference':'Synthetic ambient fixture'}).status_code==200

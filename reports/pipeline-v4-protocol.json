@@ -1,0 +1,76 @@
+{
+  "version": "observation-protocol-4",
+  "pipeline_version": "observation-pipeline-4",
+  "evaluation_role": "Fixed-v3-corpus regression manifest exported after completion; not a new preregistration or unseen evaluation.",
+  "prior_protocol": "reports/pipeline-v3-protocol.json",
+  "prior_artifacts": [
+    "reports/pipeline-v3-before-v4-benchmark.json",
+    "reports/pipeline-v3-before-v4-forecasts.csv",
+    "reports/pipeline-v3-before-v4-decisions.csv"
+  ],
+  "seeds_unchanged": true,
+  "thresholds_and_plant_settings_tuned": false,
+  "protocol": {
+    "seeds": [
+      91001,
+      91002,
+      91003,
+      91004,
+      91005,
+      91006,
+      91007,
+      91008,
+      91009,
+      91010,
+      91011,
+      91012,
+      91013,
+      91014,
+      91015,
+      91016,
+      91017,
+      91018,
+      91019,
+      91020,
+      91021,
+      91022,
+      91023,
+      91024
+    ],
+    "training": "First 70 healthy rows; fit eligibility checked before use. Otherwise defaults remain labelled assumptions. CUSUM bias uses the first 60 assumed-healthy minutes; instrument noise uses the first 60 samples. Post-gap windows are never relabelled as healthy commissioning.",
+    "targets": "Separate reported hot-spot and observed-oil targets. True synthetic target errors are also reported for scoring only; no hidden temperatures enter assessment.",
+    "inputs": "Observed voltage, loading, oil, reported hot-spot and ambient only in this fixed corpus. Optional phase observations are covered by separate consistency regressions, not independent phase-plant accuracy claims. No scenario, cooling, fault label, future row or true plant parameter.",
+    "limits": "Two synthetic plant families, overlapping origins and paired seeds; these are not independent field assets. Event onset varies from minute 90 to 115. Primary MAE retains every eligible window including future disturbances. Disjoint timing partitions expose that distinction. Cases withheld for model discrepancy remain in coverage denominators. Combined-case diagnostic completion requires all expected signals concurrently. Development seeds remain 3101\u20133112. Evaluation seeds 91001\u201391024 were already inspected during v3 review: this is a fixed-protocol regression rerun, not fresh unseen evidence. No thresholds, event cases or noise settings were tuned for this correction. Threshold-only uses per-channel observed limits and the same acquisition/domain gates, without residuals, CUSUM or forecasts; without-CUSUM is a separate ablation retaining residuals. No field validation, calibrated confidence or failure probability.",
+    "method_reference": "https://www.itl.nist.gov/div898/handbook/pmc/section3/pmc323.htm"
+  },
+  "comparison_contract": {
+    "expected_signal_set": "Matches the predefined EXPECTED signals while the synthetic disturbance is active; threshold-only cannot diagnose cooling or sensor-bias causes from a temperature limit.",
+    "any_warning": "Any valid observed threshold, acquisition/domain hold, model-disagreement signal, or qualified conditional limit forecast. Insufficient evidence alone is not counted as an alarm. Warning types are retained in the decision CSV.",
+    "validity": "Both assessors use the same available-channel and time/domain gates. Valid breaches on other channels remain visible during missing-data holds. Threshold checks need no residual warm-up and do not inherit model-disagreement holds.",
+    "false_alarm": "Any-warning false alarms are counted separately from historical diagnostic-only false alarms; labelled inactive synthetic minutes define the denominator.",
+    "early_warning": "Only warnings after event onset and before the true synthetic critical crossing qualify. A warning is not proof of correct cause or a safe operating deadline."
+  },
+  "source_sha256": {
+    "neuratwin/twin_core.py": "cf8eaf9fb21db69ea341f84133843ccc5b500b0c5f89968f4f680ebdd4d572bd",
+    "neuratwin/twin_studies.py": "8d151e005933e412290c0c06b4ceb1e71c6f5faab6c202ea3d7b05124a26da33",
+    "neuratwin/twin_observer.py": "deedf09dd6c23398132365b869aa1e9ec63727110f9ba489b2c30975fdf9ef22",
+    "neuratwin/thermal_reference.py": "cd31d218cdbb1317244f49a2a5112da4f1e2bc8f95cd3126358f2b83f3f50eb8",
+    "neuratwin/validation_plant.py": "ef8b3a57c78a06a7a8c2b3b0016b35f0226252f5d8ca9ec0f15de9150092f358",
+    "scripts/benchmark_pipeline.py": "9d58e5536b5810c2e76cb2bba56d3b5d3bbf9670370137a43f071ed4a76e29ab"
+  },
+  "phase_validation": "Optional phase scope is tested by simulator-consistency and invalid-input regressions, not an independent unbalanced-transformer dataset.",
+  "denominators": {
+    "all_cases": 480,
+    "disturbed_cases": 432,
+    "healthy_controls": 48,
+    "critical_events": 82,
+    "labelled_inactive_case_minutes": 20160,
+    "definitions": {
+      "comparators.total": "All paired cases, including healthy controls. Not the event-coverage denominator.",
+      "expected_signal_set_complete": "Count completed among disturbed cases; denominator disturbed_cases.",
+      "events_with_any_warning": "Count warned among disturbed cases; denominator disturbed_cases.",
+      "any_warning_before_critical": "Count warned after onset and before crossing; denominator critical_events.",
+      "false_alarms": "Minutes/episodes in labelled inactive intervals of healthy controls and disturbed cases."
+    }
+  }
+}

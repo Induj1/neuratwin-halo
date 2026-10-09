@@ -1,0 +1,9 @@
+{
+  "copied_valid_report_files": 53,
+  "excluded_empty_stdout_logs": [
+    "pipeline-v6-regression-log.json"
+  ],
+  "reason": "Only the unfinished stdout log of the concurrent fixed-corpus run was excluded. All substantive earlier JSON reports, including v5 fresh and both development experiments, were included. No seeds or scores were changed.",
+  "protocol_sha256": "ec3a29b467366b197fc0588efcf05abf2fc88bb23fa0a05caf52b0928ee3ebf2",
+  "known_seed_set_sha256": "ec24bd46d609032a658ecc878e8b3f422c22a9194f2fa429786036514f7a520f"
+}

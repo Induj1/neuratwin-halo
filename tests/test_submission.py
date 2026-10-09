@@ -35,7 +35,8 @@ def post(c,s,path,**extra):
 
 def test_active_warning_overrides_health_band_and_sensor_advice():
     s=core.create_state('audit');s['inputs']['load_percent']=125;core.evaluate(s,0)
-    assert s['analysis']['health_index']>80
+    assert s['analysis']['health_index'] is None
+    assert s['analysis']['operating_stress_index']>80
     assert 'Healthy' not in core.summary(s)['health_band']
     core.inject(s,'sensor')
     assert 'independent' in ' '.join(s['analysis']['maintenance']).lower()
@@ -113,9 +114,11 @@ def test_workflow_needs_later_qualified_recovery(client):
     s=act(client,s,'inputs',inputs={**s['inputs'],'load_percent':115})
     assert update('closed',2).status_code==423
     s=act(client,s,'inputs',inputs={**s['inputs'],'load_percent':75})
+    assert update('closed',2).status_code==423
+    s=act(client,s,'step',seconds=660)
     closed=update('closed',2)
     assert closed.status_code==200,closed.text
-    assert len(closed.json()['trail'])==3 and closed.json()['trail'][-1]['elapsed_s']==60
+    assert len(closed.json()['trail'])==3 and closed.json()['trail'][-1]['elapsed_s']==720
 
 def reference_csv():return Path('data/synthetic-oil-reference.csv').read_text()
 

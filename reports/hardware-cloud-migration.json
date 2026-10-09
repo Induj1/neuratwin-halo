@@ -1,0 +1,12 @@
+{
+  "status": "passed",
+  "migration": "202610080004_hardware_provenance.sql",
+  "checked_at": "2026-10-08T18:35:34.022472+00:00",
+  "hardware_ingestion": {
+    "ready": true,
+    "durable_analysis": true,
+    "hardware_schema_version": 1
+  },
+  "hardware_control_enabled": false,
+  "scope": "Migration and service-role readiness only; no hardware telemetry injected and no commands issued"
+}

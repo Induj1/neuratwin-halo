@@ -22,6 +22,13 @@ class Telemetry(Contract):
     secondary_voltage: float | None = Field(None, ge=0)
     secondary_current: float | None = Field(None, ge=0)
     loading_percent: float | None = Field(None, ge=0)
+    phase_current_a: float | None = Field(None, ge=0)
+    phase_current_b: float | None = Field(None, ge=0)
+    phase_current_c: float | None = Field(None, ge=0)
+    neutral_current: float | None = Field(None, ge=0)
+    phase_imbalance_percent: float | None = Field(None, ge=0, le=60)
+    max_phase_loading_percent: float | None = Field(None, ge=0)
+    thermal_loading_percent: float | None = Field(None, ge=0)
     transformer_temperature: float | None = None
     ambient_temperature: float | None = None
     oil_temperature: float | None = None
@@ -41,6 +48,8 @@ class Telemetry(Contract):
                 getattr(self, k) is not None for k in ('oil_temperature', 'hotspot_temperature',
                                                        'oil_level_percent', 'oil_condition', 'gas_indicator'))):
             raise ValueError('Prototype surface telemetry cannot assert oil or winding condition.')
+        if self.source == 'prototype' and any(getattr(self, k) is not None for k in PHASE_FIELDS):
+            raise ValueError('The single-phase prototype does not measure industrial phase or neutral channels.')
         return self
 
 
@@ -86,6 +95,7 @@ class Settings(Contract):
 
 class Inputs(Contract):
     load_percent: float = Field(70, ge=0, le=250)
+    phase_imbalance_percent: float = Field(0, ge=0, le=60)
     voltage_pu: float = Field(1, ge=.4, le=1.6)
     ambient_c: float = Field(30, ge=-20, le=60)
     cooling: Literal['normal', 'degraded', 'failed'] = 'normal'
@@ -108,6 +118,21 @@ FAULTS = {'surge', 'storm', 'short_circuit', 'overcurrent', 'overvoltage', 'unde
           'thermal', 'cooling', 'low_oil', 'gas', 'combined', 'sensor'}
 MAINTENANCE = {'inspection', 'fault_investigation', 'cooling_service', 'oil_service',
                'electrical_inspection', 'load_review', 'protection_inspection', 'condition_assessment'}
+PHASE_FIELDS = ('phase_current_a', 'phase_current_b', 'phase_current_c', 'neutral_current',
+                'phase_imbalance_percent', 'max_phase_loading_percent', 'thermal_loading_percent')
+PHASE_WARNING = 10.
+PHASE_CRITICAL = 20.
+PHASE_MODEL = {
+    'version': 'illustrative-fundamental-1', 'current_unit': 'A RMS',
+    'voltage_basis': 'Balanced line-to-line RMS voltage', 'power_factor': 1.,
+    'phase_angles_deg': [0, -120, 120],
+    'imbalance_definition': '100 × maximum absolute phase-current deviation from the mean / mean; zero with no current.',
+    'current_model': 'Mean secondary current × [1+u, 1, 1-u], where u is requested imbalance / 100.',
+    'neutral_model': 'Magnitude of the fundamental 120-degree phase-current vector sum; illustrative neutral-capable secondary.',
+    'thermal_model': 'Mean squared phase loading drives copper loss; maximum phase loading drives the winding hot-spot estimate.',
+    'warning_percent': PHASE_WARNING, 'critical_percent': PHASE_CRITICAL,
+    'limitations': 'Illustrative load imbalance only; balanced voltage and unity power factor assumed. No harmonics, phase-angle imbalance, sequence-network or winding-connection model. No prototype phase measurements.',
+}
 
 
 def stamp(state):
@@ -150,23 +175,43 @@ def electrical(s):
     if event == 'overcurrent': load += .3 * level
     if s['breaker'] == 'OPEN':
         return dict(primary_voltage=0., secondary_voltage=0., primary_current=0., secondary_current=0.,
-                    loading_percent=0., losses_w=0., voltage_pu=pu, event=event, load_pu=0.)
+                    loading_percent=0., losses_w=0., voltage_pu=pu, event=event, load_pu=0.,
+                    max_phase_load_pu=0., thermal_load_pu=0., **{k:0. for k in PHASE_FIELDS})
     vp = p['primary_v'] * pu
     vs = max(0, p['secondary_v'] * pu * (1 - .035 * load))
-    # Constant-current demand: load is per-unit rated secondary current, balanced three-phase RMS.
+    # Constant-current demand: load is mean per-unit rated secondary current.
     si = load * p['rated_kva'] * 1000 / (math.sqrt(3) * p['secondary_v'])
-    losses = p['core_loss_w'] * pu**2 + p['copper_loss_w'] * load**2
+    u = i.get('phase_imbalance_percent', 0.) / 100
+    phase_currents = (si*(1+u), si, si*(1-u))
+    # Mean square of [1+u, 1, 1-u]; default u=0 preserves the balanced plant exactly.
+    thermal_load = load * math.sqrt(1 + 2*u*u/3)
+    maximum_load = load * (1+u)
+    neutral = math.hypot(sum(current*math.cos(angle) for current,angle in zip(phase_currents,(0,-2*math.pi/3,2*math.pi/3))),
+                         sum(current*math.sin(angle) for current,angle in zip(phase_currents,(0,-2*math.pi/3,2*math.pi/3)))) if u else 0.
+    losses = p['core_loss_w'] * pu**2 + p['copper_loss_w'] * load**2 * (1 + 2*u*u/3)
     apparent = math.sqrt(3) * vs * si
     # Unity power factor is an explicit industrial model assumption, never a prototype inference.
     pi = (apparent + losses) / (math.sqrt(3) * max(1, vp))
     return dict(primary_voltage=vp, secondary_voltage=vs, primary_current=pi, secondary_current=si,
-                loading_percent=load*100, losses_w=losses, voltage_pu=pu, event=event, load_pu=load)
+                loading_percent=load*100, losses_w=losses, voltage_pu=pu, event=event, load_pu=load,
+                phase_current_a=phase_currents[0], phase_current_b=phase_currents[1], phase_current_c=phase_currents[2],
+                neutral_current=neutral, phase_imbalance_percent=u*100 if si else 0.,
+                max_phase_loading_percent=maximum_load*100, thermal_loading_percent=thermal_load*100,
+                max_phase_load_pu=maximum_load, thermal_load_pu=thermal_load)
+
+
+def reduce_demand(s, reduction_pct):
+    """Shared intervention semantics: reduce requested demand, not fault current."""
+    if not math.isfinite(reduction_pct) or not 0 <= reduction_pct <= 100:
+        raise ValueError('Demand reduction must be between 0 and 100 percent.')
+    s['inputs']['load_percent'] *= 1 - reduction_pct / 100
+    return electrical(s)
 
 
 def telemetry(s):
     e = electrical(s)
     return Telemetry(timestamp=stamp(s), source='industrial', transformer_id=s['id'],
-                     **{k: e[k] for k in ('primary_voltage', 'secondary_voltage', 'primary_current', 'secondary_current', 'loading_percent')},
+                     **{k: e[k] for k in ('primary_voltage', 'secondary_voltage', 'primary_current', 'secondary_current', 'loading_percent', *PHASE_FIELDS)},
                      transformer_temperature=s['oil_c']+s['winding_rise_c']+(25 if e['event']=='sensor' else 0), temperature_kind='modelled_hotspot',
                      oil_temperature=s['oil_c'], hotspot_temperature=s['oil_c']+s['winding_rise_c'],
                      ambient_temperature=s['inputs']['ambient_c'], oil_level_percent=s['inputs']['oil_level_percent'],
@@ -184,13 +229,22 @@ def analyse(t, limits, previous=None, history_damage=0., oil_condition=None):
         add('data_quality', 'WARNING', 'quality', t['quality'], 'qualified', 'Fresh, calibrated measurements are required.')
         return dict(status='UNKNOWN', health_index=None, stress={}, alerts=alerts, maintenance=['Restore telemetry and verify channel calibration.'], trend_c_min=None)
     load, temp = t['loading_percent'], t['transformer_temperature']
-    for name, value, levels in [('loading_percent', load, ('load_warning','load_critical','load_trip')),
+    maximum_load = t.get('max_phase_loading_percent')
+    imbalance = t.get('phase_imbalance_percent') or 0.
+    load_parameter = 'max_phase_loading_percent' if imbalance else 'loading_percent'
+    protective_load = maximum_load if imbalance and maximum_load is not None else load
+    for name, value, levels in [(load_parameter, protective_load, ('load_warning','load_critical','load_trip')),
                                  ('transformer_temperature', temp, ('temperature_warning','temperature_critical','temperature_trip'))]:
         if value is None: continue
         for severity, key in reversed(list(zip(('WARNING','CRITICAL','TRIP'), levels))):
             if limits.get(key) is not None and value >= limits[key]:
-                add(name, severity, name, value, limits[key], 'Loading exceeds the configured level.' if name=='loading_percent' else 'Thermal threshold exceeded.')
+                add(name, severity, name, value, limits[key], 'Maximum phase loading exceeds the configured level.' if name=='max_phase_loading_percent' else 'Loading exceeds the configured level.' if name=='loading_percent' else 'Thermal threshold exceeded.')
                 break
+    if imbalance >= PHASE_WARNING:
+        severity = 'CRITICAL' if imbalance >= PHASE_CRITICAL else 'WARNING'
+        add('phase_imbalance', severity, 'phase_imbalance_percent', imbalance,
+            PHASE_CRITICAL if severity == 'CRITICAL' else PHASE_WARNING,
+            'Illustrative fundamental current imbalance exceeds the review level; inspect phase allocation. Thresholds are demonstration assumptions.')
     nominal = limits.get('nominal_voltage')
     voltage = t['primary_voltage'] if t['source']=='industrial' else t['secondary_voltage']
     deviation = abs(voltage/nominal-1) if nominal and voltage is not None and not limits.get('isolated') else 0
@@ -222,7 +276,8 @@ def analyse(t, limits, previous=None, history_damage=0., oil_condition=None):
             current=t['secondary_current']; old=previous.get('secondary_current')
             if same_load and current is not None and old and abs(current-old)/old>.25:
                 add('current_residual','WARNING','current_step_pu',abs(current-old)/old,.25,'Current changed without a corresponding loading change.',True)
-    stress={'electrical':min(100,deviation*200), 'loading':min(100,max(0,(load or 0)-80)),
+    # Imbalance contribution is a declared screening heuristic, not a standard or probability.
+    stress={'electrical':min(100,max(deviation*200,imbalance*2)), 'loading':min(100,max(0,(protective_load or 0)-80)),
             'thermal':min(100,max(0,(temp or 0)-(limits.get('temperature_warning') or 110)+20)*2),
             'environmental':min(100,max(0,(t['ambient_temperature'] or 30)-35)*3),
             'historical':min(100,history_damage), 'oil':100-oil_condition if oil_condition is not None else 0}
@@ -235,7 +290,8 @@ def analyse(t, limits, previous=None, history_damage=0., oil_condition=None):
     codes={a['code'] for a in alerts}
     if codes & {'sensor_residual','current_residual'}:
         maintenance.append('Verify the discrepant channel against an independent reference before relying on its forecast; inspect sensor wiring and calibration.')
-    if 'loading_percent' in codes: maintenance.append('Review loading and compare a load-reduction study against the current thermal trajectory.')
+    if codes & {'loading_percent','max_phase_loading_percent'}: maintenance.append('Review loading and compare a load-reduction study against the current thermal trajectory.')
+    if 'phase_imbalance' in codes: maintenance.append('Review and rebalance phase allocation; reducing demand lowers current and heating but does not correct the phase-current ratio.')
     if codes & {'transformer_temperature','thermal_trend'}: maintenance.append('Inspect cooling and compare temperature against an independent reference.')
     if codes & {'voltage','voltage_step'}: maintenance.append('Inspect supply conditions and upstream surge protection.')
     if codes & {'oil_level','gas'} or (oil_condition is not None and oil_condition<70): maintenance.append('Arrange oil-system inspection and laboratory sampling; a model is not a lab result.')
@@ -243,7 +299,7 @@ def analyse(t, limits, previous=None, history_damage=0., oil_condition=None):
     if 'ambient' in codes: maintenance.append('Confirm ambient conditions and review available cooling and loading margin.')
     if alerts and not maintenance: maintenance.append('Investigate the active signal and record an independent check before clearing it.')
     if not maintenance: maintenance=['Continue monitoring; no immediate action indicated by the available evidence.']
-    return dict(status=('NORMAL','WARNING','CRITICAL','TRIP')[severity],health_index=health,stress=stress,
+    return dict(status=('NORMAL','WARNING','CRITICAL','TRIP')[severity],health_index=health,operating_stress_index=health,stress=stress,
                 alerts=alerts,maintenance=maintenance,trend_c_min=slope)
 
 
@@ -264,7 +320,9 @@ def evaluate(s, dt):
             trip(s,'; '.join(x['detail'] for x in causes),t,causes)
             t=telemetry(s)
     else:
-        safe=(t['hotspot_temperature']<p['recovery_temperature'] and s['inputs']['load_percent']<p['load_warning']
+        requested_max=s['inputs']['load_percent']*(1+s['inputs'].get('phase_imbalance_percent',0)/100)
+        safe=(t['hotspot_temperature']<p['recovery_temperature'] and requested_max<p['load_warning']
+              and (s['inputs']['load_percent']==0 or s['inputs'].get('phase_imbalance_percent',0)<PHASE_WARNING)
               and abs(electrical(s)['voltage_pu']-1)<p['voltage_warning_pu'] and not s['fault']
               and s['inputs']['cooling']=='normal' and s['inputs']['oil_level_percent']>=70)
         s['recovery_s']=s['recovery_s']+dt if safe else 0
@@ -276,6 +334,57 @@ def evaluate(s, dt):
         a['maintenance'].insert(0,'Investigate the latched trip and satisfy recovery checks before manual reconnection.'
                                   if not s['investigated'] else 'Review recovery holds before manually reconnecting the simulated transformer.')
     s['analysis']=a;s['telemetry']=t;s['previous_telemetry']=t
+    add_forward_risk(s)
+    if any(x['code']=='forecast_thermal' for x in a['alerts']):
+        if 'forecast_thermal' not in codes and 'forecast_thermal' not in s.get('previous_advisories',[]):
+            log(s,'forecast_warning',next(x['detail'] for x in a['alerts'] if x['code']=='forecast_thermal'),'WARNING')
+        s['previous_advisories']=['forecast_thermal']
+    else:s['previous_advisories']=[]
+
+
+def add_forward_risk(s):
+    """Advisory risk affects advice and closure, never protective trip timing."""
+    a=s['analysis']
+    a['alerts']=[x for x in a['alerts'] if x['code'] not in ('forecast_thermal','cooling_condition')]
+    a['maintenance']=[x for x in a['maintenance'] if not x.startswith(('Act before the projected thermal limit','Cooling remains declared'))]
+    prediction=forecast(s)
+    minutes=prediction.get('minutes_to_critical')
+    a['forward_risk']={'available':prediction.get('available',True),
+                       'minutes_to_critical':minutes,'horizon_min':240,
+                       'requires_action':minutes is not None}
+    if minutes is not None:
+        a['alerts'].append(dict(code='forecast_thermal',severity='WARNING',parameter='minutes_to_critical',
+            value=minutes,threshold=240,timestamp=s['telemetry']['timestamp'],category='conditional_forecast',
+            detail=f'Critical thermal limit projected in {minutes} min under unchanged inputs; review an intervention now.',
+            action='Compare demand reduction and inspect cooling'))
+        if a['status']=='NORMAL':a['status']='WARNING'
+        a['maintenance'].insert(0,f'Act before the projected thermal limit in {minutes} min: compare demand reduction and arrange a cooling check. Reassess when inputs change.')
+    if s['inputs']['cooling']!='normal':
+        a['alerts'].append(dict(code='cooling_condition',severity='WARNING',parameter='declared_cooling',
+            value=s['inputs']['cooling'],threshold='normal',timestamp=s['telemetry']['timestamp'],
+            category='declared_scenario',detail='Cooling is declared impaired in this simulation; reduced loading is mitigation, not repair.',
+            action='Retain a maintenance hold until cooling is restored'))
+        if a['status']=='NORMAL':a['status']='WARNING'
+        note='Cooling remains declared impaired: maintain reduced loading and arrange cooling service. This scenario setting is not an observation-only diagnosis.'
+        if minutes is None:a['maintenance'].insert(0,note)
+        else:a['maintenance'].append(note)
+    if s['inputs']['oil_condition']<70 and a['status']=='NORMAL':
+        a['status']='WARNING'
+        a['alerts'].append(dict(code='oil_condition',severity='WARNING',parameter='oil_condition',
+            value=s['inputs']['oil_condition'],threshold=70,timestamp=s['telemetry']['timestamp'],
+            category='scenario_condition',detail='Oil-condition scenario needs assessment; this is not a measured oil test.',action='Arrange a condition assessment'))
+        a['maintenance'].insert(0,'Arrange a condition assessment for the degraded oil-condition scenario; a real oil test is required to establish physical condition.')
+    if a['status']!='NORMAL':
+        a['maintenance']=[x for x in a['maintenance'] if not x.startswith('Continue monitoring; no immediate action')]
+    # Keep the transparent stress arithmetic, but do not present it as confirmed
+    # asset health when a known condition contradicts that interpretation.
+    raw=a.get('operating_stress_index',a['health_index'])
+    a['operating_stress_index']=raw
+    holds=[x['code'] for x in a['alerts']]
+    a['health_index']=None if holds or s['breaker']=='OPEN' else raw
+    a['health_evidence']={'state':'review_required' if holds or s['breaker']=='OPEN' else 'screening_only',
+        'holds':holds,'calibrated_failure_probability':False,
+        'note':'Condition index withheld while operational or evidence holds remain. The separate stress score describes current readings and recorded history; it does not establish asset health.' if holds or s['breaker']=='OPEN' else 'Illustrative condition screening, not a calibrated failure probability or certification of health.'}
 
 
 def trip(s, reason, before=None, rules=None):
@@ -288,16 +397,34 @@ def trip(s, reason, before=None, rules=None):
 
 
 def remember(s):
-    t=s['telemetry'];s['history'].append({**t,'health_index':s['analysis']['health_index'],
+    t=s['telemetry'];s['history'].append(deepcopy({**t,'health_index':s['analysis']['health_index'],
                                         'breaker':s['breaker'],'elapsed_s':s['elapsed_s'],
                                         'status':s['analysis']['status'],'equivalent_age_hours':s['equivalent_age_hours'],
                                         'input_signature':input_signature(s),
-                                        'channel_qualified':not any(a['code']=='sensor_residual' for a in s['analysis']['alerts'])})
+                                        'channel_qualified':not any(a['code']=='sensor_residual' for a in s['analysis']['alerts']),
+                                        'history_version':'synchronized-twin-1','component_data_available':True,
+                                        'event_cursor':len(s['events']),
+                                        'analysis':s['analysis'],'inputs':s['inputs'],'settings':s['settings'],
+                                        'prediction':forecast(s),
+                                        'input_context':{k:s.get(k) for k in ('id','revision','inputs','settings','breaker','fault','scenario','running','trip','profile')},
+                                        'phase_model':PHASE_MODEL}))
+
+
+def history_view(rows):
+    """Return recorded evidence only; never infer old component scores from today's inputs."""
+    result=deepcopy(rows)
+    for row in result:
+        if row.get('history_version')!='synchronized-twin-1' or not isinstance(row.get('analysis'),dict):
+            row.update(component_data_available=False, analysis=None,
+                       component_data_note='Component analysis and input context were not retained for this legacy observation.')
+    return result
 
 
 def input_signature(s):
     """Operating assumptions, excluding clock speed and accumulated oil ageing."""
     values={k:s['inputs'][k] for k in ('load_percent','voltage_pu','ambient_c','cooling','oil_level_percent')}
+    # Keep signatures of existing balanced proofs compatible with the zero default.
+    if s['inputs'].get('phase_imbalance_percent',0):values['phase_imbalance_percent']=s['inputs']['phase_imbalance_percent']
     effective=electrical(s)
     values.update(breaker=s['breaker'],event=effective['event'],model_settings=s['settings'],
                   effective_load_pu=effective['load_pu'],effective_voltage_pu=effective['voltage_pu'])
@@ -312,7 +439,7 @@ def advance(s, seconds):
         dt=min(5,target-s['elapsed_s']);p=s['settings'];i=s['inputs'];e=electrical(s)
         cooling={'normal':1.,'degraded':.6,'failed':.3}[i['cooling']]
         if s['fault'] and s['fault']['kind'] in ('cooling','combined'):cooling=.3
-        load=e['load_pu'];ratio=e['losses_w']/(p['core_loss_w']+p['copper_loss_w'])
+        load=e['max_phase_load_pu'];ratio=e['losses_w']/(p['core_loss_w']+p['copper_loss_w'])
         oil_target=i['ambient_c']+p['rated_oil_rise_c']*ratio**.8/cooling
         winding_target=p['rated_winding_rise_c']*load**1.6
         if e['event'] in ('thermal','combined') and s['breaker']=='CLOSED': oil_target+=70
@@ -346,7 +473,8 @@ def recovery_holds(s):
     if not s['investigated']:holds.append('Record a fault investigation after the latest trip.')
     if s['fault']:holds.append('Clear the active disturbance.')
     if s['inputs']['cooling']!='normal':holds.append('Restore cooling.')
-    if s['inputs']['load_percent']>=s['settings']['load_warning']:holds.append('Reduce requested loading below the warning threshold.')
+    if s['inputs']['load_percent']*(1+s['inputs'].get('phase_imbalance_percent',0)/100)>=s['settings']['load_warning']:holds.append('Reduce requested maximum phase loading below the warning threshold.')
+    if s['inputs']['load_percent'] and s['inputs'].get('phase_imbalance_percent',0)>=PHASE_WARNING:holds.append('Rebalance requested phase currents below the illustrative warning threshold.')
     if s['recovery_s']<s['settings']['recovery_hold_s']:holds.append('Hold voltage, temperature, oil level and loading inside recovery limits.')
     return holds
 
@@ -365,6 +493,10 @@ def maintain(s, action, note):
 
 
 def summary(s):
+    # Rebuild advice on reads of historical runs without rewriting their evidence.
+    s=deepcopy(s)
+    s['analysis']['alerts']=[a for a in s['analysis']['alerts'] if a['code']!='forecast_thermal']
+    add_forward_risk(s)
     a=s['analysis'];p=s['settings'];t=s['telemetry']
     acceleration=math.exp(min(20,15000/383.15-15000/(t['hotspot_temperature']+273.15)))
     remaining=max(0,p['reference_life_hours']-s['equivalent_age_hours'])
@@ -374,16 +506,16 @@ def summary(s):
     if a['status'] in ('WARNING','CRITICAL','TRIP'):band=a['status'].title()+' · review signals'
     if s['breaker']=='OPEN':band='Trip review required'
     return {**{k:deepcopy(s[k]) for k in ('id','source','revision','started_at','elapsed_s','running','scenario','settings','inputs','fault','breaker','trip','trip_count','fault_count','telemetry','analysis')},
-            'history':s['history'][-240:],'events':s['events'][-100:],'history_count':len(s['history']),
+            'history':history_view(s['history'][-240:]),'events':s['events'][-100:],'history_count':len(s['history']),
             'protection_state':'ISOLATED' if s['breaker']=='OPEN' else 'ARMED' if s['inputs']['protection_enabled'] else 'DISABLED · simulation only',
             'health_band':band,'recovery_holds':recovery_holds(s),
             'profile':deepcopy(s.get('profile',{'name':'Illustrative distribution transformer','basis':'illustrative','reference':'No manufacturer test sheet supplied','reviewer':'Unreviewed'})),
-            'prediction':forecast(s),
+            'prediction':forecast(s),'phase_model':deepcopy(PHASE_MODEL),
             'condition':{'equivalent_age_hours':s['equivalent_age_hours'],'overload_hours':s['overload_hours'],
                          'insulation_consumed_percent':100*s['equivalent_age_hours']/p['reference_life_hours'],
                          'ageing_acceleration':acceleration,'conditional_life_years':remaining/max(1e-9,acceleration)/8760,
                          'life_note':'Hypothetical thermal budget at constant modelled hot-spot; not actual remaining useful life.'},
-            'assumptions':['Balanced three-phase RMS, constant-current load, unity power factor; all ratings are illustrative.',
+            'assumptions':['Balanced three-phase voltage, fundamental RMS constant-current demand, unity power factor; illustrative phase amplitudes [1+u, 1, 1-u], no harmonics. All ratings are illustrative.',
                            'First-order oil and winding thermal states; gas and oil condition are scenario variables, not chemistry or DGA.',
                            'No electromagnetic transient model: surge and short circuit are supervisory RMS scenarios.',
                            'Health is a transparent screening score. Simulated isolation is not a declaration of electrical safety.']}
@@ -399,7 +531,7 @@ def forecast(s):
     if e['event'] in ('cooling','combined'):cooling=.3
     target=i['ambient_c']+p['rated_oil_rise_c']*(e['losses_w']/(p['core_loss_w']+p['copper_loss_w']))**.8/cooling
     if e['event'] in ('thermal','combined'):target+=70
-    winding=p['rated_winding_rise_c']*e['load_pu']**1.6
+    winding=p['rated_winding_rise_c']*e['max_phase_load_pu']**1.6
     crossing=None
     for minute in range(241):
         temp=target+(s['oil_c']-target)*math.exp(-minute/p['oil_tau_min'])+winding+(s['winding_rise_c']-winding)*math.exp(-minute/p['winding_tau_min'])

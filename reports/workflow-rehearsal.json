@@ -1,0 +1,17 @@
+{
+  "status": "pass",
+  "scope": "Isolated synthetic workflow, no private environment loaded",
+  "checks": [
+    "Forward risk overrides the condition index",
+    "Frozen forecast scored on later observations",
+    "Applied load matches the selected proposal",
+    "Continuing cooling defect prevents false closure",
+    "Structured post-repair recovery window passes",
+    "Export retains forecasts, actions, closure evidence and valid manifest",
+    "Blind assessment must precede verified ground-truth reveal",
+    "No hardware commands were created"
+  ],
+  "final_status": "NORMAL",
+  "work_status": "closed",
+  "stable_samples": 11
+}

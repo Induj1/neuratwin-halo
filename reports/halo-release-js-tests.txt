@@ -1,0 +1,292 @@
+TAP version 13
+# Subtest: held health never promotes a reassuring stress value to the dial score
+ok 1 - held health never promotes a reassuring stress value to the dial score
+  ---
+  duration_ms: 0.78
+  type: 'test'
+  ...
+# Subtest: unqualified changing readings cannot produce a thermal recovery explanation
+ok 2 - unqualified changing readings cannot produce a thermal recovery explanation
+  ---
+  duration_ms: 0.2404
+  type: 'test'
+  ...
+# Subtest: industrial components retain valid zero and reported stress values
+ok 3 - industrial components retain valid zero and reported stress values
+  ---
+  duration_ms: 0.6101
+  type: 'test'
+  ...
+# Subtest: prototype never presents oil or accumulated insulation stress as measured
+ok 4 - prototype never presents oil or accumulated insulation stress as measured
+  ---
+  duration_ms: 0.1706
+  type: 'test'
+  ...
+# Subtest: unqualified physical channels do not produce available component bars
+ok 5 - unqualified physical channels do not produce available component bars
+  ---
+  duration_ms: 0.165
+  type: 'test'
+  ...
+# Subtest: component availability requires actual numbers and corresponding observations
+ok 6 - component availability requires actual numbers and corresponding observations
+  ---
+  duration_ms: 0.1794
+  type: 'test'
+  ...
+# Subtest: prototype electrical availability uses secondary channel rather than primary voltage
+ok 7 - prototype electrical availability uses secondary channel rather than primary voltage
+  ---
+  duration_ms: 0.0948
+  type: 'test'
+  ...
+# Subtest: change note excludes same-time and future observations from comparison
+ok 8 - change note excludes same-time and future observations from comparison
+  ---
+  duration_ms: 0.0844
+  type: 'test'
+  ...
+# Subtest: change note distinguishes thermal lag, demand changes, imbalance and missing evidence
+ok 9 - change note distinguishes thermal lag, demand changes, imbalance and missing evidence
+  ---
+  duration_ms: 0.3109
+  type: 'test'
+  ...
+# Subtest: legacy replay does not substitute latest health, settings, inputs, age or forecast
+ok 10 - legacy replay does not substitute latest health, settings, inputs, age or forecast
+  ---
+  duration_ms: 0.4998
+  type: 'test'
+  ...
+# Subtest: recorded replay uses the analysis and configuration retained at that observation
+ok 11 - recorded replay uses the analysis and configuration retained at that observation
+  ---
+  duration_ms: 0.2294
+  type: 'test'
+  ...
+# Subtest: legacy replay cannot inherit a future fault or trip from the live state
+ok 12 - legacy replay cannot inherit a future fault or trip from the live state
+  ---
+  duration_ms: 0.1066
+  type: 'test'
+  ...
+# Subtest: replay slices observations and events causally without mutating the source
+ok 13 - replay slices observations and events causally without mutating the source
+  ---
+  duration_ms: 0.2489
+  type: 'test'
+  ...
+# Subtest: replay does not import later actions at the same simulation instant
+ok 14 - replay does not import later actions at the same simulation instant
+  ---
+  duration_ms: 0.1697
+  type: 'test'
+  ...
+# Subtest: change note uses an earlier identified action while simulation time is paused
+ok 15 - change note uses an earlier identified action while simulation time is paused
+  ---
+  duration_ms: 0.0941
+  type: 'test'
+  ...
+# Subtest: zero-reduction study has one unchanged-input trajectory and no intervention affordance
+ok 16 - zero-reduction study has one unchanged-input trajectory and no intervention affordance
+  ---
+  duration_ms: 0.1477
+  type: 'test'
+  ...
+# Subtest: real reduction preserves two distinct trajectories and the actual reduction label
+ok 17 - real reduction preserves two distinct trajectories and the actual reduction label
+  ---
+  duration_ms: 0.0641
+  type: 'test'
+  ...
+# Subtest: a held study cannot expose a stale recommendation as an actionable trajectory
+ok 18 - a held study cannot expose a stale recommendation as an actionable trajectory
+  ---
+  duration_ms: 0.0568
+  type: 'test'
+  ...
+# Subtest: the prominent temperature uses its threshold breach even when combined health appears normal
+ok 19 - the prominent temperature uses its threshold breach even when combined health appears normal
+  ---
+  duration_ms: 0.0794
+  type: 'test'
+  ...
+# Subtest: surface or unqualified channels are not promoted to modelled hot-spot observations
+ok 20 - surface or unqualified channels are not promoted to modelled hot-spot observations
+  ---
+  duration_ms: 0.0888
+  type: 'test'
+  ...
+# Subtest: guided review remains on its selected simulation source while the revision advances
+ok 21 - guided review remains on its selected simulation source while the revision advances
+  ---
+  duration_ms: 0.0993
+  type: 'test'
+  ...
+# Subtest: physical, missing and replay sources cannot launch the simulation review flow
+ok 22 - physical, missing and replay sources cannot launch the simulation review flow
+  ---
+  duration_ms: 0.0776
+  type: 'test'
+  ...
+# Subtest: lost write response retries the same intent and preserves entered metadata
+ok 23 - lost write response retries the same intent and preserves entered metadata
+  ---
+  duration_ms: 7.0251
+  type: 'test'
+  ...
+# Subtest: identical intent survives panel remount while an edited payload gets a new identity
+ok 24 - identical intent survives panel remount while an edited payload gets a new identity
+  ---
+  duration_ms: 1.3631
+  type: 'test'
+  ...
+# Subtest: busy controls suppress duplicate submissions and restore their previous disabled state
+ok 25 - busy controls suppress duplicate submissions and restore their previous disabled state
+  ---
+  duration_ms: 1.7985
+  type: 'test'
+  ...
+# Subtest: failed submission restores controls without enabling an originally blocked action
+ok 26 - failed submission restores controls without enabling an originally blocked action
+  ---
+  duration_ms: 0.9739
+  type: 'test'
+  ...
+# Subtest: partial follow-up resumes its created recording and completed assessment with a stable link identity
+ok 27 - partial follow-up resumes its created recording and completed assessment with a stable link identity
+  ---
+  duration_ms: 16.0237
+  type: 'test'
+  ...
+# Subtest: lost import response reuses the import request ID instead of creating a second recording
+ok 28 - lost import response reuses the import request ID instead of creating a second recording
+  ---
+  duration_ms: 1.6408
+  type: 'test'
+  ...
+# Subtest: follow-up choices exclude linked, concealed, unassessed and mismatched records
+ok 29 - follow-up choices exclude linked, concealed, unassessed and mismatched records
+  ---
+  duration_ms: 0.9237
+  type: 'test'
+  ...
+# Subtest: late assessment response cannot restore a recording after navigation
+ok 30 - late assessment response cannot restore a recording after navigation
+  ---
+  duration_ms: 0.8182
+  type: 'test'
+  ...
+# Subtest: navigation during follow-up import stops assessment and link continuations
+ok 31 - navigation during follow-up import stops assessment and link continuations
+  ---
+  duration_ms: 1.3963
+  type: 'test'
+  ...
+# Subtest: navigation during reveal prevents revealing additional linked records or selecting the old case
+ok 32 - navigation during reveal prevents revealing additional linked records or selecting the old case
+  ---
+  duration_ms: 1.0014
+  type: 'test'
+  ...
+# Subtest: evidence download preserves exact server bytes, including integer-valued floats, through the auth helper
+ok 33 - evidence download preserves exact server bytes, including integer-valued floats, through the auth helper
+  ---
+  duration_ms: 1.9289
+  type: 'test'
+  ...
+# Subtest: export refusal stays inline and does not create a download
+ok 34 - export refusal stays inline and does not create a download
+  ---
+  duration_ms: 0.7535
+  type: 'test'
+  ...
+# Subtest: navigation during authenticated export does not download stale evidence
+ok 35 - navigation during authenticated export does not download stale evidence
+  ---
+  duration_ms: 0.7007
+  type: 'test'
+  ...
+# Subtest: public raw-download helper handles a case endpoint without parsing its frozen assessment
+ok 36 - public raw-download helper handles a case endpoint without parsing its frozen assessment
+  ---
+  duration_ms: 0.7119
+  type: 'test'
+  ...
+# Subtest: 50 Hz sinusoid uses RMS-to-peak conversion and a 20 ms period
+ok 37 - 50 Hz sinusoid uses RMS-to-peak conversion and a 20 ms period
+  ---
+  duration_ms: 1.1134
+  type: 'test'
+  ...
+# Subtest: balanced three-phase currents cancel at every sampled point
+ok 38 - balanced three-phase currents cancel at every sampled point
+  ---
+  duration_ms: 0.3691
+  type: 'test'
+  ...
+# Subtest: unbalanced neutral is a phasor sum, not a sum of RMS magnitudes
+ok 39 - unbalanced neutral is a phasor sum, not a sum of RMS magnitudes
+  ---
+  duration_ms: 0.3654
+  type: 'test'
+  ...
+# Subtest: zero is valid data; missing, negative, strings and nonfinite values are unavailable
+ok 40 - zero is valid data; missing, negative, strings and nonfinite values are unavailable
+  ---
+  duration_ms: 0.305
+  type: 'test'
+  ...
+# Subtest: prototype does not manufacture three-phase channels or missing primary current
+ok 41 - prototype does not manufacture three-phase channels or missing primary current
+  ---
+  duration_ms: 1.1373
+  type: 'test'
+  ...
+# Subtest: industrial phase data is required; scalar current and line voltage do not create phase traces
+ok 42 - industrial phase data is required; scalar current and line voltage do not create phase traces
+  ---
+  duration_ms: 0.1835
+  type: 'test'
+  ...
+# Subtest: neutral trace requires supplied, consistent neutral RMS and complete phase currents
+ok 43 - neutral trace requires supplied, consistent neutral RMS and complete phase currents
+  ---
+  duration_ms: 0.2059
+  type: 'test'
+  ...
+# Subtest: axis stays finite for missing and zero channels and contains nonzero peaks
+ok 44 - axis stays finite for missing and zero channels and contains nonzero peaks
+  ---
+  duration_ms: 0.1324
+  type: 'test'
+  ...
+# Subtest: industrial current scale holds its rated reference as loading changes
+ok 45 - industrial current scale holds its rated reference as loading changes
+  ---
+  duration_ms: 0.3689
+  type: 'test'
+  ...
+# Subtest: current scale expands only when an available peak exceeds the rated reference
+ok 46 - current scale expands only when an available peak exceeds the rated reference
+  ---
+  duration_ms: 0.302
+  type: 'test'
+  ...
+# Subtest: prototype, voltage and missing-rating views retain explicit auto scaling
+ok 47 - prototype, voltage and missing-rating views retain explicit auto scaling
+  ---
+  duration_ms: 0.1769
+  type: 'test'
+  ...
+1..47
+# tests 47
+# suites 0
+# pass 47
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 119.4304

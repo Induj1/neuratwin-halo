@@ -1,0 +1,32 @@
+{
+  "review_date": "2026-10-08",
+  "method": "Public source and documentation inspection only; no third-party code executed and no tests independently rerun.",
+  "sources_location": "C:/Users/induj/Downloads/powernext/tmp/competitor-research-2026-10-08",
+  "repositories": [
+    {"repo":"Amitosh07/Transformer-digital-twin","branch":"main","commit":"cee0b7b0c2259ce750f0aa1c40ef370a4193fc41","scope":"README-level main branch"},
+    {"repo":"Amitosh07/Transformer-digital-twin","branch":"develop","commit":"7ca8667d503d636051e01c689c0cce8921a07dc6","scope":"Backend, simulator, causal feature and thermal modules; implementation phase plans"},
+    {"repo":"Sukhleen321/Transformer-DigitalTwin","branch":"main","commit":"b3cdc4e535a0fd6af81628a3f483094bd08f69c3","scope":"Overlapping project family, backend and locally simulated frontend"}
+  ],
+  "participation": "Same collaborating project family inferred from repository references and team component. Public PowerNext/CPRI mentions support relevance, but no official finalist registration or track mapping verified.",
+  "strengths": [
+    {"area":"Data contract","status":"source implemented","paths":["backend/app/schemas/telemetry.py","ml/adaptors/data_adapter.py"],"finding":"Nullable per-phase voltage/current, neutral current, thermal/protection/power fields; CSV adapter isolates raw names, keeps outer-aligned missing observations, explicit duplicate policies by field semantics."},
+    {"area":"Alert lifecycle","status":"source implemented","paths":["backend/app/services/alert_service.py","backend/app/repositories/alert_repo.py"],"finding":"Per-asset/per-type active episodes, timestamp ordering, severity escalation, acknowledgement and configurable consecutive-clear resolution; invalid inference does not automatically clear analytical alerts."},
+    {"area":"Maintenance lifecycle","status":"source implemented","paths":["backend/app/services/maintenance_service.py"],"finding":"PLAN/URGENT records linked to analytics, deduplicated by open priority and reason set; completion state persisted."},
+    {"area":"Read scalability","status":"source implemented; timings author reported","paths":["backend/app/repositories/telemetry_repo.py","backend/docs/performance.md"],"finding":"Time-window queries, pagination, bucket aggregation, 10k-row ingestion profiling and million-row read profiling."},
+    {"area":"Verification","status":"author reported, not independently executed","paths":["backend/docs/phase9-acceptance.md","backend/docs/demo-verification.json"],"finding":"722 backend tests reported, no skips; actual PostgreSQL and Mosquitto claimed; fresh-stack/non-root runtime/reset/reseed verification described."},
+    {"area":"UI explanation","status":"source implemented, local simulation","repository":"Sukhleen321/Transformer-DigitalTwin","paths":["frontend/src/components/InteractiveTwinStudio.tsx","frontend/src/components/HealthIndexDial.tsx","frontend/src/components/ThermalResidualChart.tsx","frontend/src/components/ThreePhaseWaveformCanvas.tsx"],"finding":"Direct load/ambient controls and neighboring waveform, thermal residual, component health and recommended-action panels make cause/effect easy to narrate."},
+    {"area":"Thermal baseline","status":"source implemented, not backend-integrated by default","paths":["ml/thermal/thermal_twin.py"],"finding":"Per-asset causal recurrence, actual elapsed-time response, required explicit coefficients, missing residual for missing observations, duplicate identity validation."}
+  ],
+  "limitations": [
+    {"paths":["backend/app/core/config.py","backend/app/ml_client/stub_client.py"],"finding":"Default ML backend is stub. Scores primarily respond to protection flags; thermal outputs remain null. Thermal module presence does not prove deployed integration."},
+    {"repository":"Sukhleen321/Transformer-DigitalTwin","paths":["frontend/src/data/scadaSimulation.ts","frontend/src/components/InteractiveTwinStudio.tsx"],"finding":"Frontend imports local scenario engine. Confidence 0.92, latency 11.4 ms and zero-leakage statement are literals; scenario labels directly drive diagnosis; historical curves are generated."},
+    {"paths":["backend/docs/known-limitations.md"],"finding":"General APIs lack auth; MQTT queue and replay jobs are not durable; units unverified; latest source/timestamp duplicates need payload-conflict policy rather than blind dedupe."},
+    {"paths":["ml/adaptors/data_adapter.py","ml/features/feature_engineering.py","docs/implementation/AUDIT_PLAN.md"],"finding":"Future remediation plan acknowledges unsafe historical output writes from tests, binary WTI misinterpretation, incomplete-phase calculations and unknown source time/unit semantics; plans are not proof of completed remediation."},
+    {"paths":["docs/implementation/AUDIT_PLAN.md","docs/implementation/06_EVALUATION.md"],"finding":"Anomaly, health, forecasting, calibrated evaluation and unified model integration are specified as implementation phases, not established analytical results in inspected ML source."}
+  ],
+  "halo_comparison": {
+    "already_present_do_not_rebuild": ["Authentication/authorization", "SQLite and Supabase persistence", "Idempotent device frame handling and lost-ack recovery", "Calibration and provenance fields", "Thermal modelling and forecast validation", "Evidence-linked maintenance and closure checks in existing modes", "Source-separated industrial and bench modes", "CSV import and frozen prediction scoring"],
+    "targeted_gaps": ["Unified imported-case-to-maintenance evidence journey", "Immutable config/calibration/firmware/schema binding per frame and assessment", "Measured query/ingestion performance and bounded history interfaces", "Explicit episode lifecycle across imported observations", "Broader phase-aware import semantics without fabricating unmeasured channels", "Visual cause/effect and synchronized evidence inspection"],
+    "ui_status": "Health dial/contribution/3D links, mode-honest waveforms, unified thermal-state display, inline intervention preview/apply and synchronized alert replay are IN PROGRESS under a later user request. Completion requires integration tests and browser verification."
+  }
+}

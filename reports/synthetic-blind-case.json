@@ -1,0 +1,3229 @@
+{
+  "id": "BLIND-b1ac3bd9-b054-4f87-9bd2-202854d7683b",
+  "source": "independent synthetic challenge",
+  "name": "Unseen synthetic case",
+  "temperature_mode": "oil_and_hotspot",
+  "commitment": "6540d1bac6ccd6d2b5f34260ad135b62b5d230db71543456eec0d41dfa693794",
+  "origin_min": 120.0,
+  "horizon_min": 30,
+  "observations": [
+    {
+      "elapsed_s": 5400,
+      "oil_c": 45.921617359025156,
+      "hotspot_c": 62.098768636245374,
+      "ambient_c": 30.34998072888245,
+      "load_percent": 84.16175350540323,
+      "voltage_pu": 1.0
+    },
+    {
+      "elapsed_s": 5460,
+      "oil_c": 46.302704352412114,
+      "hotspot_c": 63.362611870707916,
+      "ambient_c": 30.368511219069852,
+      "load_percent": 84.355507427066,
+      "voltage_pu": 1.0
+    },
+    {
+      "elapsed_s": 5520,
+      "oil_c": 47.2031822053211,
+      "hotspot_c": 62.712315474877414,
+      "ambient_c": 30.3868048601091,
+      "load_percent": 84.55212469942808,
+      "voltage_pu": 1.0
+    },
+    {
+      "elapsed_s": 5580,
+      "oil_c": 47.127497486844995,
+      "hotspot_c": 62.914969373969875,
+      "ambient_c": 30.404859822651332,
+      "load_percent": 84.75073179154751,
+      "voltage_pu": 1.0
+    },
+    {
+      "elapsed_s": 5640,
+      "oil_c": 46.397097918263135,
+      "hotspot_c": 61.59610909914354,
+      "ambient_c": 30.42267430121534,
+      "load_percent": 84.95044633211391,
+      "voltage_pu": 1.0
+    },
+    {
+      "elapsed_s": 5700,
+      "oil_c": 47.13342612121188,
+      "hotspot_c": 63.1385636412828,
+      "ambient_c": 30.44024651436812,
+      "load_percent": 85.15038102964652,
+      "voltage_pu": 1.0
+    },
+    {
+      "elapsed_s": 5760,
+      "oil_c": 46.25189171436095,
+      "hotspot_c": 63.25866760373811,
+      "ambient_c": 30.457574704902996,
+      "load_percent": 85.34964761455149,
+      "voltage_pu": 1.0
+    },
+    {
+      "elapsed_s": 5820,
+      "oil_c": 46.728281110753464,
+      "hotspot_c": 63.71619395430189,
+      "ambient_c": 30.47465714001535,
+      "load_percent": 85.5473607855248,
+      "voltage_pu": 1.0
+    },
+    {
+      "elapsed_s": 5880,
+      "oil_c": 47.44829510752255,
+      "hotspot_c": 63.46710976742851,
+      "ambient_c": 30.49149211147591,
+      "load_percent": 85.74264214276774,
+      "voltage_pu": 1.0
+    },
+    {
+      "elapsed_s": 5940,
+      "oil_c": 46.87272217577473,
+      "hotspot_c": 63.333107535500844,
+      "ambient_c": 30.508077935801563,
+      "load_percent": 85.93462409054014,
+      "voltage_pu": 1.0
+    },
+    {
+      "elapsed_s": 6000,
+      "oil_c": 46.91195216601475,
+      "hotspot_c": 64.18487579343872,
+      "ambient_c": 30.52441295442369,
+      "load_percent": 86.12245369171366,
+      "voltage_pu": 1.0
+    },
+    {
+      "elapsed_s": 6060,
+      "oil_c": 46.68964829284549,
+      "hotspot_c": 64.11833575240844,
+      "ambient_c": 30.540495533854045,
+      "load_percent": 86.30529645719959,
+      "voltage_pu": 1.0
+    },
+    {
+      "elapsed_s": 6120,
+      "oil_c": 47.2894904252834,
+      "hotspot_c": 63.89999731472143,
+      "ambient_c": 30.556324065848088,
+      "load_percent": 86.48234005341583,
+      "voltage_pu": 1.0
+    },
+    {
+      "elapsed_s": 6180,
+      "oil_c": 47.353689324090496,
+      "hotspot_c": 65.34805748941929,
+      "ambient_c": 30.57189696756581,
+      "load_percent": 86.65279791132134,
+      "voltage_pu": 1.0
+    },
+    {
+      "elapsed_s": 6240,
+      "oil_c": 48.042388723337,
+      "hotspot_c": 65.3158791398129,
+      "ambient_c": 30.587212681730016,
+      "load_percent": 86.81591272098407,
+      "voltage_pu": 1.0
+    },
+    {
+      "elapsed_s": 6300,
+      "oil_c": 47.38043419866685,
+      "hotspot_c": 65.93723093921224,
+      "ambient_c": 30.60226967678205,
+      "load_percent": 86.97095979615636,
+      "voltage_pu": 1.0
+    },
+    {
+      "elapsed_s": 6360,
+      "oil_c": 47.94245802520749,
+      "hotspot_c": 64.58746030545339,
+      "ambient_c": 30.617066447034958,
+      "load_percent": 87.11725029391006,
+      "voltage_pu": 1.0
+    },
+    {
+      "elapsed_s": 6420,
+      "oil_c": 48.49103645812752,
+      "hotspot_c": 65.13569556925434,
+      "ambient_c": 30.631601512824044,
+      "load_percent": 87.25413427502689,
+      "voltage_pu": 1.0
+    },
+    {
+      "elapsed_s": 6480,
+      "oil_c": 47.880374120813485,
+      "hotspot_c": 67.34277410761386,
+      "ambient_c": 30.645873420654844,
+      "load_percent": 87.38100359154745,
+      "voltage_pu": 1.0
+    },
+    {
+      "elapsed_s": 6540,
+      "oil_c": 47.827005253287886,
+      "hotspot_c": 65.20272839493781,
+      "ambient_c": 30.659880743348463,
+      "load_percent": 87.49729458865026,
+      "voltage_pu": 1.0
+    },
+    {
+      "elapsed_s": 6600,
+      "oil_c": 48.62209515208815,
+      "hotspot_c": 65.99995227326598,
+      "ambient_c": 30.673622080184305,
+      "load_percent": 87.60249060885641,
+      "voltage_pu": 1.0
+    },
+    {
+      "elapsed_s": 6660,
+      "oil_c": 48.739304149068445,
+      "hotspot_c": 65.82707616557799,
+      "ambient_c": 30.687096057040144,
+      "load_percent": 87.69612428743488,
+      "voltage_pu": 1.0
+    },
+    {
+      "elapsed_s": 6720,
+      "oil_c": 49.49865354920611,
+      "hotspot_c": 67.0363587741024,
+      "ambient_c": 30.700301326529516,
+      "load_percent": 87.77777962880975,
+      "voltage_pu": 1.0
+    },
+    {
+      "elapsed_s": 6780,
+      "oil_c": 48.27756574883499,
+      "hotspot_c": 66.93875512168911,
+      "ambient_c": 30.713236568136477,
+      "load_percent": 87.84709385474487,
+      "voltage_pu": 1.0
+    },
+    {
+      "elapsed_s": 6840,
+      "oil_c": 49.57753970802883,
+      "hotspot_c": 65.74788208617436,
+      "ambient_c": 30.725900488347648,
+      "load_percent": 87.90375901609445,
+      "voltage_pu": 1.0
+    },
+    {
+      "elapsed_s": 6900,
+      "oil_c": 48.38435475645606,
+      "hotspot_c": 69.42261378611451,
+      "ambient_c": 30.738291820781562,
+      "load_percent": 114.0,
+      "voltage_pu": 1.0
+    },
+    {
+      "elapsed_s": 6960,
+      "oil_c": 50.259195849103925,
+      "hotspot_c": 68.9858706222228,
+      "ambient_c": 30.7504093263153,
+      "load_percent": 114.0,
+      "voltage_pu": 1.0
+    },
+    {
+      "elapsed_s": 7020,
+      "oil_c": 49.574092433375114,
+      "hotspot_c": 72.49010018347118,
+      "ambient_c": 30.762251793208407,
+      "load_percent": 114.0,
+      "voltage_pu": 1.0
+    },
+    {
+      "elapsed_s": 7080,
+      "oil_c": 49.93289373311007,
+      "hotspot_c": 73.37479978671777,
+      "ambient_c": 30.77381803722406,
+      "load_percent": 114.0,
+      "voltage_pu": 1.0
+    },
+    {
+      "elapsed_s": 7140,
+      "oil_c": 51.09723930515148,
+      "hotspot_c": 74.96358615605892,
+      "ambient_c": 30.7851069017475,
+      "load_percent": 114.0,
+      "voltage_pu": 1.0
+    },
+    {
+      "elapsed_s": 7200,
+      "oil_c": 50.51566178755384,
+      "hotspot_c": 76.94564895998633,
+      "ambient_c": 30.796117257901678,
+      "load_percent": 114.0,
+      "voltage_pu": 1.0
+    }
+  ],
+  "assessment": {
+    "result": {
+      "available": true,
+      "version": "observation-pipeline-3",
+      "hypothesis": "overload",
+      "hypotheses": [
+        "overload"
+      ],
+      "capability": {
+        "temperature_mode": "oil_and_hotspot",
+        "forecast_target": "hotspot_c",
+        "hotspot_basis": "reported_reference_channel",
+        "channel_agreement_tested": true,
+        "hotspot_deadline_supported": true,
+        "note": "Reported hot-spot is checked against oil and the winding reference."
+      },
+      "validity": {
+        "forecast_allowed": true,
+        "holds": []
+      },
+      "residual": {
+        "hypothesis": "no_anomaly_established",
+        "hypotheses": [],
+        "oil_residual_c": -0.5495843733726625,
+        "noise_c": 0.4779879513293548,
+        "drift": {
+          "available": true,
+          "alarm": false,
+          "cusum_c": 0.2926515859716853,
+          "threshold_c": 3.0,
+          "allowance_c": 0.2389939756646774,
+          "reference_bias_c": -0.38099436515448853,
+          "reference_end_s": 3600,
+          "trace": [
+            {
+              "elapsed_s": 3900,
+              "innovation_c": 0.8794535952542788,
+              "cusum_c": 0.6404596195896014
+            },
+            {
+              "elapsed_s": 4200,
+              "innovation_c": -1.3252841101961692,
+              "cusum_c": 0.0
+            },
+            {
+              "elapsed_s": 4500,
+              "innovation_c": 0.1871556108765618,
+              "cusum_c": 0.0
+            },
+            {
+              "elapsed_s": 4800,
+              "innovation_c": 0.11635231911800342,
+              "cusum_c": 0.0
+            },
+            {
+              "elapsed_s": 5100,
+              "innovation_c": -0.8585143266339343,
+              "cusum_c": 0.0
+            },
+            {
+              "elapsed_s": 5400,
+              "innovation_c": 0.5672718123411926,
+              "cusum_c": 0.3282778366765152
+            },
+            {
+              "elapsed_s": 5700,
+              "innovation_c": 0.437945495565262,
+              "cusum_c": 0.5272293565770999
+            },
+            {
+              "elapsed_s": 6000,
+              "innovation_c": -0.9771734066320306,
+              "cusum_c": 0.0
+            },
+            {
+              "elapsed_s": 6300,
+              "innovation_c": -0.32580126897869793,
+              "cusum_c": 0.0
+            },
+            {
+              "elapsed_s": 6600,
+              "innovation_c": 0.4416568106082324,
+              "cusum_c": 0.20266283494355503
+            },
+            {
+              "elapsed_s": 6900,
+              "innovation_c": -1.0047030093652836,
+              "cusum_c": 0.0
+            },
+            {
+              "elapsed_s": 7200,
+              "innovation_c": 0.5316455616363627,
+              "cusum_c": 0.2926515859716853
+            }
+          ],
+          "method": "One-sided five-minute CUSUM; healthy-prefix assumption; screening, not a cooling-fault diagnosis."
+        }
+      },
+      "analysis": {
+        "status": "WARNING",
+        "health_index": 93.2,
+        "operating_stress_index": 93.2,
+        "stress": {
+          "electrical": 0.0,
+          "loading": 34.0,
+          "thermal": 0,
+          "environmental": 0,
+          "historical": 0.0,
+          "oil": 0
+        },
+        "alerts": [
+          {
+            "code": "loading_percent",
+            "severity": "WARNING",
+            "parameter": "loading_percent",
+            "value": 114.0,
+            "threshold": 100,
+            "timestamp": "2026-01-01T02:00:00+00:00",
+            "detail": "Loading exceeds the configured level.",
+            "category": "threshold",
+            "action": "Monitor / investigate"
+          },
+          {
+            "code": "thermal_trend",
+            "severity": "WARNING",
+            "parameter": "rise_c_min",
+            "value": 1.9820628039274055,
+            "threshold": 1,
+            "timestamp": "2026-01-01T02:00:00+00:00",
+            "detail": "Temperature is rising rapidly at nearly constant load; inspect cooling and verify the probe.",
+            "category": "trend_anomaly",
+            "action": "Monitor / investigate"
+          }
+        ],
+        "maintenance": [
+          "Review loading and compare a load-reduction study against the current thermal trajectory.",
+          "Inspect cooling and compare temperature against an independent reference."
+        ],
+        "trend_c_min": 1.9820628039274055
+      },
+      "forecast": {
+        "points": [
+          {
+            "minute": 0,
+            "temperature_c": 76.94564895998633,
+            "oil_c": 50.51566178755384,
+            "load_percent": 113.99999999999999,
+            "served_kw": 689.5438199999999
+          },
+          {
+            "minute": 1,
+            "temperature_c": 77.58853474830624,
+            "oil_c": 50.90101711555555,
+            "load_percent": 113.99999999999999,
+            "served_kw": 689.5438199999999
+          },
+          {
+            "minute": 2,
+            "temperature_c": 78.19393958977317,
+            "oil_c": 51.28317449246012,
+            "load_percent": 113.99999999999999,
+            "served_kw": 689.5438199999999
+          },
+          {
+            "minute": 3,
+            "temperature_c": 78.76645384764527,
+            "oil_c": 51.66216045712787,
+            "load_percent": 113.99999999999999,
+            "served_kw": 689.5438199999999
+          },
+          {
+            "minute": 4,
+            "temperature_c": 79.3100601190535,
+            "oil_c": 52.03800132818087,
+            "load_percent": 113.99999999999999,
+            "served_kw": 689.5438199999999
+          },
+          {
+            "minute": 5,
+            "temperature_c": 79.82821411461398,
+            "oil_c": 52.41072320583065,
+            "load_percent": 113.99999999999999,
+            "served_kw": 689.5438199999999
+          },
+          {
+            "minute": 6,
+            "temperature_c": 80.3239147714047,
+            "oil_c": 52.78035197369072,
+            "load_percent": 113.99999999999999,
+            "served_kw": 689.5438199999999
+          },
+          {
+            "minute": 7,
+            "temperature_c": 80.79976503258177,
+            "oil_c": 53.14691330057407,
+            "load_percent": 113.99999999999999,
+            "served_kw": 689.5438199999999
+          },
+          {
+            "minute": 8,
+            "temperature_c": 81.2580245361099,
+            "oil_c": 53.51043264227571,
+            "load_percent": 113.99999999999999,
+            "served_kw": 689.5438199999999
+          },
+          {
+            "minute": 9,
+            "temperature_c": 81.7006552896808,
+            "oil_c": 53.87093524334046,
+            "load_percent": 113.99999999999999,
+            "served_kw": 689.5438199999999
+          },
+          {
+            "minute": 10,
+            "temperature_c": 82.12936126551126,
+            "oil_c": 54.228446138816054,
+            "load_percent": 113.99999999999999,
+            "served_kw": 689.5438199999999
+          },
+          {
+            "minute": 11,
+            "temperature_c": 82.54562272441748,
+            "oil_c": 54.58299015599168,
+            "load_percent": 113.99999999999999,
+            "served_kw": 689.5438199999999
+          },
+          {
+            "minute": 12,
+            "temperature_c": 82.9507259708133,
+            "oil_c": 54.93459191612213,
+            "load_percent": 113.99999999999999,
+            "served_kw": 689.5438199999999
+          },
+          {
+            "minute": 13,
+            "temperature_c": 83.345789146876,
+            "oil_c": 55.2832758361376,
+            "load_percent": 113.99999999999999,
+            "served_kw": 689.5438199999999
+          },
+          {
+            "minute": 14,
+            "temperature_c": 83.73178459315193,
+            "oil_c": 55.629066130339325,
+            "load_percent": 113.99999999999999,
+            "served_kw": 689.5438199999999
+          },
+          {
+            "minute": 15,
+            "temperature_c": 84.10955823268297,
+            "oil_c": 55.971986812081155,
+            "load_percent": 113.99999999999999,
+            "served_kw": 689.5438199999999
+          },
+          {
+            "minute": 16,
+            "temperature_c": 84.47984637488736,
+            "oil_c": 56.31206169543714,
+            "load_percent": 113.99999999999999,
+            "served_kw": 689.5438199999999
+          },
+          {
+            "minute": 17,
+            "temperature_c": 84.8432902826806,
+            "oil_c": 56.649314396855274,
+            "load_percent": 113.99999999999999,
+            "served_kw": 689.5438199999999
+          },
+          {
+            "minute": 18,
+            "temperature_c": 85.2004488005973,
+            "oil_c": 56.983768336797596,
+            "load_percent": 113.99999999999999,
+            "served_kw": 689.5438199999999
+          },
+          {
+            "minute": 19,
+            "temperature_c": 85.55180930203542,
+            "oil_c": 57.315446741366564,
+            "load_percent": 113.99999999999999,
+            "served_kw": 689.5438199999999
+          },
+          {
+            "minute": 20,
+            "temperature_c": 85.89779717938347,
+            "oil_c": 57.64437264391801,
+            "load_percent": 113.99999999999999,
+            "served_kw": 689.5438199999999
+          },
+          {
+            "minute": 21,
+            "temperature_c": 86.23878407100341,
+            "oil_c": 57.970568886660686,
+            "load_percent": 113.99999999999999,
+            "served_kw": 689.5438199999999
+          },
+          {
+            "minute": 22,
+            "temperature_c": 86.57509499321993,
+            "oil_c": 58.29405812224254,
+            "load_percent": 113.99999999999999,
+            "served_kw": 689.5438199999999
+          },
+          {
+            "minute": 23,
+            "temperature_c": 86.90701452308234,
+            "oil_c": 58.614862815323825,
+            "load_percent": 113.99999999999999,
+            "served_kw": 689.5438199999999
+          },
+          {
+            "minute": 24,
+            "temperature_c": 87.23479215826055,
+            "oil_c": 58.933005244137156,
+            "load_percent": 113.99999999999999,
+            "served_kw": 689.5438199999999
+          },
+          {
+            "minute": 25,
+            "temperature_c": 87.55864696361525,
+            "oil_c": 59.248507502034606,
+            "load_percent": 113.99999999999999,
+            "served_kw": 689.5438199999999
+          },
+          {
+            "minute": 26,
+            "temperature_c": 87.87877159939994,
+            "oil_c": 59.561391499021994,
+            "load_percent": 113.99999999999999,
+            "served_kw": 689.5438199999999
+          },
+          {
+            "minute": 27,
+            "temperature_c": 88.1953358134118,
+            "oil_c": 59.8716789632804,
+            "load_percent": 113.99999999999999,
+            "served_kw": 689.5438199999999
+          },
+          {
+            "minute": 28,
+            "temperature_c": 88.50848946845004,
+            "oil_c": 60.179391442675104,
+            "load_percent": 113.99999999999999,
+            "served_kw": 689.5438199999999
+          },
+          {
+            "minute": 29,
+            "temperature_c": 88.81836516694092,
+            "oil_c": 60.48455030625195,
+            "load_percent": 113.99999999999999,
+            "served_kw": 689.5438199999999
+          },
+          {
+            "minute": 30,
+            "temperature_c": 89.12508052635404,
+            "oil_c": 60.78717674572131,
+            "load_percent": 113.99999999999999,
+            "served_kw": 689.5438199999999
+          }
+        ],
+        "served_kwh": 344.77191,
+        "thermal_exposure_c_min": 0.0,
+        "peak_c": 89.12508052635404
+      },
+      "minutes_to_critical": null,
+      "inferred_hotspot_c": null,
+      "next_action": "Use the conditional trajectory with current alerts; reassess on each observation.",
+      "assumptions": "Nominal cooling and constant observed inputs; no fault label or hidden state. A clear residual is not proof that every fault is absent. Reported temperatures initialise the conditional forecast; parameter mismatch remains possible."
+    },
+    "sha256": "637ffa411a06eb99d76a2082b104ddbbb80e83466d1c690c76889c8b0b76bf8b",
+    "actor": "authenticated operator",
+    "origin_min": 120.0,
+    "temperature_mode": "oil_and_hotspot",
+    "settings_sha256": "f8d20b0bf2674aad458d805a0f833817bfad5d9ca00de5273494d4e61f0cb966"
+  },
+  "revealed": true,
+  "qualification": {
+    "oil_fit_used": false,
+    "reference_basis": "First 70 assumed-healthy synthetic observations"
+  },
+  "note": "Fault label, seed and later observations remain withheld until assessment. Synthetic experiment; no field-accuracy claim.",
+  "reveal": {
+    "rows": [
+      {
+        "elapsed_s": 0,
+        "oil_c": 34.83297228591636,
+        "hotspot_c": 42.64627139004286,
+        "ambient_c": 28.0,
+        "load_percent": 70.0,
+        "voltage_pu": 1.0
+      },
+      {
+        "elapsed_s": 60,
+        "oil_c": 35.97502762617694,
+        "hotspot_c": 42.820552660984454,
+        "ambient_c": 28.0299995000025,
+        "load_percent": 71.99724631719515,
+        "voltage_pu": 1.0
+      },
+      {
+        "elapsed_s": 120,
+        "oil_c": 35.84265245298231,
+        "hotspot_c": 45.081214644490515,
+        "ambient_c": 28.059996000079998,
+        "load_percent": 73.97799783123264,
+        "voltage_pu": 1.0
+      },
+      {
+        "elapsed_s": 180,
+        "oil_c": 36.34044902259292,
+        "hotspot_c": 45.18447791493253,
+        "ambient_c": 28.089986500607488,
+        "load_percent": 75.92589596578317,
+        "voltage_pu": 1.0
+      },
+      {
+        "elapsed_s": 240,
+        "oil_c": 35.347070072152135,
+        "hotspot_c": 47.02450418162075,
+        "ambient_c": 28.1199680025599,
+        "load_percent": 77.82485347310771,
+        "voltage_pu": 1.0
+      },
+      {
+        "elapsed_s": 300,
+        "oil_c": 36.61466435762173,
+        "hotspot_c": 47.14819281700463,
+        "ambient_c": 28.149937507812034,
+        "load_percent": 79.65918729497834,
+        "voltage_pu": 1.0
+      },
+      {
+        "elapsed_s": 360,
+        "oil_c": 36.379503409291544,
+        "hotspot_c": 47.302581205871604,
+        "ambient_c": 28.179892019438334,
+        "load_percent": 81.4137480854898,
+        "voltage_pu": 1.0
+      },
+      {
+        "elapsed_s": 420,
+        "oil_c": 36.28223932015584,
+        "hotspot_c": 47.937662653965646,
+        "ambient_c": 28.2098285420126,
+        "load_percent": 83.07404532606236,
+        "voltage_pu": 1.0
+      },
+      {
+        "elapsed_s": 480,
+        "oil_c": 36.210574164589666,
+        "hotspot_c": 50.66927060376249,
+        "ambient_c": 28.239744081907517,
+        "load_percent": 84.62636699933961,
+        "voltage_pu": 1.0
+      },
+      {
+        "elapsed_s": 540,
+        "oil_c": 36.97500475833388,
+        "hotspot_c": 51.560568215839204,
+        "ambient_c": 28.269635647594033,
+        "load_percent": 86.05789283362162,
+        "voltage_pu": 1.0
+      },
+      {
+        "elapsed_s": 600,
+        "oil_c": 37.29529715803833,
+        "hotspot_c": 51.98881941406763,
+        "ambient_c": 28.299500249940486,
+        "load_percent": 87.35680018257366,
+        "voltage_pu": 1.0
+      },
+      {
+        "elapsed_s": 660,
+        "oil_c": 37.0759354415714,
+        "hotspot_c": 53.020870396343255,
+        "ambient_c": 28.329334902511526,
+        "load_percent": 88.51236166577372,
+        "voltage_pu": 1.0
+      },
+      {
+        "elapsed_s": 720,
+        "oil_c": 37.90070193385072,
+        "hotspot_c": 53.43897686093141,
+        "ambient_c": 28.359136621866757,
+        "load_percent": 89.51503376370803,
+        "voltage_pu": 1.0
+      },
+      {
+        "elapsed_s": 780,
+        "oil_c": 38.202290968153456,
+        "hotspot_c": 52.99343301431151,
+        "ambient_c": 28.388902427859083,
+        "load_percent": 90.35653563552853,
+        "voltage_pu": 1.0
+      },
+      {
+        "elapsed_s": 840,
+        "oil_c": 37.5011569615815,
+        "hotspot_c": 54.51327342527487,
+        "ambient_c": 28.41862934393271,
+        "load_percent": 91.02991750863431,
+        "voltage_pu": 1.0
+      },
+      {
+        "elapsed_s": 900,
+        "oil_c": 38.851728992514616,
+        "hotspot_c": 54.84595647606457,
+        "ambient_c": 28.4483143974208,
+        "load_percent": 91.5296180752632,
+        "voltage_pu": 1.0
+      },
+      {
+        "elapsed_s": 960,
+        "oil_c": 38.55288234470512,
+        "hotspot_c": 55.697118271141015,
+        "ambient_c": 28.477954619842738,
+        "load_percent": 91.85151042206786,
+        "voltage_pu": 1.0
+      },
+      {
+        "elapsed_s": 1020,
+        "oil_c": 38.98825420208117,
+        "hotspot_c": 56.28202038245067,
+        "ambient_c": 28.507547047200987,
+        "load_percent": 91.99293611335474,
+        "voltage_pu": 1.0
+      },
+      {
+        "elapsed_s": 1080,
+        "oil_c": 39.016071857202306,
+        "hotspot_c": 56.56077119065584,
+        "ambient_c": 28.537088720277474,
+        "load_percent": 91.95272714649985,
+        "voltage_pu": 1.0
+      },
+      {
+        "elapsed_s": 1140,
+        "oil_c": 40.140333097895876,
+        "hotspot_c": 56.22110233835375,
+        "ambient_c": 28.5665766849295,
+        "load_percent": 91.73121559821688,
+        "voltage_pu": 1.0
+      },
+      {
+        "elapsed_s": 1200,
+        "oil_c": 39.050110076818555,
+        "hotspot_c": 58.48601379817959,
+        "ambient_c": 28.596007992385182,
+        "load_percent": 91.33023088201112,
+        "voltage_pu": 1.0
+      },
+      {
+        "elapsed_s": 1260,
+        "oil_c": 40.006624402205816,
+        "hotspot_c": 56.11108696848461,
+        "ambient_c": 28.6253796995383,
+        "load_percent": 90.75308463946934,
+        "voltage_pu": 1.0
+      },
+      {
+        "elapsed_s": 1320,
+        "oil_c": 40.3820040026005,
+        "hotspot_c": 57.925050160253335,
+        "ambient_c": 28.65468886924261,
+        "load_percent": 90.004543390165,
+        "voltage_pu": 1.0
+      },
+      {
+        "elapsed_s": 1380,
+        "oil_c": 40.01405592865092,
+        "hotspot_c": 56.144053810005474,
+        "ambient_c": 28.683932570605567,
+        "load_percent": 89.09078916605696,
+        "voltage_pu": 1.0
+      },
+      {
+        "elapsed_s": 1440,
+        "oil_c": 40.64924750776416,
+        "hotspot_c": 56.659798623040416,
+        "ambient_c": 28.713107879281402,
+        "load_percent": 88.0193684554934,
+        "voltage_pu": 1.0
+      },
+      {
+        "elapsed_s": 1500,
+        "oil_c": 39.50139527779246,
+        "hotspot_c": 57.75257112442002,
+        "ambient_c": 28.74221187776357,
+        "load_percent": 86.7991298784806,
+        "voltage_pu": 1.0
+      },
+      {
+        "elapsed_s": 1560,
+        "oil_c": 40.29370071983034,
+        "hotspot_c": 58.566925290044146,
+        "ambient_c": 28.771241655676466,
+        "load_percent": 85.44015110794246,
+        "voltage_pu": 1.0
+      },
+      {
+        "elapsed_s": 1620,
+        "oil_c": 40.21375551358697,
+        "hotspot_c": 57.62320858037706,
+        "ambient_c": 28.800194310066495,
+        "load_percent": 83.95365564051158,
+        "voltage_pu": 1.0
+      },
+      {
+        "elapsed_s": 1680,
+        "oil_c": 40.76209620651505,
+        "hotspot_c": 57.19634113718313,
+        "ambient_c": 28.82906694569234,
+        "load_percent": 82.3519201042227,
+        "voltage_pu": 1.0
+      },
+      {
+        "elapsed_s": 1740,
+        "oil_c": 40.79496866434216,
+        "hotspot_c": 56.8655284203226,
+        "ambient_c": 28.85785667531451,
+        "load_percent": 80.6481728686336,
+        "voltage_pu": 1.0
+      },
+      {
+        "elapsed_s": 1800,
+        "oil_c": 40.637290330055265,
+        "hotspot_c": 58.02848296652352,
+        "ambient_c": 28.886560619984017,
+        "load_percent": 78.85648479472893,
+        "voltage_pu": 1.0
+      },
+      {
+        "elapsed_s": 1860,
+        "oil_c": 41.04343284645275,
+        "hotspot_c": 57.12594557132268,
+        "ambient_c": 28.91517590933033,
+        "load_percent": 76.99165302687919,
+        "voltage_pu": 1.0
+      },
+      {
+        "elapsed_s": 1920,
+        "oil_c": 42.11139618286047,
+        "hotspot_c": 59.207272559970576,
+        "ambient_c": 28.943699681848354,
+        "load_percent": 75.06907878659025,
+        "voltage_pu": 1.0
+      },
+      {
+        "elapsed_s": 1980,
+        "oil_c": 41.304981408885205,
+        "hotspot_c": 56.95981231593306,
+        "ambient_c": 28.972129085184605,
+        "load_percent": 73.10464017731708,
+        "voltage_pu": 1.0
+      },
+      {
+        "elapsed_s": 2040,
+        "oil_c": 41.39148206338994,
+        "hotspot_c": 55.270050255893565,
+        "ambient_c": 29.000461276422442,
+        "load_percent": 71.11456105081811,
+        "voltage_pu": 1.0
+      },
+      {
+        "elapsed_s": 2100,
+        "oil_c": 41.75106403455477,
+        "hotspot_c": 55.58973470264526,
+        "ambient_c": 29.028693422366352,
+        "load_percent": 69.11527701805288,
+        "voltage_pu": 1.0
+      },
+      {
+        "elapsed_s": 2160,
+        "oil_c": 41.75381819120569,
+        "hotspot_c": 56.44361000890561,
+        "ambient_c": 29.05682269982527,
+        "load_percent": 67.12329971120855,
+        "voltage_pu": 1.0
+      },
+      {
+        "elapsed_s": 2220,
+        "oil_c": 42.22662694383964,
+        "hotspot_c": 55.80724339658186,
+        "ambient_c": 29.084846295894884,
+        "load_percent": 65.15508041788445,
+        "voltage_pu": 1.0
+      },
+      {
+        "elapsed_s": 2280,
+        "oil_c": 41.90322876790582,
+        "hotspot_c": 55.16634026218983,
+        "ambient_c": 29.11276140823895,
+        "load_percent": 63.22687421364889,
+        "voltage_pu": 1.0
+      },
+      {
+        "elapsed_s": 2340,
+        "oil_c": 41.58709746466689,
+        "hotspot_c": 52.584126081853434,
+        "ambient_c": 29.140565245369483,
+        "load_percent": 61.35460571506637,
+        "voltage_pu": 1.0
+      },
+      {
+        "elapsed_s": 2400,
+        "oil_c": 42.18783303451803,
+        "hotspot_c": 53.7168360984787,
+        "ambient_c": 29.16825502692595,
+        "load_percent": 59.55373756191073,
+        "voltage_pu": 1.0
+      },
+      {
+        "elapsed_s": 2460,
+        "oil_c": 41.42064760289121,
+        "hotspot_c": 52.046197306559144,
+        "ambient_c": 29.19582798395327,
+        "load_percent": 57.83914271473943,
+        "voltage_pu": 1.0
+      },
+      {
+        "elapsed_s": 2520,
+        "oil_c": 41.38625308416759,
+        "hotspot_c": 54.47662014633846,
+        "ambient_c": 29.22328135917871,
+        "load_percent": 56.224981622494454,
+        "voltage_pu": 1.0
+      },
+      {
+        "elapsed_s": 2580,
+        "oil_c": 41.810112597993296,
+        "hotspot_c": 53.587542413384966,
+        "ambient_c": 29.250612407287633,
+        "load_percent": 54.72458527457463,
+        "voltage_pu": 1.0
+      },
+      {
+        "elapsed_s": 2640,
+        "oil_c": 41.451761124124154,
+        "hotspot_c": 52.06519704258352,
+        "ambient_c": 29.277818395198,
+        "load_percent": 53.35034510322558,
+        "voltage_pu": 1.0
+      },
+      {
+        "elapsed_s": 2700,
+        "oil_c": 42.23068250349837,
+        "hotspot_c": 51.380994518420806,
+        "ambient_c": 29.30489660233369,
+        "load_percent": 52.113610645518726,
+        "voltage_pu": 1.0
+      },
+      {
+        "elapsed_s": 2760,
+        "oil_c": 41.774851780313,
+        "hotspot_c": 50.0719733372455,
+        "ambient_c": 29.331844320896558,
+        "load_percent": 51.02459581010547,
+        "voltage_pu": 1.0
+      },
+      {
+        "elapsed_s": 2820,
+        "oil_c": 41.880764534436395,
+        "hotspot_c": 51.42950403032377,
+        "ambient_c": 29.358658856137204,
+        "load_percent": 50.09229452286827,
+        "voltage_pu": 1.0
+      },
+      {
+        "elapsed_s": 2880,
+        "oil_c": 42.043850060461885,
+        "hotspot_c": 51.52510130326914,
+        "ambient_c": 29.385337526624447,
+        "load_percent": 49.324406448132066,
+        "voltage_pu": 1.0
+      },
+      {
+        "elapsed_s": 2940,
+        "oil_c": 43.021750161909836,
+        "hotspot_c": 50.64679858348755,
+        "ambient_c": 29.411877664513476,
+        "load_percent": 48.727273398887505,
+        "voltage_pu": 1.0
+      },
+      {
+        "elapsed_s": 3000,
+        "oil_c": 41.6233528183226,
+        "hotspot_c": 49.82012344428251,
+        "ambient_c": 29.438276615812608,
+        "load_percent": 48.30582696119954,
+        "voltage_pu": 1.0
+      },
+      {
+        "elapsed_s": 3060,
+        "oil_c": 41.43639804304134,
+        "hotspot_c": 51.483521220269054,
+        "ambient_c": 29.464531740648724,
+        "load_percent": 48.06354776535967,
+        "voltage_pu": 1.0
+      },
+      {
+        "elapsed_s": 3120,
+        "oil_c": 41.92923579643328,
+        "hotspot_c": 49.82872935165605,
+        "ambient_c": 29.49064041353121,
+        "load_percent": 48.00243674015178,
+        "voltage_pu": 1.0
+      },
+      {
+        "elapsed_s": 3180,
+        "oil_c": 43.011949714654264,
+        "hotspot_c": 50.75755310362166,
+        "ambient_c": 29.51660002361454,
+        "load_percent": 48.12299858763632,
+        "voltage_pu": 1.0
+      },
+      {
+        "elapsed_s": 3240,
+        "oil_c": 43.39914542783583,
+        "hotspot_c": 50.53159439156142,
+        "ambient_c": 29.54240797495934,
+        "load_percent": 48.42423761493082,
+        "voltage_pu": 1.0
+      },
+      {
+        "elapsed_s": 3300,
+        "oil_c": 42.651517787374914,
+        "hotspot_c": 49.88456505304798,
+        "ambient_c": 29.568061686791978,
+        "load_percent": 48.90366595741095,
+        "voltage_pu": 1.0
+      },
+      {
+        "elapsed_s": 3360,
+        "oil_c": 42.89785073984629,
+        "hotspot_c": 50.82126444498882,
+        "ambient_c": 29.59355859376265,
+        "load_percent": 49.55732412541873,
+        "voltage_pu": 1.0
+      },
+      {
+        "elapsed_s": 3420,
+        "oil_c": 42.7325327922695,
+        "hotspot_c": 50.94879999071649,
+        "ambient_c": 29.61889614620191,
+        "load_percent": 50.37981370478716,
+        "voltage_pu": 1.0
+      },
+      {
+        "elapsed_s": 3480,
+        "oil_c": 41.83908559035215,
+        "hotspot_c": 50.761429418042795,
+        "ambient_c": 29.64407181037562,
+        "load_percent": 51.36434194111531,
+        "voltage_pu": 1.0
+      },
+      {
+        "elapsed_s": 3540,
+        "oil_c": 43.4625248282704,
+        "hotspot_c": 50.828744182087235,
+        "ambient_c": 29.669083068738352,
+        "load_percent": 52.502777839582166,
+        "voltage_pu": 1.0
+      },
+      {
+        "elapsed_s": 3600,
+        "oil_c": 42.61399964874012,
+        "hotspot_c": 50.93131352110611,
+        "ambient_c": 29.693927420185105,
+        "load_percent": 53.78571931698391,
+        "voltage_pu": 1.0
+      },
+      {
+        "elapsed_s": 3660,
+        "oil_c": 42.928193980189576,
+        "hotspot_c": 51.48528314317688,
+        "ambient_c": 29.718602380301444,
+        "load_percent": 55.202570851401006,
+        "voltage_pu": 1.0
+      },
+      {
+        "elapsed_s": 3720,
+        "oil_c": 42.117142598829695,
+        "hotspot_c": 50.116067223117184,
+        "ambient_c": 29.743105481611916,
+        "load_percent": 56.741630988204335,
+        "voltage_pu": 1.0
+      },
+      {
+        "elapsed_s": 3780,
+        "oil_c": 43.91218439555206,
+        "hotspot_c": 50.87905857719251,
+        "ambient_c": 29.767434273826808,
+        "load_percent": 58.39018897970804,
+        "voltage_pu": 1.0
+      },
+      {
+        "elapsed_s": 3840,
+        "oil_c": 42.196032138745835,
+        "hotspot_c": 51.07667200946093,
+        "ambient_c": 29.791586324087177,
+        "load_percent": 60.13462976034424,
+        "voltage_pu": 1.0
+      },
+      {
+        "elapsed_s": 3900,
+        "oil_c": 43.695748747198294,
+        "hotspot_c": 51.27646544988622,
+        "ambient_c": 29.81555921720812,
+        "load_percent": 61.96054639039347,
+        "voltage_pu": 1.0
+      },
+      {
+        "elapsed_s": 3960,
+        "oil_c": 43.171638615830176,
+        "hotspot_c": 51.20931779994108,
+        "ambient_c": 29.8393505559203,
+        "load_percent": 63.85285903962363,
+        "voltage_pu": 1.0
+      },
+      {
+        "elapsed_s": 4020,
+        "oil_c": 42.81990307376181,
+        "hotspot_c": 52.56007878588444,
+        "ambient_c": 29.86295796110968,
+        "load_percent": 65.79593952817876,
+        "voltage_pu": 1.0
+      },
+      {
+        "elapsed_s": 4080,
+        "oil_c": 43.2767330465192,
+        "hotspot_c": 53.03746510901251,
+        "ambient_c": 29.886379072055405,
+        "load_percent": 67.7737403961626,
+        "voltage_pu": 1.0
+      },
+      {
+        "elapsed_s": 4140,
+        "oil_c": 42.71903142526384,
+        "hotspot_c": 53.068537344523534,
+        "ambient_c": 29.909611546665904,
+        "load_percent": 69.76992743596058,
+        "voltage_pu": 1.0
+      },
+      {
+        "elapsed_s": 4200,
+        "oil_c": 42.734212451697985,
+        "hotspot_c": 54.78407513356425,
+        "ambient_c": 29.932653061713072,
+        "load_percent": 82.00313524870622,
+        "voltage_pu": 1.0
+      },
+      {
+        "elapsed_s": 4260,
+        "oil_c": 42.960746224667055,
+        "hotspot_c": 55.386038929959966,
+        "ambient_c": 29.95550131306461,
+        "load_percent": 82.00065797482753,
+        "voltage_pu": 1.0
+      },
+      {
+        "elapsed_s": 4320,
+        "oil_c": 44.53581870628013,
+        "hotspot_c": 56.42894911877845,
+        "ambient_c": 29.97815401591442,
+        "load_percent": 82.01150617349248,
+        "voltage_pu": 1.0
+      },
+      {
+        "elapsed_s": 4380,
+        "oil_c": 44.79430957508474,
+        "hotspot_c": 56.94213927767779,
+        "ambient_c": 30.000608905011095,
+        "load_percent": 82.03563164833923,
+        "voltage_pu": 1.0
+      },
+      {
+        "elapsed_s": 4440,
+        "oil_c": 43.920346697807986,
+        "hotspot_c": 55.92396556078958,
+        "ambient_c": 30.022863734884435,
+        "load_percent": 82.07292721474197,
+        "voltage_pu": 1.0
+      },
+      {
+        "elapsed_s": 4500,
+        "oil_c": 43.73880430110112,
+        "hotspot_c": 58.121150481441724,
+        "ambient_c": 30.04491628007,
+        "load_percent": 82.12322717601059,
+        "voltage_pu": 1.0
+      },
+      {
+        "elapsed_s": 4560,
+        "oil_c": 44.20277470893847,
+        "hotspot_c": 57.49000171367329,
+        "ambient_c": 30.066764335331655,
+        "load_percent": 82.18630805954768,
+        "voltage_pu": 1.0
+      },
+      {
+        "elapsed_s": 4620,
+        "oil_c": 44.95548659939132,
+        "hotspot_c": 57.72767794313904,
+        "ambient_c": 30.088405715882068,
+        "load_percent": 82.26188960969233,
+        "voltage_pu": 1.0
+      },
+      {
+        "elapsed_s": 4680,
+        "oil_c": 43.959926547767324,
+        "hotspot_c": 58.22105800686364,
+        "ambient_c": 30.109838257601233,
+        "load_percent": 82.34963603283954,
+        "voltage_pu": 1.0
+      },
+      {
+        "elapsed_s": 4740,
+        "oil_c": 44.03551261527805,
+        "hotspot_c": 58.64979347841752,
+        "ambient_c": 30.131059817252822,
+        "load_percent": 82.44915748930359,
+        "voltage_pu": 1.0
+      },
+      {
+        "elapsed_s": 4800,
+        "oil_c": 44.642933657893224,
+        "hotspot_c": 59.775372119126985,
+        "ambient_c": 30.152068272698568,
+        "load_percent": 82.56001182529727,
+        "voltage_pu": 1.0
+      },
+      {
+        "elapsed_s": 4860,
+        "oil_c": 44.91277225392725,
+        "hotspot_c": 59.807065073227854,
+        "ambient_c": 30.172861523110427,
+        "load_percent": 82.68170653733203,
+        "voltage_pu": 1.0
+      },
+      {
+        "elapsed_s": 4920,
+        "oil_c": 45.83371431951936,
+        "hotspot_c": 60.991207869062784,
+        "ambient_c": 30.19343748918069,
+        "load_percent": 82.81370096031195,
+        "voltage_pu": 1.0
+      },
+      {
+        "elapsed_s": 4980,
+        "oil_c": 45.01020343335545,
+        "hotspot_c": 60.40440795568284,
+        "ambient_c": 30.21379411332989,
+        "load_percent": 82.95540866959965,
+        "voltage_pu": 1.0
+      },
+      {
+        "elapsed_s": 5040,
+        "oil_c": 45.6641441037301,
+        "hotspot_c": 60.3959480929844,
+        "ambient_c": 30.23392935991258,
+        "load_percent": 83.10620008638304,
+        "voltage_pu": 1.0
+      },
+      {
+        "elapsed_s": 5100,
+        "oil_c": 44.55466869977018,
+        "hotspot_c": 60.13532484903591,
+        "ambient_c": 30.253841215420877,
+        "load_percent": 83.26540527476708,
+        "voltage_pu": 1.0
+      },
+      {
+        "elapsed_s": 5160,
+        "oil_c": 45.75521243352039,
+        "hotspot_c": 62.077412265980854,
+        "ambient_c": 30.27352768868583,
+        "load_percent": 83.43231691816405,
+        "voltage_pu": 1.0
+      },
+      {
+        "elapsed_s": 5220,
+        "oil_c": 46.09409215255189,
+        "hotspot_c": 60.36414975252746,
+        "ambient_c": 30.292986811076517,
+        "load_percent": 83.60619346175872,
+        "voltage_pu": 1.0
+      },
+      {
+        "elapsed_s": 5280,
+        "oil_c": 45.136281984806665,
+        "hotspot_c": 60.767827752338,
+        "ambient_c": 30.31221663669691,
+        "load_percent": 83.78626240708705,
+        "voltage_pu": 1.0
+      },
+      {
+        "elapsed_s": 5340,
+        "oil_c": 45.758251935838565,
+        "hotspot_c": 62.40104733606194,
+        "ambient_c": 30.33121524258047,
+        "load_percent": 83.97172374409121,
+        "voltage_pu": 1.0
+      },
+      {
+        "elapsed_s": 5400,
+        "oil_c": 45.921617359025156,
+        "hotspot_c": 62.098768636245374,
+        "ambient_c": 30.34998072888245,
+        "load_percent": 84.16175350540323,
+        "voltage_pu": 1.0
+      },
+      {
+        "elapsed_s": 5460,
+        "oil_c": 46.302704352412114,
+        "hotspot_c": 63.362611870707916,
+        "ambient_c": 30.368511219069852,
+        "load_percent": 84.355507427066,
+        "voltage_pu": 1.0
+      },
+      {
+        "elapsed_s": 5520,
+        "oil_c": 47.2031822053211,
+        "hotspot_c": 62.712315474877414,
+        "ambient_c": 30.3868048601091,
+        "load_percent": 84.55212469942808,
+        "voltage_pu": 1.0
+      },
+      {
+        "elapsed_s": 5580,
+        "oil_c": 47.127497486844995,
+        "hotspot_c": 62.914969373969875,
+        "ambient_c": 30.404859822651332,
+        "load_percent": 84.75073179154751,
+        "voltage_pu": 1.0
+      },
+      {
+        "elapsed_s": 5640,
+        "oil_c": 46.397097918263135,
+        "hotspot_c": 61.59610909914354,
+        "ambient_c": 30.42267430121534,
+        "load_percent": 84.95044633211391,
+        "voltage_pu": 1.0
+      },
+      {
+        "elapsed_s": 5700,
+        "oil_c": 47.13342612121188,
+        "hotspot_c": 63.1385636412828,
+        "ambient_c": 30.44024651436812,
+        "load_percent": 85.15038102964652,
+        "voltage_pu": 1.0
+      },
+      {
+        "elapsed_s": 5760,
+        "oil_c": 46.25189171436095,
+        "hotspot_c": 63.25866760373811,
+        "ambient_c": 30.457574704902996,
+        "load_percent": 85.34964761455149,
+        "voltage_pu": 1.0
+      },
+      {
+        "elapsed_s": 5820,
+        "oil_c": 46.728281110753464,
+        "hotspot_c": 63.71619395430189,
+        "ambient_c": 30.47465714001535,
+        "load_percent": 85.5473607855248,
+        "voltage_pu": 1.0
+      },
+      {
+        "elapsed_s": 5880,
+        "oil_c": 47.44829510752255,
+        "hotspot_c": 63.46710976742851,
+        "ambient_c": 30.49149211147591,
+        "load_percent": 85.74264214276774,
+        "voltage_pu": 1.0
+      },
+      {
+        "elapsed_s": 5940,
+        "oil_c": 46.87272217577473,
+        "hotspot_c": 63.333107535500844,
+        "ambient_c": 30.508077935801563,
+        "load_percent": 85.93462409054014,
+        "voltage_pu": 1.0
+      },
+      {
+        "elapsed_s": 6000,
+        "oil_c": 46.91195216601475,
+        "hotspot_c": 64.18487579343872,
+        "ambient_c": 30.52441295442369,
+        "load_percent": 86.12245369171366,
+        "voltage_pu": 1.0
+      },
+      {
+        "elapsed_s": 6060,
+        "oil_c": 46.68964829284549,
+        "hotspot_c": 64.11833575240844,
+        "ambient_c": 30.540495533854045,
+        "load_percent": 86.30529645719959,
+        "voltage_pu": 1.0
+      },
+      {
+        "elapsed_s": 6120,
+        "oil_c": 47.2894904252834,
+        "hotspot_c": 63.89999731472143,
+        "ambient_c": 30.556324065848088,
+        "load_percent": 86.48234005341583,
+        "voltage_pu": 1.0
+      },
+      {
+        "elapsed_s": 6180,
+        "oil_c": 47.353689324090496,
+        "hotspot_c": 65.34805748941929,
+        "ambient_c": 30.57189696756581,
+        "load_percent": 86.65279791132134,
+        "voltage_pu": 1.0
+      },
+      {
+        "elapsed_s": 6240,
+        "oil_c": 48.042388723337,
+        "hotspot_c": 65.3158791398129,
+        "ambient_c": 30.587212681730016,
+        "load_percent": 86.81591272098407,
+        "voltage_pu": 1.0
+      },
+      {
+        "elapsed_s": 6300,
+        "oil_c": 47.38043419866685,
+        "hotspot_c": 65.93723093921224,
+        "ambient_c": 30.60226967678205,
+        "load_percent": 86.97095979615636,
+        "voltage_pu": 1.0
+      },
+      {
+        "elapsed_s": 6360,
+        "oil_c": 47.94245802520749,
+        "hotspot_c": 64.58746030545339,
+        "ambient_c": 30.617066447034958,
+        "load_percent": 87.11725029391006,
+        "voltage_pu": 1.0
+      },
+      {
+        "elapsed_s": 6420,
+        "oil_c": 48.49103645812752,
+        "hotspot_c": 65.13569556925434,
+        "ambient_c": 30.631601512824044,
+        "load_percent": 87.25413427502689,
+        "voltage_pu": 1.0
+      },
+      {
+        "elapsed_s": 6480,
+        "oil_c": 47.880374120813485,
+        "hotspot_c": 67.34277410761386,
+        "ambient_c": 30.645873420654844,
+        "load_percent": 87.38100359154745,
+        "voltage_pu": 1.0
+      },
+      {
+        "elapsed_s": 6540,
+        "oil_c": 47.827005253287886,
+        "hotspot_c": 65.20272839493781,
+        "ambient_c": 30.659880743348463,
+        "load_percent": 87.49729458865026,
+        "voltage_pu": 1.0
+      },
+      {
+        "elapsed_s": 6600,
+        "oil_c": 48.62209515208815,
+        "hotspot_c": 65.99995227326598,
+        "ambient_c": 30.673622080184305,
+        "load_percent": 87.60249060885641,
+        "voltage_pu": 1.0
+      },
+      {
+        "elapsed_s": 6660,
+        "oil_c": 48.739304149068445,
+        "hotspot_c": 65.82707616557799,
+        "ambient_c": 30.687096057040144,
+        "load_percent": 87.69612428743488,
+        "voltage_pu": 1.0
+      },
+      {
+        "elapsed_s": 6720,
+        "oil_c": 49.49865354920611,
+        "hotspot_c": 67.0363587741024,
+        "ambient_c": 30.700301326529516,
+        "load_percent": 87.77777962880975,
+        "voltage_pu": 1.0
+      },
+      {
+        "elapsed_s": 6780,
+        "oil_c": 48.27756574883499,
+        "hotspot_c": 66.93875512168911,
+        "ambient_c": 30.713236568136477,
+        "load_percent": 87.84709385474487,
+        "voltage_pu": 1.0
+      },
+      {
+        "elapsed_s": 6840,
+        "oil_c": 49.57753970802883,
+        "hotspot_c": 65.74788208617436,
+        "ambient_c": 30.725900488347648,
+        "load_percent": 87.90375901609445,
+        "voltage_pu": 1.0
+      },
+      {
+        "elapsed_s": 6900,
+        "oil_c": 48.38435475645606,
+        "hotspot_c": 69.42261378611451,
+        "ambient_c": 30.738291820781562,
+        "load_percent": 114.0,
+        "voltage_pu": 1.0
+      },
+      {
+        "elapsed_s": 6960,
+        "oil_c": 50.259195849103925,
+        "hotspot_c": 68.9858706222228,
+        "ambient_c": 30.7504093263153,
+        "load_percent": 114.0,
+        "voltage_pu": 1.0
+      },
+      {
+        "elapsed_s": 7020,
+        "oil_c": 49.574092433375114,
+        "hotspot_c": 72.49010018347118,
+        "ambient_c": 30.762251793208407,
+        "load_percent": 114.0,
+        "voltage_pu": 1.0
+      },
+      {
+        "elapsed_s": 7080,
+        "oil_c": 49.93289373311007,
+        "hotspot_c": 73.37479978671777,
+        "ambient_c": 30.77381803722406,
+        "load_percent": 114.0,
+        "voltage_pu": 1.0
+      },
+      {
+        "elapsed_s": 7140,
+        "oil_c": 51.09723930515148,
+        "hotspot_c": 74.96358615605892,
+        "ambient_c": 30.7851069017475,
+        "load_percent": 114.0,
+        "voltage_pu": 1.0
+      },
+      {
+        "elapsed_s": 7200,
+        "oil_c": 50.51566178755384,
+        "hotspot_c": 76.94564895998633,
+        "ambient_c": 30.796117257901678,
+        "load_percent": 114.0,
+        "voltage_pu": 1.0
+      },
+      {
+        "elapsed_s": 7260,
+        "oil_c": 51.77443613866842,
+        "hotspot_c": 77.50083139352012,
+        "ambient_c": 30.806848004660157,
+        "load_percent": 114.0,
+        "voltage_pu": 1.0
+      },
+      {
+        "elapsed_s": 7320,
+        "oil_c": 50.16426937515665,
+        "hotspot_c": 79.6002362566327,
+        "ambient_c": 30.817298068957204,
+        "load_percent": 114.0,
+        "voltage_pu": 1.0
+      },
+      {
+        "elapsed_s": 7380,
+        "oil_c": 50.6991659611131,
+        "hotspot_c": 80.66380537186237,
+        "ambient_c": 30.827466405795093,
+        "load_percent": 114.0,
+        "voltage_pu": 1.0
+      },
+      {
+        "elapsed_s": 7440,
+        "oil_c": 51.41966497580886,
+        "hotspot_c": 81.46754235833792,
+        "ambient_c": 30.837351998348616,
+        "load_percent": 114.0,
+        "voltage_pu": 1.0
+      },
+      {
+        "elapsed_s": 7500,
+        "oil_c": 51.139310241752504,
+        "hotspot_c": 83.27475940674783,
+        "ambient_c": 30.846953858066758,
+        "load_percent": 114.0,
+        "voltage_pu": 1.0
+      },
+      {
+        "elapsed_s": 7560,
+        "oil_c": 52.40121515228273,
+        "hotspot_c": 83.28367444596255,
+        "ambient_c": 30.856271024771548,
+        "load_percent": 114.0,
+        "voltage_pu": 1.0
+      },
+      {
+        "elapsed_s": 7620,
+        "oil_c": 52.39405425243739,
+        "hotspot_c": 84.59438394512517,
+        "ambient_c": 30.865302566754078,
+        "load_percent": 114.0,
+        "voltage_pu": 1.0
+      },
+      {
+        "elapsed_s": 7680,
+        "oil_c": 51.62018762863664,
+        "hotspot_c": 84.9037042625206,
+        "ambient_c": 30.874047580867675,
+        "load_percent": 114.0,
+        "voltage_pu": 1.0
+      },
+      {
+        "elapsed_s": 7740,
+        "oil_c": 51.698197335532015,
+        "hotspot_c": 85.2137782761732,
+        "ambient_c": 30.88250519261822,
+        "load_percent": 114.0,
+        "voltage_pu": 1.0
+      },
+      {
+        "elapsed_s": 7800,
+        "oil_c": 52.07236419995243,
+        "hotspot_c": 84.28525843963733,
+        "ambient_c": 30.89067455625158,
+        "load_percent": 114.0,
+        "voltage_pu": 1.0
+      },
+      {
+        "elapsed_s": 7860,
+        "oil_c": 52.36585865996797,
+        "hotspot_c": 85.75023712064068,
+        "ambient_c": 30.898554854838203,
+        "load_percent": 114.0,
+        "voltage_pu": 1.0
+      },
+      {
+        "elapsed_s": 7920,
+        "oil_c": 53.28028142386917,
+        "hotspot_c": 85.89579551878138,
+        "ambient_c": 30.906145300354794,
+        "load_percent": 114.0,
+        "voltage_pu": 1.0
+      },
+      {
+        "elapsed_s": 7980,
+        "oil_c": 53.473015300565685,
+        "hotspot_c": 85.59191183524315,
+        "ambient_c": 30.913445133763133,
+        "load_percent": 114.0,
+        "voltage_pu": 1.0
+      },
+      {
+        "elapsed_s": 8040,
+        "oil_c": 52.2654612878831,
+        "hotspot_c": 86.12801700188368,
+        "ambient_c": 30.92045362508596,
+        "load_percent": 114.0,
+        "voltage_pu": 1.0
+      },
+      {
+        "elapsed_s": 8100,
+        "oil_c": 52.919390974514656,
+        "hotspot_c": 87.78858486787948,
+        "ambient_c": 30.927170073479978,
+        "load_percent": 114.0,
+        "voltage_pu": 1.0
+      },
+      {
+        "elapsed_s": 8160,
+        "oil_c": 54.74895748509253,
+        "hotspot_c": 86.56494072057913,
+        "ambient_c": 30.93359380730595,
+        "load_percent": 114.0,
+        "voltage_pu": 1.0
+      },
+      {
+        "elapsed_s": 8220,
+        "oil_c": 53.722924478413134,
+        "hotspot_c": 87.14473863087956,
+        "ambient_c": 30.939724184195843,
+        "load_percent": 114.0,
+        "voltage_pu": 1.0
+      },
+      {
+        "elapsed_s": 8280,
+        "oil_c": 53.7569092386719,
+        "hotspot_c": 88.15419092167346,
+        "ambient_c": 30.94556059111708,
+        "load_percent": 114.0,
+        "voltage_pu": 1.0
+      },
+      {
+        "elapsed_s": 8340,
+        "oil_c": 54.45028400632406,
+        "hotspot_c": 88.48373662408278,
+        "ambient_c": 30.95110244443383,
+        "load_percent": 114.0,
+        "voltage_pu": 1.0
+      },
+      {
+        "elapsed_s": 8400,
+        "oil_c": 54.57149752536509,
+        "hotspot_c": 86.00832684103825,
+        "ambient_c": 30.95634918996538,
+        "load_percent": 114.0,
+        "voltage_pu": 1.0
+      },
+      {
+        "elapsed_s": 8460,
+        "oil_c": 54.74196265284637,
+        "hotspot_c": 87.33795276749277,
+        "ambient_c": 30.96130030304155,
+        "load_percent": 114.0,
+        "voltage_pu": 1.0
+      },
+      {
+        "elapsed_s": 8520,
+        "oil_c": 54.29361343766996,
+        "hotspot_c": 88.29551863836079,
+        "ambient_c": 30.965955288555158,
+        "load_percent": 114.0,
+        "voltage_pu": 1.0
+      },
+      {
+        "elapsed_s": 8580,
+        "oil_c": 54.2641011739665,
+        "hotspot_c": 88.89222158096987,
+        "ambient_c": 30.970313681011532,
+        "load_percent": 114.0,
+        "voltage_pu": 1.0
+      },
+      {
+        "elapsed_s": 8640,
+        "oil_c": 54.91678374196628,
+        "hotspot_c": 87.951014944855,
+        "ambient_c": 30.97437504457506,
+        "load_percent": 114.0,
+        "voltage_pu": 1.0
+      },
+      {
+        "elapsed_s": 8700,
+        "oil_c": 55.483774859034995,
+        "hotspot_c": 88.85509641600957,
+        "ambient_c": 30.978138973112767,
+        "load_percent": 114.0,
+        "voltage_pu": 1.0
+      },
+      {
+        "elapsed_s": 8760,
+        "oil_c": 54.66238314315665,
+        "hotspot_c": 88.32780578665087,
+        "ambient_c": 30.981605090234936,
+        "load_percent": 114.0,
+        "voltage_pu": 1.0
+      },
+      {
+        "elapsed_s": 8820,
+        "oil_c": 56.09579414746229,
+        "hotspot_c": 89.61390081689103,
+        "ambient_c": 30.984773049332745,
+        "load_percent": 114.0,
+        "voltage_pu": 1.0
+      },
+      {
+        "elapsed_s": 8880,
+        "oil_c": 55.19271412101367,
+        "hotspot_c": 90.02483616146048,
+        "ambient_c": 30.98764253361292,
+        "load_percent": 114.0,
+        "voltage_pu": 1.0
+      },
+      {
+        "elapsed_s": 8940,
+        "oil_c": 55.94912748363676,
+        "hotspot_c": 88.93698733819619,
+        "ambient_c": 30.99021325612943,
+        "load_percent": 114.0,
+        "voltage_pu": 1.0
+      },
+      {
+        "elapsed_s": 9000,
+        "oil_c": 56.323715842236126,
+        "hotspot_c": 89.76347594400472,
+        "ambient_c": 30.992484959812163,
+        "load_percent": 114.0,
+        "voltage_pu": 1.0
+      },
+      {
+        "elapsed_s": 9060,
+        "oil_c": 55.913395050685544,
+        "hotspot_c": 90.04997708667865,
+        "ambient_c": 30.994457417492644,
+        "load_percent": 114.0,
+        "voltage_pu": 1.0
+      },
+      {
+        "elapsed_s": 9120,
+        "oil_c": 56.56675924213733,
+        "hotspot_c": 90.50610673218091,
+        "ambient_c": 30.996130431926748,
+        "load_percent": 114.0,
+        "voltage_pu": 1.0
+      },
+      {
+        "elapsed_s": 9180,
+        "oil_c": 56.917748115956805,
+        "hotspot_c": 89.3207167728017,
+        "ambient_c": 30.997503835814427,
+        "load_percent": 114.0,
+        "voltage_pu": 1.0
+      },
+      {
+        "elapsed_s": 9240,
+        "oil_c": 56.49766686942108,
+        "hotspot_c": 89.54833470210477,
+        "ambient_c": 30.998577491816437,
+        "load_percent": 114.0,
+        "voltage_pu": 1.0
+      },
+      {
+        "elapsed_s": 9300,
+        "oil_c": 57.17062273943152,
+        "hotspot_c": 91.06310028392247,
+        "ambient_c": 30.999351292568072,
+        "load_percent": 114.0,
+        "voltage_pu": 1.0
+      },
+      {
+        "elapsed_s": 9360,
+        "oil_c": 56.36856525964587,
+        "hotspot_c": 90.12614069372103,
+        "ambient_c": 30.9998251606899,
+        "load_percent": 114.0,
+        "voltage_pu": 1.0
+      },
+      {
+        "elapsed_s": 9420,
+        "oil_c": 56.057827631361775,
+        "hotspot_c": 91.15165041584379,
+        "ambient_c": 30.999999048795505,
+        "load_percent": 114.0,
+        "voltage_pu": 1.0
+      },
+      {
+        "elapsed_s": 9480,
+        "oil_c": 56.74516529234696,
+        "hotspot_c": 90.9020734544096,
+        "ambient_c": 30.99987293949622,
+        "load_percent": 114.0,
+        "voltage_pu": 1.0
+      },
+      {
+        "elapsed_s": 9540,
+        "oil_c": 56.893404146014866,
+        "hotspot_c": 90.46618809016336,
+        "ambient_c": 30.999446845402872,
+        "load_percent": 114.0,
+        "voltage_pu": 1.0
+      },
+      {
+        "elapsed_s": 9600,
+        "oil_c": 57.41018775441066,
+        "hotspot_c": 89.80036929650198,
+        "ambient_c": 30.998720809124514,
+        "load_percent": 114.0,
+        "voltage_pu": 1.0
+      },
+      {
+        "elapsed_s": 9660,
+        "oil_c": 58.60536437251013,
+        "hotspot_c": 90.74560674474411,
+        "ambient_c": 30.997694903264172,
+        "load_percent": 114.0,
+        "voltage_pu": 1.0
+      },
+      {
+        "elapsed_s": 9720,
+        "oil_c": 58.16776228446117,
+        "hotspot_c": 91.52135109601818,
+        "ambient_c": 30.996369230411574,
+        "load_percent": 114.0,
+        "voltage_pu": 1.0
+      },
+      {
+        "elapsed_s": 9780,
+        "oil_c": 57.835915903985864,
+        "hotspot_c": 91.01700462063489,
+        "ambient_c": 30.994743923132898,
+        "load_percent": 114.0,
+        "voltage_pu": 1.0
+      },
+      {
+        "elapsed_s": 9840,
+        "oil_c": 58.349145985389384,
+        "hotspot_c": 91.71260389327568,
+        "ambient_c": 30.992819143957522,
+        "load_percent": 114.0,
+        "voltage_pu": 1.0
+      },
+      {
+        "elapsed_s": 9900,
+        "oil_c": 58.278354148098906,
+        "hotspot_c": 91.84400842567656,
+        "ambient_c": 30.990595085361758,
+        "load_percent": 114.0,
+        "voltage_pu": 1.0
+      },
+      {
+        "elapsed_s": 9960,
+        "oil_c": 58.106312997239435,
+        "hotspot_c": 91.0511707209943,
+        "ambient_c": 30.988071969749612,
+        "load_percent": 114.0,
+        "voltage_pu": 1.0
+      },
+      {
+        "elapsed_s": 10020,
+        "oil_c": 57.84606366371895,
+        "hotspot_c": 93.14836257320235,
+        "ambient_c": 30.98525004943054,
+        "load_percent": 114.0,
+        "voltage_pu": 1.0
+      },
+      {
+        "elapsed_s": 10080,
+        "oil_c": 59.52538510250677,
+        "hotspot_c": 92.06364684704272,
+        "ambient_c": 30.982129606594228,
+        "load_percent": 114.0,
+        "voltage_pu": 1.0
+      },
+      {
+        "elapsed_s": 10140,
+        "oil_c": 58.45617421424759,
+        "hotspot_c": 92.19095602330496,
+        "ambient_c": 30.978710953282356,
+        "load_percent": 114.0,
+        "voltage_pu": 1.0
+      },
+      {
+        "elapsed_s": 10200,
+        "oil_c": 59.29363744018667,
+        "hotspot_c": 93.26520401398851,
+        "ambient_c": 30.974994431357405,
+        "load_percent": 114.0,
+        "voltage_pu": 1.0
+      },
+      {
+        "elapsed_s": 10260,
+        "oil_c": 58.95379209766439,
+        "hotspot_c": 93.29205298013326,
+        "ambient_c": 30.970980412468474,
+        "load_percent": 114.0,
+        "voltage_pu": 1.0
+      },
+      {
+        "elapsed_s": 10320,
+        "oil_c": 60.09455875164958,
+        "hotspot_c": 93.86452773247287,
+        "ambient_c": 30.966669298014104,
+        "load_percent": 114.0,
+        "voltage_pu": 1.0
+      },
+      {
+        "elapsed_s": 10380,
+        "oil_c": 59.56926175635182,
+        "hotspot_c": 93.25412806319798,
+        "ambient_c": 30.96206151910215,
+        "load_percent": 114.0,
+        "voltage_pu": 1.0
+      },
+      {
+        "elapsed_s": 10440,
+        "oil_c": 59.69631678890346,
+        "hotspot_c": 91.49426113339197,
+        "ambient_c": 30.95715753650666,
+        "load_percent": 114.0,
+        "voltage_pu": 1.0
+      },
+      {
+        "elapsed_s": 10500,
+        "oil_c": 59.365255820686244,
+        "hotspot_c": 93.27930507737594,
+        "ambient_c": 30.95195784062181,
+        "load_percent": 114.0,
+        "voltage_pu": 1.0
+      },
+      {
+        "elapsed_s": 10560,
+        "oil_c": 60.48041349987136,
+        "hotspot_c": 93.39084590405095,
+        "ambient_c": 30.946462951412855,
+        "load_percent": 114.0,
+        "voltage_pu": 1.0
+      },
+      {
+        "elapsed_s": 10620,
+        "oil_c": 59.830472389737245,
+        "hotspot_c": 93.41684419794245,
+        "ambient_c": 30.940673418364135,
+        "load_percent": 114.0,
+        "voltage_pu": 1.0
+      },
+      {
+        "elapsed_s": 10680,
+        "oil_c": 60.38092482997459,
+        "hotspot_c": 94.02248913528805,
+        "ambient_c": 30.934589820424133,
+        "load_percent": 114.0,
+        "voltage_pu": 1.0
+      },
+      {
+        "elapsed_s": 10740,
+        "oil_c": 61.240254322136344,
+        "hotspot_c": 93.88883855405342,
+        "ambient_c": 30.928212765947574,
+        "load_percent": 114.0,
+        "voltage_pu": 1.0
+      },
+      {
+        "elapsed_s": 10800,
+        "oil_c": 60.4837273217541,
+        "hotspot_c": 95.00721081129221,
+        "ambient_c": 30.921542892634584,
+        "load_percent": 114.0,
+        "voltage_pu": 1.0
+      }
+    ],
+    "truth": [
+      {
+        "active": false,
+        "hotspot_c": 43.0,
+        "oil_c": 35.0
+      },
+      {
+        "active": false,
+        "hotspot_c": 43.935055883756526,
+        "oil_c": 35.221648847756114
+      },
+      {
+        "active": false,
+        "hotspot_c": 44.84792450430594,
+        "oil_c": 35.44363523049564
+      },
+      {
+        "active": false,
+        "hotspot_c": 45.742191828917996,
+        "oil_c": 35.666206707580244
+      },
+      {
+        "active": false,
+        "hotspot_c": 46.62005362583084,
+        "oil_c": 35.88952696018295
+      },
+      {
+        "active": false,
+        "hotspot_c": 47.48249341697701,
+        "oil_c": 36.11367599570589
+      },
+      {
+        "active": false,
+        "hotspot_c": 48.329445555480305,
+        "oil_c": 36.33865128582644
+      },
+      {
+        "active": false,
+        "hotspot_c": 49.159946528665934,
+        "oil_c": 36.56436988225065
+      },
+      {
+        "active": false,
+        "hotspot_c": 49.97227684860507,
+        "oil_c": 36.7906715299648
+      },
+      {
+        "active": false,
+        "hotspot_c": 50.76409525214137,
+        "oil_c": 37.01732277356431
+      },
+      {
+        "active": false,
+        "hotspot_c": 51.53256638252305,
+        "oil_c": 37.244022028560494
+      },
+      {
+        "active": false,
+        "hotspot_c": 52.274482658005894,
+        "oil_c": 37.470405566850616
+      },
+      {
+        "active": false,
+        "hotspot_c": 52.986380642862606,
+        "oil_c": 37.696054344198146
+      },
+      {
+        "active": false,
+        "hotspot_c": 53.66465191760853,
+        "oil_c": 37.92050157799323
+      },
+      {
+        "active": false,
+        "hotspot_c": 54.305648192914106,
+        "oil_c": 38.14324096610643
+      },
+      {
+        "active": false,
+        "hotspot_c": 54.90578022093828,
+        "oil_c": 38.363735422632786
+      },
+      {
+        "active": false,
+        "hotspot_c": 55.46160992418923,
+        "oil_c": 38.58142619402719
+      },
+      {
+        "active": false,
+        "hotspot_c": 55.96993508107603,
+        "oil_c": 38.795742209785985
+      },
+      {
+        "active": false,
+        "hotspot_c": 56.42786587461474,
+        "oil_c": 39.006109515607584
+      },
+      {
+        "active": false,
+        "hotspot_c": 56.832892621769346,
+        "oil_c": 39.21196063398223
+      },
+      {
+        "active": false,
+        "hotspot_c": 57.18294405098972,
+        "oil_c": 39.412743697469594
+      },
+      {
+        "active": false,
+        "hotspot_c": 57.476435579859114,
+        "oil_c": 39.60793120350933
+      },
+      {
+        "active": false,
+        "hotspot_c": 57.71230715844159,
+        "oil_c": 39.79702824639704
+      },
+      {
+        "active": false,
+        "hotspot_c": 57.890050381854685,
+        "oil_c": 39.97958009190498
+      },
+      {
+        "active": false,
+        "hotspot_c": 58.00972473262014,
+        "oil_c": 40.15517897273259
+      },
+      {
+        "active": false,
+        "hotspot_c": 58.07196298424825,
+        "oil_c": 40.32346999828065
+      },
+      {
+        "active": false,
+        "hotspot_c": 58.07796597707315,
+        "oil_c": 40.4841560898489
+      },
+      {
+        "active": false,
+        "hotspot_c": 58.0294871604231,
+        "oil_c": 40.63700187191381
+      },
+      {
+        "active": false,
+        "hotspot_c": 57.92880747675053,
+        "oil_c": 40.78183647126858
+      },
+      {
+        "active": false,
+        "hotspot_c": 57.778701338518225,
+        "oil_c": 40.91855519809523
+      },
+      {
+        "active": false,
+        "hotspot_c": 57.58239461284563,
+        "oil_c": 41.04712010606242
+      },
+      {
+        "active": false,
+        "hotspot_c": 57.343515677866776,
+        "oil_c": 41.167559451866964
+      },
+      {
+        "active": false,
+        "hotspot_c": 57.06604074449297,
+        "oil_c": 41.27996609781713
+      },
+      {
+        "active": false,
+        "hotspot_c": 56.75423474423751,
+        "oil_c": 41.38449492364573
+      },
+      {
+        "active": false,
+        "hotspot_c": 56.41258916477684,
+        "oil_c": 41.48135933528454
+      },
+      {
+        "active": false,
+        "hotspot_c": 56.04575826722353,
+        "oil_c": 41.57082697836316
+      },
+      {
+        "active": false,
+        "hotspot_c": 55.65849514030088,
+        "oil_c": 41.65321478222628
+      },
+      {
+        "active": false,
+        "hotspot_c": 55.255589034750564,
+        "oil_c": 41.72888347576962
+      },
+      {
+        "active": false,
+        "hotspot_c": 54.84180537476448,
+        "oil_c": 41.79823172881078
+      },
+      {
+        "active": false,
+        "hotspot_c": 54.4218297607893,
+        "oil_c": 41.861690081418345
+      },
+      {
+        "active": false,
+        "hotspot_c": 54.000217158933296,
+        "oil_c": 41.91971482796372
+      },
+      {
+        "active": false,
+        "hotspot_c": 53.58134731619981,
+        "oil_c": 41.9727820219638
+      },
+      {
+        "active": false,
+        "hotspot_c": 53.169387248450576,
+        "oil_c": 42.021381761420734
+      },
+      {
+        "active": false,
+        "hotspot_c": 52.7682614210411,
+        "oil_c": 42.06601290183495
+      },
+      {
+        "active": false,
+        "hotspot_c": 52.38162998367628,
+        "oil_c": 42.10717832509925
+      },
+      {
+        "active": false,
+        "hotspot_c": 52.012875136460245,
+        "oil_c": 42.14538086715659
+      },
+      {
+        "active": false,
+        "hotspot_c": 51.6650954011657,
+        "oil_c": 42.18111997615924
+      },
+      {
+        "active": false,
+        "hotspot_c": 51.341107261180866,
+        "oil_c": 42.21488913696697
+      },
+      {
+        "active": false,
+        "hotspot_c": 51.04345332924028,
+        "oil_c": 42.24717405876698
+      },
+      {
+        "active": false,
+        "hotspot_c": 50.77441592049511,
+        "oil_c": 42.27845158245749
+      },
+      {
+        "active": false,
+        "hotspot_c": 50.53603466816725,
+        "oil_c": 42.30918922560654
+      },
+      {
+        "active": false,
+        "hotspot_c": 50.33012663870574,
+        "oil_c": 42.33984524779856
+      },
+      {
+        "active": false,
+        "hotspot_c": 50.158307299995826,
+        "oil_c": 42.37086909042393
+      },
+      {
+        "active": false,
+        "hotspot_c": 50.02201068260115,
+        "oil_c": 42.40270202451761
+      },
+      {
+        "active": false,
+        "hotspot_c": 49.9225071567522,
+        "oil_c": 42.43577782963227
+      },
+      {
+        "active": false,
+        "hotspot_c": 49.86091742541816,
+        "oil_c": 42.470523326763924
+      },
+      {
+        "active": false,
+        "hotspot_c": 49.83822159647125,
+        "oil_c": 42.50735859908244
+      },
+      {
+        "active": false,
+        "hotspot_c": 49.85526252712614,
+        "oil_c": 42.546696754919104
+      },
+      {
+        "active": false,
+        "hotspot_c": 49.91274300818375,
+        "oil_c": 42.588943116671224
+      },
+      {
+        "active": false,
+        "hotspot_c": 50.011216747743816,
+        "oil_c": 42.63449375495336
+      },
+      {
+        "active": false,
+        "hotspot_c": 50.15107349754885,
+        "oil_c": 42.683733327012256
+      },
+      {
+        "active": false,
+        "hotspot_c": 50.33251901624827,
+        "oil_c": 42.73703221951305
+      },
+      {
+        "active": false,
+        "hotspot_c": 50.55555086361631,
+        "oil_c": 42.794743035757236
+      },
+      {
+        "active": false,
+        "hotspot_c": 50.81993125494795,
+        "oil_c": 42.8571965039598
+      },
+      {
+        "active": false,
+        "hotspot_c": 51.12515836836431,
+        "oil_c": 42.924696914612866
+      },
+      {
+        "active": false,
+        "hotspot_c": 51.47043758797129,
+        "oil_c": 42.99751721997829
+      },
+      {
+        "active": false,
+        "hotspot_c": 51.85465418563713,
+        "oil_c": 43.07589394674583
+      },
+      {
+        "active": false,
+        "hotspot_c": 52.27634889980795,
+        "oil_c": 43.16002208376131
+      },
+      {
+        "active": false,
+        "hotspot_c": 52.73369776961424,
+        "oil_c": 43.25005011078786
+      },
+      {
+        "active": false,
+        "hotspot_c": 53.224497435980204,
+        "oil_c": 43.34607533212815
+      },
+      {
+        "active": false,
+        "hotspot_c": 54.23891393428345,
+        "oil_c": 43.48598673431611
+      },
+      {
+        "active": false,
+        "hotspot_c": 55.11917454141419,
+        "oil_c": 43.624085327908176
+      },
+      {
+        "active": false,
+        "hotspot_c": 55.88603755631964,
+        "oil_c": 43.760502885993226
+      },
+      {
+        "active": false,
+        "hotspot_c": 56.55713446255322,
+        "oil_c": 43.89536525918693
+      },
+      {
+        "active": false,
+        "hotspot_c": 57.14743939377542,
+        "oil_c": 44.028792499237696
+      },
+      {
+        "active": false,
+        "hotspot_c": 57.66966763319543,
+        "oil_c": 44.16089896818366
+      },
+      {
+        "active": false,
+        "hotspot_c": 58.134613884873744,
+        "oil_c": 44.29179343464491
+      },
+      {
+        "active": false,
+        "hotspot_c": 58.551439431430616,
+        "oil_c": 44.42157915877314
+      },
+      {
+        "active": false,
+        "hotspot_c": 58.92791591480538,
+        "oil_c": 44.55035396732563
+      },
+      {
+        "active": false,
+        "hotspot_c": 59.27063230716482,
+        "oil_c": 44.678210320280385
+      },
+      {
+        "active": false,
+        "hotspot_c": 59.585170646356545,
+        "oil_c": 44.80523537036424
+      },
+      {
+        "active": false,
+        "hotspot_c": 59.87625526769925,
+        "oil_c": 44.93151101682416
+      },
+      {
+        "active": false,
+        "hotspot_c": 60.1478795486921,
+        "oil_c": 45.05711395473368
+      },
+      {
+        "active": false,
+        "hotspot_c": 60.40341357614116,
+        "oil_c": 45.18211572108973
+      },
+      {
+        "active": false,
+        "hotspot_c": 60.6456956298821,
+        "oil_c": 45.30658273891959
+      },
+      {
+        "active": false,
+        "hotspot_c": 60.87710993984265,
+        "oil_c": 45.430576360582
+      },
+      {
+        "active": false,
+        "hotspot_c": 61.09965280184922,
+        "oil_c": 45.55415291140995
+      },
+      {
+        "active": false,
+        "hotspot_c": 61.314988822337035,
+        "oil_c": 45.677363734804175
+      },
+      {
+        "active": false,
+        "hotspot_c": 61.52449879448156,
+        "oil_c": 45.80025523984537
+      },
+      {
+        "active": false,
+        "hotspot_c": 61.72932048102547,
+        "oil_c": 45.92286895244857
+      },
+      {
+        "active": false,
+        "hotspot_c": 61.9303833861138,
+        "oil_c": 46.04524157103459
+      },
+      {
+        "active": false,
+        "hotspot_c": 62.128438434580445,
+        "oil_c": 46.167405027640356
+      },
+      {
+        "active": false,
+        "hotspot_c": 62.324083337947656,
+        "oil_c": 46.289386555331596
+      },
+      {
+        "active": false,
+        "hotspot_c": 62.517784308169986,
+        "oil_c": 46.41120876271798
+      },
+      {
+        "active": false,
+        "hotspot_c": 62.7098946797037,
+        "oil_c": 46.53288971630177
+      },
+      {
+        "active": false,
+        "hotspot_c": 62.90067091512326,
+        "oil_c": 46.65444303131641
+      },
+      {
+        "active": false,
+        "hotspot_c": 63.090286396955655,
+        "oil_c": 46.775877971631644
+      },
+      {
+        "active": false,
+        "hotspot_c": 63.2788433467268,
+        "oil_c": 46.89719955921634
+      },
+      {
+        "active": false,
+        "hotspot_c": 63.46638315976941,
+        "oil_c": 47.01840869356031
+      },
+      {
+        "active": false,
+        "hotspot_c": 63.65289539973982,
+        "oil_c": 47.1395022813619
+      },
+      {
+        "active": false,
+        "hotspot_c": 63.83832565884937,
+        "oil_c": 47.260473376689674
+      },
+      {
+        "active": false,
+        "hotspot_c": 64.02258245753752,
+        "oil_c": 47.381311331725335
+      },
+      {
+        "active": false,
+        "hotspot_c": 64.20554332984898,
+        "oil_c": 47.50200195809106
+      },
+      {
+        "active": false,
+        "hotspot_c": 64.38706021740883,
+        "oil_c": 47.622527698659134
+      },
+      {
+        "active": false,
+        "hotspot_c": 64.56696427500994,
+        "oil_c": 47.74286780963596
+      },
+      {
+        "active": false,
+        "hotspot_c": 64.74507017391838,
+        "oil_c": 47.86299855260674
+      },
+      {
+        "active": false,
+        "hotspot_c": 64.92117997463048,
+        "oil_c": 47.98289339612312
+      },
+      {
+        "active": false,
+        "hotspot_c": 65.09508662860776,
+        "oil_c": 48.102523226313984
+      },
+      {
+        "active": false,
+        "hotspot_c": 65.26657715815931,
+        "oil_c": 48.221856565901255
+      },
+      {
+        "active": false,
+        "hotspot_c": 65.43543555487048,
+        "oil_c": 48.34085980090811
+      },
+      {
+        "active": false,
+        "hotspot_c": 65.60144542956365,
+        "oil_c": 48.45949741425848
+      },
+      {
+        "active": false,
+        "hotspot_c": 65.76439244053205,
+        "oil_c": 48.57773222538375
+      },
+      {
+        "active": false,
+        "hotspot_c": 65.92406652154477,
+        "oil_c": 48.69552563487741
+      },
+      {
+        "active": false,
+        "hotspot_c": 66.08026392674483,
+        "oil_c": 48.81283787317059
+      },
+      {
+        "active": false,
+        "hotspot_c": 66.23278910592884,
+        "oil_c": 48.92962825214252
+      },
+      {
+        "active": true,
+        "hotspot_c": 67.8604278037584,
+        "oil_c": 49.161855612719044
+      },
+      {
+        "active": true,
+        "hotspot_c": 69.27398648406238,
+        "oil_c": 49.390994651020115
+      },
+      {
+        "active": true,
+        "hotspot_c": 70.50549873306215,
+        "oil_c": 49.61717617716372
+      },
+      {
+        "active": true,
+        "hotspot_c": 71.58216670023671,
+        "oil_c": 49.84052339004095
+      },
+      {
+        "active": true,
+        "hotspot_c": 72.52709093270104,
+        "oil_c": 50.06115233025968
+      },
+      {
+        "active": true,
+        "hotspot_c": 73.35988989721264,
+        "oil_c": 50.279172306064844
+      },
+      {
+        "active": true,
+        "hotspot_c": 74.09722586699912,
+        "oil_c": 50.49468629384852
+      },
+      {
+        "active": true,
+        "hotspot_c": 74.75325132908965,
+        "oil_c": 50.70779131476669
+      },
+      {
+        "active": true,
+        "hotspot_c": 75.33998792757686,
+        "oil_c": 50.918578788889
+      },
+      {
+        "active": true,
+        "hotspot_c": 75.86764814158686,
+        "oil_c": 51.12713486822273
+      },
+      {
+        "active": true,
+        "hotspot_c": 76.34490835476177,
+        "oil_c": 51.33354074987205
+      },
+      {
+        "active": true,
+        "hotspot_c": 76.77914066423212,
+        "oil_c": 51.5378729705184
+      },
+      {
+        "active": true,
+        "hotspot_c": 77.17660966612145,
+        "oil_c": 51.74020368333708
+      },
+      {
+        "active": true,
+        "hotspot_c": 77.54263951166244,
+        "oil_c": 51.940600918398424
+      },
+      {
+        "active": true,
+        "hotspot_c": 77.88175572761386,
+        "oil_c": 52.13912882753953
+      },
+      {
+        "active": true,
+        "hotspot_c": 78.19780561529447,
+        "oil_c": 52.33584791463351
+      },
+      {
+        "active": true,
+        "hotspot_c": 78.49406046589525,
+        "oil_c": 52.53081525212796
+      },
+      {
+        "active": true,
+        "hotspot_c": 78.77330234026374,
+        "oil_c": 52.724084684672285
+      },
+      {
+        "active": true,
+        "hotspot_c": 79.03789774589171,
+        "oil_c": 52.9157070206046
+      },
+      {
+        "active": true,
+        "hotspot_c": 79.28986019118977,
+        "oil_c": 53.10573021202292
+      },
+      {
+        "active": true,
+        "hotspot_c": 79.5309032978021,
+        "oil_c": 53.294199524122014
+      },
+      {
+        "active": true,
+        "hotspot_c": 79.76248589764074,
+        "oil_c": 53.48115769443676
+      },
+      {
+        "active": true,
+        "hotspot_c": 79.98585032565775,
+        "oil_c": 53.66664508259444
+      },
+      {
+        "active": true,
+        "hotspot_c": 80.20205493631778,
+        "oil_c": 53.850699811142555
+      },
+      {
+        "active": true,
+        "hotspot_c": 80.41200171635384,
+        "oil_c": 54.03335789798484
+      },
+      {
+        "active": true,
+        "hotspot_c": 80.6164597344995,
+        "oil_c": 54.214653380926414
+      },
+      {
+        "active": true,
+        "hotspot_c": 80.81608505694088,
+        "oil_c": 54.394618434799014
+      },
+      {
+        "active": true,
+        "hotspot_c": 81.0114376622067,
+        "oil_c": 54.57328348160933
+      },
+      {
+        "active": true,
+        "hotspot_c": 81.20299580855466,
+        "oil_c": 54.750677294126724
+      },
+      {
+        "active": true,
+        "hotspot_c": 81.39116823844603,
+        "oil_c": 54.92682709330203
+      },
+      {
+        "active": true,
+        "hotspot_c": 81.5763045465852,
+        "oil_c": 55.10175863988562
+      },
+      {
+        "active": true,
+        "hotspot_c": 81.75870398866923,
+        "oil_c": 55.27549632059094
+      },
+      {
+        "active": true,
+        "hotspot_c": 81.93862296611881,
+        "oil_c": 55.44806322912911
+      },
+      {
+        "active": true,
+        "hotspot_c": 82.1162813865187,
+        "oil_c": 55.619481242420655
+      },
+      {
+        "active": true,
+        "hotspot_c": 82.29186806932262,
+        "oil_c": 55.789771092272254
+      },
+      {
+        "active": true,
+        "hotspot_c": 82.46554534076806,
+        "oil_c": 55.95895243278919
+      },
+      {
+        "active": true,
+        "hotspot_c": 82.63745294020484,
+        "oil_c": 56.12704390377793
+      },
+      {
+        "active": true,
+        "hotspot_c": 82.80771134158769,
+        "oil_c": 56.29406319037821
+      },
+      {
+        "active": true,
+        "hotspot_c": 82.97642457821716,
+        "oil_c": 56.46002707914963
+      },
+      {
+        "active": true,
+        "hotspot_c": 83.14368264551516,
+        "oil_c": 56.624951510824324
+      },
+      {
+        "active": true,
+        "hotspot_c": 83.30956354533282,
+        "oil_c": 56.788851629924686
+      },
+      {
+        "active": true,
+        "hotspot_c": 83.47413502570546,
+        "oil_c": 56.95174183143323
+      },
+      {
+        "active": true,
+        "hotspot_c": 83.63745606183454,
+        "oil_c": 57.113635804690475
+      },
+      {
+        "active": true,
+        "hotspot_c": 83.79957811717014,
+        "oil_c": 57.2745465746863
+      },
+      {
+        "active": true,
+        "hotspot_c": 83.96054621760528,
+        "oil_c": 57.43448654090022
+      },
+      {
+        "active": true,
+        "hotspot_c": 84.12039986681584,
+        "oil_c": 57.59346751383697
+      },
+      {
+        "active": true,
+        "hotspot_c": 84.27917382655454,
+        "oil_c": 57.75150074939476
+      },
+      {
+        "active": true,
+        "hotspot_c": 84.43689878212,
+        "oil_c": 57.908596981195586
+      },
+      {
+        "active": true,
+        "hotspot_c": 84.59360191017647,
+        "oil_c": 58.06476645099922
+      },
+      {
+        "active": true,
+        "hotspot_c": 84.74930736351355,
+        "oil_c": 58.22001893731511
+      },
+      {
+        "active": true,
+        "hotspot_c": 84.90403668514006,
+        "oil_c": 58.37436378231973
+      },
+      {
+        "active": true,
+        "hotspot_c": 85.05780916224182,
+        "oil_c": 58.527809917180555
+      },
+      {
+        "active": true,
+        "hotspot_c": 85.21064212895038,
+        "oil_c": 58.68036588588152
+      },
+      {
+        "active": true,
+        "hotspot_c": 85.36255122552527,
+        "oil_c": 58.83203986763954
+      },
+      {
+        "active": true,
+        "hotspot_c": 85.51355062041134,
+        "oil_c": 58.982839697995956
+      },
+      {
+        "active": true,
+        "hotspot_c": 85.6636532006635,
+        "oil_c": 59.13277288866208
+      },
+      {
+        "active": true,
+        "hotspot_c": 85.81287073540727,
+        "oil_c": 59.28184664619298
+      },
+      {
+        "active": true,
+        "hotspot_c": 85.96121401630529,
+        "oil_c": 59.43006788955953
+      },
+      {
+        "active": true,
+        "hotspot_c": 86.10869297840568,
+        "oil_c": 59.57744326668432
+      },
+      {
+        "active": true,
+        "hotspot_c": 86.2553168042435,
+        "oil_c": 59.723979170003204
+      },
+      {
+        "active": true,
+        "hotspot_c": 86.4010940136384,
+        "oil_c": 59.86968175111063
+      },
+      {
+        "active": true,
+        "hotspot_c": 86.54603254126727,
+        "oil_c": 60.0145569345433
+      },
+      {
+        "active": true,
+        "hotspot_c": 86.69013980378153,
+        "oil_c": 60.15861043075355
+      },
+      {
+        "active": true,
+        "hotspot_c": 86.8334227579756,
+        "oil_c": 60.30184774832074
+      },
+      {
+        "active": true,
+        "hotspot_c": 86.9758879512899,
+        "oil_c": 60.44427420544606
+      },
+      {
+        "active": true,
+        "hotspot_c": 87.11754156574176,
+        "oil_c": 60.5858949407734
+      }
+    ],
+    "meta": {
+      "scenario": "overload_sensor_bias",
+      "event_min": 115,
+      "severity": 0.2,
+      "noise_c": 0.5,
+      "seed": 39757285,
+      "family": "radiator_lag"
+    },
+    "nonce": "23fc5e4ada4a90a0ab1c738a10fcb5ab"
+  },
+  "commitment_verified": true,
+  "scores": {
+    "target": "hotspot_c",
+    "count": 30,
+    "possible": 30,
+    "model_mae_c": 2.0292233379240088,
+    "persistence_mae_c": 9.064259861150093,
+    "note": "All available future target observations are retained, including future input changes. No score is evidence of safety or diagnostic certainty."
+  },
+  "observed_future": [
+    {
+      "minute": 1.0,
+      "actual_c": 77.50083139352012,
+      "predicted_c": 77.58853474830624,
+      "error_c": 0.08770335478612878,
+      "persistence_error_c": 0.5551824335337869
+    },
+    {
+      "minute": 2.0,
+      "actual_c": 79.6002362566327,
+      "predicted_c": 78.19393958977317,
+      "error_c": 1.4062966668595323,
+      "persistence_error_c": 2.654587296646369
+    },
+    {
+      "minute": 3.0,
+      "actual_c": 80.66380537186237,
+      "predicted_c": 78.76645384764527,
+      "error_c": 1.8973515242171004,
+      "persistence_error_c": 3.7181564118760377
+    },
+    {
+      "minute": 4.0,
+      "actual_c": 81.46754235833792,
+      "predicted_c": 79.3100601190535,
+      "error_c": 2.1574822392844197,
+      "persistence_error_c": 4.521893398351594
+    },
+    {
+      "minute": 5.0,
+      "actual_c": 83.27475940674783,
+      "predicted_c": 79.82821411461398,
+      "error_c": 3.446545292133848,
+      "persistence_error_c": 6.329110446761504
+    },
+    {
+      "minute": 6.0,
+      "actual_c": 83.28367444596255,
+      "predicted_c": 80.3239147714047,
+      "error_c": 2.9597596745578443,
+      "persistence_error_c": 6.3380254859762175
+    },
+    {
+      "minute": 7.0,
+      "actual_c": 84.59438394512517,
+      "predicted_c": 80.79976503258177,
+      "error_c": 3.794618912543399,
+      "persistence_error_c": 7.648734985138844
+    },
+    {
+      "minute": 8.0,
+      "actual_c": 84.9037042625206,
+      "predicted_c": 81.2580245361099,
+      "error_c": 3.6456797264107053,
+      "persistence_error_c": 7.958055302534277
+    },
+    {
+      "minute": 9.0,
+      "actual_c": 85.2137782761732,
+      "predicted_c": 81.7006552896808,
+      "error_c": 3.513122986492405,
+      "persistence_error_c": 8.268129316186872
+    },
+    {
+      "minute": 10.0,
+      "actual_c": 84.28525843963733,
+      "predicted_c": 82.12936126551126,
+      "error_c": 2.1558971741260677,
+      "persistence_error_c": 7.339609479651003
+    },
+    {
+      "minute": 11.0,
+      "actual_c": 85.75023712064068,
+      "predicted_c": 82.54562272441748,
+      "error_c": 3.2046143962231923,
+      "persistence_error_c": 8.804588160654347
+    },
+    {
+      "minute": 12.0,
+      "actual_c": 85.89579551878138,
+      "predicted_c": 82.9507259708133,
+      "error_c": 2.945069547968089,
+      "persistence_error_c": 8.950146558795055
+    },
+    {
+      "minute": 13.0,
+      "actual_c": 85.59191183524315,
+      "predicted_c": 83.345789146876,
+      "error_c": 2.2461226883671515,
+      "persistence_error_c": 8.646262875256824
+    },
+    {
+      "minute": 14.0,
+      "actual_c": 86.12801700188368,
+      "predicted_c": 83.73178459315193,
+      "error_c": 2.3962324087317484,
+      "persistence_error_c": 9.182368041897348
+    },
+    {
+      "minute": 15.0,
+      "actual_c": 87.78858486787948,
+      "predicted_c": 84.10955823268297,
+      "error_c": 3.6790266351965073,
+      "persistence_error_c": 10.84293590789315
+    },
+    {
+      "minute": 16.0,
+      "actual_c": 86.56494072057913,
+      "predicted_c": 84.47984637488736,
+      "error_c": 2.085094345691772,
+      "persistence_error_c": 9.619291760592802
+    },
+    {
+      "minute": 17.0,
+      "actual_c": 87.14473863087956,
+      "predicted_c": 84.8432902826806,
+      "error_c": 2.30144834819896,
+      "persistence_error_c": 10.19908967089323
+    },
+    {
+      "minute": 18.0,
+      "actual_c": 88.15419092167346,
+      "predicted_c": 85.2004488005973,
+      "error_c": 2.9537421210761607,
+      "persistence_error_c": 11.208541961687132
+    },
+    {
+      "minute": 19.0,
+      "actual_c": 88.48373662408278,
+      "predicted_c": 85.55180930203542,
+      "error_c": 2.9319273220473576,
+      "persistence_error_c": 11.538087664096452
+    },
+    {
+      "minute": 20.0,
+      "actual_c": 86.00832684103825,
+      "predicted_c": 85.89779717938347,
+      "error_c": 0.1105296616547804,
+      "persistence_error_c": 9.062677881051926
+    },
+    {
+      "minute": 21.0,
+      "actual_c": 87.33795276749277,
+      "predicted_c": 86.23878407100341,
+      "error_c": 1.0991686964893574,
+      "persistence_error_c": 10.392303807506437
+    },
+    {
+      "minute": 22.0,
+      "actual_c": 88.29551863836079,
+      "predicted_c": 86.57509499321993,
+      "error_c": 1.7204236451408548,
+      "persistence_error_c": 11.34986967837446
+    },
+    {
+      "minute": 23.0,
+      "actual_c": 88.89222158096987,
+      "predicted_c": 86.90701452308234,
+      "error_c": 1.9852070578875356,
+      "persistence_error_c": 11.946572620983545
+    },
+    {
+      "minute": 24.0,
+      "actual_c": 87.951014944855,
+      "predicted_c": 87.23479215826055,
+      "error_c": 0.7162227865944573,
+      "persistence_error_c": 11.005365984868675
+    },
+    {
+      "minute": 25.0,
+      "actual_c": 88.85509641600957,
+      "predicted_c": 87.55864696361525,
+      "error_c": 1.2964494523943273,
+      "persistence_error_c": 11.909447456023244
+    },
+    {
+      "minute": 26.0,
+      "actual_c": 88.32780578665087,
+      "predicted_c": 87.87877159939994,
+      "error_c": 0.44903418725093047,
+      "persistence_error_c": 11.382156826664541
+    },
+    {
+      "minute": 27.0,
+      "actual_c": 89.61390081689103,
+      "predicted_c": 88.1953358134118,
+      "error_c": 1.4185650034792303,
+      "persistence_error_c": 12.668251856904703
+    },
+    {
+      "minute": 28.0,
+      "actual_c": 90.02483616146048,
+      "predicted_c": 88.50848946845004,
+      "error_c": 1.5163466930104477,
+      "persistence_error_c": 13.079187201474156
+    },
+    {
+      "minute": 29.0,
+      "actual_c": 88.93698733819619,
+      "predicted_c": 88.81836516694092,
+      "error_c": 0.11862217125526797,
+      "persistence_error_c": 11.99133837820986
+    },
+    {
+      "minute": 30.0,
+      "actual_c": 89.76347594400472,
+      "predicted_c": 89.12508052635404,
+      "error_c": 0.6383954176506847,
+      "persistence_error_c": 12.817826984018396
+    }
+  ]
+}

@@ -1,0 +1,48 @@
+{
+  "version": "observation-pipeline-2",
+  "development_seeds": [
+    3101,
+    3102,
+    3103,
+    3104,
+    3105,
+    3106,
+    3107,
+    3108,
+    3109,
+    3110,
+    3111,
+    3112
+  ],
+  "evaluation_seeds": [
+    88001,
+    88002,
+    88003,
+    88004,
+    88005,
+    88006,
+    88007,
+    88008,
+    88009,
+    88010,
+    88011,
+    88012,
+    88013,
+    88014,
+    88015,
+    88016,
+    88017,
+    88018,
+    88019,
+    88020,
+    88021,
+    88022,
+    88023,
+    88024
+  ],
+  "decision": "Freeze CUSUM: five-minute non-overlapping innovations, mean healthy-prefix bias, k=max(0.15,0.5*noise), h=max(3,6*noise). Development 11/12 cooling vs 8/12 baseline; one healthy false-alarm episode. No evaluation-driven tuning.",
+  "source_sha256": {
+    "neuratwin/twin_observer.py": "f9007b4bbcbe6d1a98fc1f8e8e2c2f27ac7b344a3c8c725b96d967454f110a60",
+    "neuratwin/validation_plant.py": "43c54122ed16754f39f4e041da520c02b82961738aa47b1d81ffe266dd365887"
+  }
+}

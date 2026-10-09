@@ -1,0 +1,9 @@
+{
+  "status": "pass",
+  "archive_boot": "extracted application with isolated SQLite",
+  "private_env_loaded": false,
+  "hardware_control": false,
+  "checks": 37,
+  "verified_manifest_files": 304,
+  "archive_sha256": "5283136272f3a35b33e0788197f4c12513315e44dc220aafbd9c6098758d6284"
+}
