@@ -41,15 +41,15 @@
 #include <stdarg.h>
 
 // ============================================================
-// NETWORK / IDENTITY
-// WIFI_SSID, WIFI_PASSWORD and API_TOKEN live in secrets.h (gitignored).
-// Copy secrets.example.h to secrets.h and fill it in before flashing.
+// NETWORK / IDENTITY - EDIT THESE
 // ============================================================
 
-#include "secrets.h"
+const char* WIFI_SSID     = "YOUR_SSID";
+const char* WIFI_PASSWORD = "YOUR_PASSWORD";
 
 const char* DEVICE_ID     = "HALO-ESP32";     // must equal the backend's configured device_id
 const char* MDNS_HOSTNAME = "halo-esp32";     // reachable as http://halo-esp32.local
+const char* API_TOKEN     = "YOUR_TOKEN";     // paste HALO_DEVICE_TOKEN from .env; empty = no auth (LAN dev only)
 const uint16_t HTTP_PORT  = 80;
 
 const unsigned long WIFI_BOOT_WAIT_MS     = 20000;  // wait this long at boot, then carry on
