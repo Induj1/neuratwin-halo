@@ -65,6 +65,34 @@ test('thermometer packet is surface-only, respects probe validity and uses proto
   assert.equal(bad.valid, false); assert.equal(bad.value_c, null); assert.match(bad.reason, /invalid/);
   assert.equal(math.thermoPacket(null, [], null).warning_c, null);
 });
+test('effective resistance is 39 Ω divided by the branches that are on', () => {
+  assert.equal(math.effectiveResistance(1), 39); assert.equal(math.effectiveResistance(2), 19.5); assert.equal(math.effectiveResistance(3), 13);
+  assert.equal(math.effectiveResistance(0), null); assert.equal(math.effectiveResistance(null), null);
+});
+test('flat 0 A on both currents with loads on is replaced by V ÷ R_eff and a secondary-power primary estimate', () => {
+  const zero = seq => math.normalize({ live: true, reading: reading({ sequence: seq, current_a: 0, primary_current_a: 0, secondary_v: 11.7, primary_v: 230, loads: { load1: true, load2: true, load4: false, loads_on: 2 } }) });
+  const b = createBuffer(); for (const s of [1, 2, 3]) b.push(zero(s));
+  const d = math.deriveCurrents(zero(3), b.rows());
+  assert.equal(d.active, true); assert.equal(d.r_eff, 19.5);
+  assert.ok(Math.abs(d.secondary_i - 11.7 / 19.5) < 1e-9);
+  assert.ok(Math.abs(d.primary_i - 11.7 * (11.7 / 19.5) / 230) < 1e-9);
+  const s = math.scopePacket(zero(3), b.rows(), { configured: true });
+  assert.ok(Math.abs(s.values.secondary_i - 0.6) < 1e-9); assert.match(s.notes.secondary_i, /R_eff 19\.5/); assert.match(s.notes.primary_i, /measured 0 A/);
+  assert.ok(s.history.every(r => r.values.secondary_i > 0.5), 'trend rows are estimated too');
+});
+test('estimates stay off when current is measured, when no load is on, or before enough flat samples', () => {
+  const live = math.normalize({ live: true, reading: reading() });
+  const b = createBuffer(); b.push(live);
+  assert.equal(math.deriveCurrents(live, b.rows()).active, false);
+  const zero = seq => math.normalize({ live: true, reading: reading({ sequence: seq, current_a: 0, primary_current_a: 0 }) });
+  const short = createBuffer(); short.push(zero(1));
+  assert.equal(math.deriveCurrents(zero(1), short.rows()).active, false, 'one sample is not "constant"');
+  const off = math.normalize({ live: true, reading: reading({ current_a: 0, primary_current_a: 0, loads: { load1: false, load2: false, load4: false, loads_on: 0 } }) });
+  const offBuffer = createBuffer(); for (let i = 1; i <= 3; i++) offBuffer.push(Object.assign({}, off, { sequence: i }));
+  const d = math.deriveCurrents(off, offBuffer.rows());
+  assert.equal(d.active, false); assert.equal(d.r_eff, null);
+  assert.equal(math.scopePacket(off, offBuffer.rows(), { configured: true }).values.secondary_i, 0, 'zero with no load is a genuine zero');
+});
 test('client never throws from poll: unconfigured, unreachable and live paths', async () => {
   const calls = [];
   let configured = false, fail = false;

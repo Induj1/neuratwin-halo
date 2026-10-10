@@ -129,7 +129,9 @@
         sw.setAttribute('aria-label', `${m.ui} load`);
       }
       q('.hl-count').textContent = p && p.loads ? `${p.loads.loads_on + (cutoff.active ? 1 : 0)} of 4 loads on` : 'Load states unavailable';
-      q('.hl-expected').textContent = p && finite(p.secondary.i_expected) ? `expected ${fmt(p.secondary.i_expected, 3)} A · measured ${fmt(p.secondary.i, 3)} A` : '';
+      const d = ctx.derived || null, rEff = d && finite(d.r_eff) ? `R_eff ${fmt(d.r_eff, 1)} Ω` : '';
+      q('.hl-expected').textContent = d && d.active ? `${rEff} · estimated ${fmt(d.secondary_i, 3)} A (V ÷ R_eff) · measured ${fmt(p.secondary.i, 3)} A`
+        : p && finite(p.secondary.i_expected) ? `${rEff ? rEff + ' · ' : ''}expected ${fmt(p.secondary.i_expected, 3)} A · measured ${fmt(p.secondary.i, 3)} A` : rEff;
       q('.hl-alloff').disabled = !st.configured || !!ctx.busy || pendingUi !== null;
       q('.hl-gate').textContent = message || g.reason;
       q('.hl-gate').dataset.error = String(!!message);

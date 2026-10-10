@@ -62,7 +62,8 @@
         bootId = packet.boot_id; lastKey = key;
         rows.push({ at: packet.at, sequence: packet.sequence, values: {
           primary_v: packet.primary.v, secondary_v: packet.secondary.v, primary_i: packet.primary.i,
-          secondary_i: packet.secondary.i, secondary_i_expected: packet.secondary.i_expected, surface_c: packet.surface_c } });
+          secondary_i: packet.secondary.i, secondary_i_expected: packet.secondary.i_expected, surface_c: packet.surface_c,
+          loads_on: packet.loads ? packet.loads.loads_on : null } });
         if (rows.length > max) rows = rows.slice(rows.length - max);
         return true;
       },
@@ -78,17 +79,64 @@
     return packet.stale ? 'stale' : 'live';
   }
 
+  /* Load bank: identical 39 Ω branches in parallel, so R_eff = 39 Ω ÷ branches on. */
+  const BRANCH_OHMS = 39;
+  const ZERO_AMPS = 0.005;
+  function effectiveResistance(loadsOn, branchOhms) {
+    const ohms = finite(branchOhms) && branchOhms > 0 ? branchOhms : BRANCH_OHMS;
+    return finite(loadsOn) && loadsOn > 0 ? ohms / loadsOn : null;
+  }
+  const zeroCurrent = v => v === null || v === undefined || (finite(v) && Math.abs(v) < ZERO_AMPS);
+  function estimateFrom(secondaryV, primaryV, loadsOn) {
+    const rEff = effectiveResistance(loadsOn);
+    if (rEff === null || !finite(secondaryV) || secondaryV <= 0) return { r_eff: rEff, secondary_i: null, primary_i: null };
+    const secondaryI = secondaryV / rEff;
+    const primaryI = finite(primaryV) && primaryV > 0 ? secondaryV * secondaryI / primaryV : null;
+    return { r_eff: rEff, secondary_i: secondaryI, primary_i: primaryI };
+  }
+  /* Frontend estimate used only when the board reports a flat 0 A on both currents while loads are on.
+     Secondary: V_s ÷ R_eff. Primary: V_s·I_s ÷ V_p (ideal transformer, unity power factor). */
+  function deriveCurrents(packet, history, options) {
+    const opts = options || {}, minSamples = finite(opts.minSamples) ? opts.minSamples : 3;
+    const p = packet && packet.available ? packet : null;
+    const out = { active: false, r_eff: null, loads_on: null, secondary_i: null, primary_i: null, reason: '' };
+    if (!p) return out;
+    out.loads_on = p.loads ? p.loads.loads_on : null;
+    out.r_eff = effectiveResistance(out.loads_on);
+    if (out.r_eff === null || !finite(p.secondary.v) || p.secondary.v <= 0) return out;
+    const recent = (Array.isArray(history) ? history : []).slice(-minSamples);
+    const flatNow = zeroCurrent(p.secondary.i) && zeroCurrent(p.primary.i);
+    const flatRecent = recent.length >= minSamples && recent.every(r => zeroCurrent(r.values.secondary_i) && zeroCurrent(r.values.primary_i));
+    if (!flatNow || !flatRecent) return out;
+    const est = estimateFrom(p.secondary.v, p.primary.v, out.loads_on);
+    out.secondary_i = est.secondary_i; out.primary_i = est.primary_i; out.active = out.secondary_i !== null;
+    if (out.active) out.reason = `Measured current reads 0 A with ${out.loads_on} load${out.loads_on === 1 ? '' : 's'} on; showing V ÷ R_eff estimates`;
+    return out;
+  }
+
   /* Packet for HaloScope (prototype preset). */
   function scopePacket(packet, history, status) {
     const p = packet && packet.available ? packet : null;
-    return {
-      values: { primary_v: p ? p.primary.v : null, secondary_v: p ? p.secondary.v : null, primary_i: p ? p.primary.i : null,
-        secondary_i: p ? p.secondary.i : null, secondary_i_expected: p ? p.secondary.i_expected : null },
-      notes: { primary_i: p ? (p.primary.i_method === 'measured' ? 'measured' : 'calculated from secondary power') : '',
-        secondary_i: p && !p.current_calibrated ? 'current sensor not calibrated' : '',
-        secondary_i_expected: 'V × branches ÷ 39 Ω' },
-      history: Array.isArray(history) ? history : [], quality: quality(packet, status), sourceLabel: SOURCE,
-    };
+    const rows = Array.isArray(history) ? history : [];
+    const d = deriveCurrents(packet, rows);
+    const values = { primary_v: p ? p.primary.v : null, secondary_v: p ? p.secondary.v : null, primary_i: p ? p.primary.i : null,
+      secondary_i: p ? p.secondary.i : null, secondary_i_expected: p ? p.secondary.i_expected : null };
+    const notes = { primary_i: p ? (p.primary.i_method === 'measured' ? 'measured' : 'calculated from secondary power') : '',
+      secondary_i: p && !p.current_calibrated ? 'current sensor not calibrated' : '',
+      secondary_i_expected: 'V × branches ÷ 39 Ω' };
+    let mapped = rows;
+    if (d.active) {
+      values.secondary_i = d.secondary_i; values.primary_i = d.primary_i;
+      notes.secondary_i = `estimated V ÷ R_eff ${d.r_eff.toFixed(1)} Ω · measured 0 A`;
+      notes.primary_i = 'estimated from secondary power · measured 0 A';
+      mapped = rows.map(r => {
+        const v = r.values;
+        if (!(zeroCurrent(v.secondary_i) && zeroCurrent(v.primary_i))) return r;
+        const est = estimateFrom(v.secondary_v, v.primary_v, v.loads_on);
+        return Object.assign({}, r, { values: Object.assign({}, v, { secondary_i: est.secondary_i, primary_i: est.primary_i }) });
+      });
+    }
+    return { values, notes, history: mapped, quality: quality(packet, status), sourceLabel: SOURCE, derived: d };
   }
 
   /* Packet for HaloThermo. Thresholds come from /twin/prototype settings (surface limit − 5 / limit). */
@@ -140,7 +188,7 @@
     return { poll, refreshStatus, setLoads, applyLoads, status: () => status, packet: () => packet, history: () => buffer.rows(), reset: () => buffer.clear() };
   }
 
-  const api = { create, createBuffer, math: { normalize, freshness, scopePacket, thermoPacket, quality, empty }, SOURCE };
+  const api = { create, createBuffer, math: { normalize, freshness, scopePacket, thermoPacket, quality, empty, effectiveResistance, deriveCurrents, estimateFrom }, SOURCE, BRANCH_OHMS };
   if (typeof module !== 'undefined' && module.exports) module.exports = api;
   if (root) root.HaloEsp32 = api;
 })(typeof window !== 'undefined' ? window : globalThis);

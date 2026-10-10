@@ -192,7 +192,7 @@
     thermo||=window.HaloThermo?window.HaloThermo.create($('op-thermo'),{floor:0,ceiling:100,eyebrow:'SURFACE PROBE'}):null;
     thermo?.update(window.HaloEsp32.math.thermoPacket(hw,history,s.settings));
     loadsPanel||=window.HaloLoads?window.HaloLoads.create($('op-loads'),{setLoads:requestLoads}):null;
-    loadsPanel?.update({packet:hw,status:st,latched:!!s.latched,busy});
+    loadsPanel?.update({packet:hw,status:st,latched:!!s.latched,busy,derived:window.HaloEsp32.math.deriveCurrents(hw,history)});
   }
   function populateInputs(s){
     const form=$('op-inputs');
@@ -237,10 +237,15 @@
     $('op-reconnect').hidden=physical;
     const primaryVerified=!physical||['primary_v','primary_current_a'].every(k=>s.evidence.some(e=>e.channel===k&&e.available&&e.calibrated));
     const temp=HaloCommand.math.temperatureReading(s,mode);
+    // Wi-Fi board: effective load resistance and, when both measured currents are a flat 0 A, V ÷ R_eff estimates.
+    const derived=physical&&esp?window.HaloEsp32.math.deriveCurrents(esp.packet(),esp.history()):null;
+    const rEff=derived&&derived.r_eff!=null?` · R_eff ${fmt(derived.r_eff,1)} Ω (${derived.loads_on} load${derived.loads_on===1?'':'s'} on)`:'';
+    const secondaryNote=derived?.active?`Measured 0 A · est. ${fmt(derived.secondary_i,3)} A (V ÷ R_eff)`:`Current ${fmt(t.secondary_current,2)} A RMS`;
+    const primaryNote=derived?.active?`Measured 0 A · est. ${fmt(derived.primary_i,3)} A (from secondary power)`:`Current ${fmt(t.primary_current,2)} A RMS${primaryVerified?'':' · unverified'}`;
     const readings=[['thermal',temp.label,temp.value,'°C',`${temp.critical===null?'Critical reference unavailable':`Critical ${fmt(temp.critical,0)} °C`} · ${physical?`ambient ${fmt(t.ambient_temperature)} °C`:`oil ${fmt(t.oil_temperature)} °C`}`,temp.level],
-      ['loading',physical?'Measured loading':'Mean-current loading',t.loading_percent,'%',physical?'Relative to reviewed current limit':`Highest phase ${fmt(t.max_phase_loading_percent)}%`,null],
-      ['secondary','Secondary',t.secondary_voltage,'V',`Current ${fmt(t.secondary_current,2)} A RMS`,null],
-      ['primary','Primary',t.primary_voltage,'V',`Current ${fmt(t.primary_current,2)} A RMS${primaryVerified?'':' · unverified'}`,null]];
+      ['loading',physical?'Measured loading':'Mean-current loading',t.loading_percent,'%',physical?'Relative to reviewed current limit'+rEff:`Highest phase ${fmt(t.max_phase_loading_percent)}%`,null],
+      ['secondary','Secondary',t.secondary_voltage,'V',secondaryNote,null],
+      ['primary','Primary',t.primary_voltage,'V',primaryNote,null]];
     $('op-readings').innerHTML=readings.map(([key,label,v,unit,note,level])=>`<div class="op-reading" data-reading="${key}" ${level?`data-level="${level}"`:''}><span>${esc(label)}</span><strong>${fmt(v)} <small>${unit}</small></strong><p>${esc(note)}</p></div>`).join('');
     if(!physical){
       const scenarioKey=s.id+':'+s.scenario;
