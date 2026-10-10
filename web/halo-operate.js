@@ -7,12 +7,15 @@
   const title=s=>String(s).replaceAll('_',' ');
   let mode='industrial', run=null, current=null, busy=false, catalog=null, timer=null, ready=false, dirty=false, selectedScenario=null;
   let twin=null,initializing=false,replaySource=null,replayIndex=0,sliderTimer=null,pendingInputs=null,sliding=false,reviewSource=null,observationSource=null,observationRequest=0;
+  // Wi-Fi ESP32 instruments (prototype mode only). Absent when the module is not loaded.
+  const esp=window.HaloEsp32&&workspace?window.HaloEsp32.create(workspace.api):null;
+  let scope=null,thermo=null,loadsPanel=null;
   const grid=document.querySelector('#op-workspace .op-main-grid');
   const next=document.querySelector('#op-workspace .op-next');
   if(grid&&next){
     const stack=document.createElement('div');stack.className='op-visual-stack';
     grid.prepend(stack);stack.append(grid.querySelector('.op-model'));$('op-explore').before($('op-readings'));
-    stack.after($('op-waveform'));grid.after(next);
+    stack.after($('op-waveform'));$('op-waveform').after($('op-scope'));grid.after(next);
     grid.after(document.querySelector('#op-workspace .op-replay'));
     // Put the decision before the instruments; keep the detailed study below them.
     const decision=document.createElement('section');decision.id='op-decision-ribbon';
@@ -107,7 +110,7 @@
     $('op-industrial').disabled=busy||!ready;$('op-prototype').disabled=busy||!ready;
     document.querySelectorAll('#view-operate form button').forEach(b=>b.disabled=busy||!ready);
     $('op-clear').disabled=busy||!run;
-    $('op-off').disabled=busy||current?.connection!=='live';
+    $('op-off').disabled=busy||!(current?.connection==='live'||(esp&&esp.packet().available&&esp.status()?.configured));
     $('op-running-note').textContent=running?'Running · accelerated clock; pauses ticking when this view is hidden.':'Paused · clock advances only when you run or step.';
     $('op-live-start').textContent=running?'Pause thermal response':'Start thermal response';
     $('op-live-start').disabled=busy||!run||!!replaySource;
@@ -123,6 +126,7 @@
     if(busy)$('op-compare-apply').disabled=true;
     else {const p=HaloCommand.plan();$('op-compare-apply').disabled=!!replaySource||mode!=='industrial'||!p?.recommendation?.reduction_pct||p.origin_revision!==run?.revision;}
     if(current)paintGuide();
+    if(mode==='prototype')loadsPanel?.setBusy(busy);
   }
   async function act(action,extra={}){
     if(replaySource)throw Error('Exit replay before changing the simulation.');
@@ -142,7 +146,7 @@
     clearTimeout(timer);
     if(!ready||replaySource||document.hidden||!$('view-operate').classList.contains('active'))return;
     timer=setTimeout(()=>guarded(async()=>{
-      if(mode==='prototype')render(await workspace.api('/twin/prototype'));
+      if(mode==='prototype')render(await prototypeState());
       else if(run?.running)await act('step',{seconds:run.inputs.speed});
     }),mode==='prototype'?2500:1500);
   }
@@ -154,9 +158,41 @@
     $('op-run-tools').hidden=mode==='prototype';$('op-prototype-refresh').hidden=mode!=='prototype';
     if(mode==='industrial')render(run);else{
       current=null;$('op-workspace').hidden=true;$('op-welcome').hidden=true;$('op-clock').textContent='Loading ESP32 measurements…';
-      await guarded(async()=>render(await workspace.api('/twin/prototype')));
+      await guarded(async()=>render(await prototypeState()));
     }
     schedule();
+  }
+  /* Analysis from /twin/prototype and, in the same tick, the live board packet from /esp32/readings. */
+  async function prototypeState(){
+    const [s]=await Promise.all([workspace.api('/twin/prototype'),esp?esp.poll():null]);
+    return s;
+  }
+  function hardwareNote(s){
+    const base=`${title(s.connection)} · ${s.control_enabled?'Automatic all-off requests armed':'Monitoring only; automatic cutoff is not enabled'}. Primary current needs its own calibrated sensor. Oil and winding temperature are unavailable.`;
+    if(!esp)return base;
+    const st=esp.status(),hw=esp.packet();
+    if(!st||!st.configured)return 'Wi-Fi board integration is off (HALO_ESP32_URL unset on the server). '+base;
+    if(!hw.available)return `Wi-Fi board unreachable${st.poller?.last_error?' · '+st.poller.last_error:hw.error?' · '+hw.error:''}. `+base;
+    if(hw.stale)return `Wi-Fi board reading is STALE (${fmt(hw.age_s,0)} s old${hw.error?' · '+hw.error:''}). `+base;
+    return `Wi-Fi board live · ${hw.device_id||'board'} · sequence ${hw.sequence} · ${fmt(hw.age_s,0)} s ago. `+base;
+  }
+  function requestLoads(body){
+    if(!esp)return Promise.reject(Error('Wi-Fi board module is not loaded.'));
+    if(busy)return Promise.reject(Error('Another request is in progress.'));
+    return new Promise((resolve,reject)=>guarded(async()=>{
+      try{const r=await esp.setLoads(body);esp.applyLoads(r.loads);if(current&&mode==='prototype')render(current);resolve(r);}
+      catch(e){reject(e);throw e;}
+    }));
+  }
+  function paintHardware(s){
+    if(!esp)return;
+    const hw=esp.packet(),st=esp.status(),history=esp.history();
+    scope||=window.HaloScope?window.HaloScope.create($('op-scope'),window.HaloScope.presets.prototype()):null;
+    scope?.update(window.HaloEsp32.math.scopePacket(hw,history,st));
+    thermo||=window.HaloThermo?window.HaloThermo.create($('op-thermo'),{floor:0,ceiling:100,eyebrow:'SURFACE PROBE'}):null;
+    thermo?.update(window.HaloEsp32.math.thermoPacket(hw,history,s.settings));
+    loadsPanel||=window.HaloLoads?window.HaloLoads.create($('op-loads'),{setLoads:requestLoads}):null;
+    loadsPanel?.update({packet:hw,status:st,latched:!!s.latched,busy,derived:window.HaloEsp32.math.deriveCurrents(hw,history)});
   }
   function populateInputs(s){
     const form=$('op-inputs');
@@ -174,6 +210,7 @@
     const t=s.telemetry,a=s.analysis;
     if($('view-operate').classList.contains('active')){$('connection').textContent=physical?title(s.connection)+' · ESP32':'Industrial · simulated';$('connection').className='pill';}
     $('op-industrial-controls').hidden=physical;$('op-prototype-controls').hidden=!physical;
+    $('op-waveform').hidden=physical&&!!esp;$('op-scope').hidden=!(physical&&esp);
     $('op-maintenance').hidden=physical;$('op-maintenance-physical').hidden=!physical;
     $('op-source').textContent=physical?'PHYSICAL PROTOTYPE · ESP32':'INDUSTRIAL SIMULATION';
     $('op-clock').textContent=physical?(s.connection==='disconnected'?'No acquisition received':new Date(t.timestamp).toLocaleString()):`${clock(s.elapsed_s)} simulated · ${s.running?'running':'paused'}`;
@@ -200,10 +237,21 @@
     $('op-reconnect').hidden=physical;
     const primaryVerified=!physical||['primary_v','primary_current_a'].every(k=>s.evidence.some(e=>e.channel===k&&e.available&&e.calibrated));
     const temp=HaloCommand.math.temperatureReading(s,mode);
+    // Wi-Fi board: effective load resistance and, when both measured currents are a flat 0 A, V ÷ R_eff estimates.
+    const hwPacket=physical&&esp&&esp.packet().available?esp.packet():null;
+    const derived=physical&&esp?window.HaloEsp32.math.deriveCurrents(esp.packet(),esp.history()):null;
+    // Voltages are always the board's own values; the live packet beats the stored frame copy.
+    const secondaryV=hwPacket&&hwPacket.secondary.v!=null?hwPacket.secondary.v:t.secondary_voltage;
+    const primaryV=hwPacket&&hwPacket.primary.v!=null?hwPacket.primary.v:t.primary_voltage;
+    const secondaryI=hwPacket&&hwPacket.secondary.i!=null?hwPacket.secondary.i:t.secondary_current;
+    const primaryI=hwPacket&&hwPacket.primary.i!=null?hwPacket.primary.i:t.primary_current;
+    const rEff=derived&&derived.r_eff!=null?` · R_eff ${fmt(derived.r_eff,1)} Ω (${derived.loads_on} load${derived.loads_on===1?'':'s'} on)`:'';
+    const secondaryNote=derived?.active?`Measured 0 A · est. ${fmt(derived.secondary_i,3)} A (V ÷ R_eff)`:`Current ${fmt(secondaryI,2)} A RMS`;
+    const primaryNote=derived?.active?`Measured 0 A · est. ${fmt(derived.primary_i,3)} A (from secondary power)`:`Current ${fmt(primaryI,2)} A RMS${primaryVerified?'':' · unverified'}`;
     const readings=[['thermal',temp.label,temp.value,'°C',`${temp.critical===null?'Critical reference unavailable':`Critical ${fmt(temp.critical,0)} °C`} · ${physical?`ambient ${fmt(t.ambient_temperature)} °C`:`oil ${fmt(t.oil_temperature)} °C`}`,temp.level],
-      ['loading',physical?'Measured loading':'Mean-current loading',t.loading_percent,'%',physical?'Relative to reviewed current limit':`Highest phase ${fmt(t.max_phase_loading_percent)}%`,null],
-      ['secondary','Secondary',t.secondary_voltage,'V',`Current ${fmt(t.secondary_current,2)} A RMS`,null],
-      ['primary','Primary',t.primary_voltage,'V',`Current ${fmt(t.primary_current,2)} A RMS${primaryVerified?'':' · unverified'}`,null]];
+      ['loading',physical?'Measured loading':'Mean-current loading',t.loading_percent,'%',physical?'Relative to reviewed current limit'+rEff:`Highest phase ${fmt(t.max_phase_loading_percent)}%`,null],
+      ['secondary','Secondary',secondaryV,'V',secondaryNote,null],
+      ['primary','Primary',primaryV,'V',primaryNote,null]];
     $('op-readings').innerHTML=readings.map(([key,label,v,unit,note,level])=>`<div class="op-reading" data-reading="${key}" ${level?`data-level="${level}"`:''}><span>${esc(label)}</span><strong>${fmt(v)} <small>${unit}</small></strong><p>${esc(note)}</p></div>`).join('');
     if(!physical){
       const scenarioKey=s.id+':'+s.scenario;
@@ -215,9 +263,14 @@
       $('op-ageing').textContent=fmt(s.condition.equivalent_age_hours,2)+' equivalent hours';
       $('op-life').textContent=`${fmt(s.condition.insulation_consumed_percent,3)}% of illustrative thermal-ageing budget used. Actual remaining life unavailable.`;
     }else{
-      $('op-prototype-note').textContent=`${title(s.connection)} · ${s.control_enabled?'Automatic all-off requests armed':'Monitoring only; automatic cutoff is not enabled'}. Primary current needs its own calibrated sensor. Oil and winding temperature are unavailable.`;
-      $('op-relays').innerHTML=[0,1,2,3].map(i=>`<div><strong>K${i+1}${i===3?' · locked':''}</strong><span>39 Ω / 10 W</span><p>${s.relay_states?(s.relay_states[i]?'GPIO reports ON':'GPIO reports OFF'):'State unavailable'}</p><button data-op-relay="${i}" ${i===3||!s.load_control_available||busy?'disabled':''}>${s.relay_states?.[i]?'Request OFF':'Request ON'}</button></div>`).join('');
-      $('op-relays').querySelectorAll('button').forEach(b=>b.onclick=()=>guarded(async()=>{const states=[...current.relay_states];states[Number(b.dataset.opRelay)]=!states[Number(b.dataset.opRelay)];await physicalRelays(states);}));
+      $('op-prototype-note').textContent=hardwareNote(s);
+      if(esp){paintHardware(s);$('op-relays').hidden=true;}
+      else{
+        // USB-bridge fallback: the older relay command queue when the Wi-Fi module is absent.
+        $('op-relays').hidden=false;
+        $('op-relays').innerHTML=[0,1,2,3].map(i=>`<div><strong>K${i+1}${i===3?' · locked':''}</strong><span>39 Ω / 10 W</span><p>${s.relay_states?(s.relay_states[i]?'GPIO reports ON':'GPIO reports OFF'):'State unavailable'}</p><button data-op-relay="${i}" ${i===3||!s.load_control_available||busy?'disabled':''}>${s.relay_states?.[i]?'Request OFF':'Request ON'}</button></div>`).join('');
+        $('op-relays').querySelectorAll('button').forEach(b=>b.onclick=()=>guarded(async()=>{const states=[...current.relay_states];states[Number(b.dataset.opRelay)]=!states[Number(b.dataset.opRelay)];await physicalRelays(states);}));
+      }
       $('op-command-status').textContent=s.command?.status?`Last cutoff command: ${s.command.status}. Electrical contact state is not measured.`:'No cutoff command recorded.';
       list('op-holds',s.holds);$('op-reset-latch').hidden=!s.latched;
     }
@@ -316,7 +369,7 @@
     finally{document.body.dataset.twinSwitching='false';$('session-source').disabled=false;schedule();}
   }
   $('op-industrial').onclick=()=>selectSource('industrial');$('op-prototype').onclick=()=>selectSource('prototype');
-  click('op-prototype-refresh',async()=>render(await workspace.api('/twin/prototype')));
+  click('op-prototype-refresh',async()=>{await esp?.refreshStatus(true);render(await prototypeState());});
   $('op-run-select').onchange=()=>guarded(async()=>{if(!$('op-run-select').value)return;run=await workspace.api('/twin/runs/'+encodeURIComponent($('op-run-select').value));dirty=false;settingsFields(run);render(run);});
   click('op-start',()=>act(run.running?'pause':'start'));click('op-step',async()=>{const paused=!run.running;if(paused)await act('start');try{await act('step',{seconds:300});}finally{if(paused&&run.running)await act('pause');}});
   click('op-trip',()=>act('trip'));click('op-reconnect',()=>act('reconnect'));click('op-clear',()=>act('clear_fault'));
@@ -328,9 +381,18 @@
   $('op-settings-form').onsubmit=e=>{e.preventDefault();guarded(()=>act('settings',{settings:Object.fromEntries([...new FormData(e.target)].map(([k,v])=>[k,Number(v)]))}));};
   $('op-trend-channel').onchange=trend;$('op-model-reset').onclick=resetModelView;
   $('op-commissioning').onclick=e=>{e.preventDefault();workspace.view('commissioning');};
-  async function physicalRelays(states){if(mode!=='prototype')return;const r=await workspace.api('/relays',{states,request_id:crypto.randomUUID()});$('op-command-status').textContent=`Request ${r.status}. Await firmware acknowledgment; contacts remain unverified.`;}
+  async function physicalRelays(states){
+    if(mode!=='prototype')return;
+    if(esp&&esp.status()?.configured){
+      // Wi-Fi board: proxy to the board's load API. Only the all-off form is used here; branch switching lives in the load panel.
+      const r=await esp.setLoads({load1:!!states[0],load2:!!states[1],load4:!!states[3]});esp.applyLoads(r.loads);
+      $('op-command-status').textContent=`Board acknowledged drive states · ${r.loads?.loads_on??'?'} branch(es) on. Contact state is not measured.`;
+      if(current)render(current);return;
+    }
+    const r=await workspace.api('/relays',{states,request_id:crypto.randomUUID()});$('op-command-status').textContent=`Request ${r.status}. Await firmware acknowledgment; contacts remain unverified.`;
+  }
   click('op-off',()=>physicalRelays([false,false,false,false]));
-  $('op-reset-latch').onsubmit=e=>{e.preventDefault();guarded(async()=>{await workspace.api('/twin/prototype/reset-latch',{note:e.target.elements.note.value});render(await workspace.api('/twin/prototype'));e.target.reset();});};
+  $('op-reset-latch').onsubmit=e=>{e.preventDefault();guarded(async()=>{await workspace.api('/twin/prototype/reset-latch',{note:e.target.elements.note.value});render(await prototypeState());e.target.reset();});};
   function download(blob,name){const url=URL.createObjectURL(blob),a=document.createElement('a');a.href=url;a.download=name;document.body.append(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),30000);}
   async function exportCurrent(){
     if(mode==='prototype'){await window.HaloEvidenceWorkflow.downloadRaw('/twin/prototype','prototype-twin-evidence.json');return;}

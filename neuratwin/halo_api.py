@@ -76,6 +76,7 @@ def status():
             'local_model':'convaiinnovations/laya','public_url':os.getenv('HALO_PUBLIC_URL'),
             'telegram_configured':bool(os.getenv('HALO_TELEGRAM_BOT_TOKEN') and os.getenv('HALO_TELEGRAM_ALLOWED_CHAT_IDS')),
             'device_token_configured':bool(os.getenv('HALO_DEVICE_TOKEN')),
+            'esp32_configured':bool(os.getenv('HALO_ESP32_URL')),
             'hardware_control_enabled':os.getenv('HALO_ALLOW_CONTROL')=='1',
             'k4_physical_control':False,'holds':engine.holds(engine.config()),'hardware_ingestion':hardware_readiness(),
             'optional_extensions':{'AR':'not commissioned','vibration':'not installed','oil_level':'not installed','network_transfer':'no verified network model'}}

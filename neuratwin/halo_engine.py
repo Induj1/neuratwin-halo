@@ -102,7 +102,8 @@ def snapshot(rows, source='measured', asset_id='BENCH-001', c=None):
     age=max(0,(datetime.now(timezone.utc)-timestamp(latest['timestamp'])).total_seconds()) if latest else None
     fresh=bool(latest) and (source!='measured' or age<=5)
     connection='replay' if source!='measured' else 'live' if fresh else 'stale' if latest else 'disconnected'
-    calibration=store.get('calibration',latest.get('calibration_id','')) if latest else None
+    # Wi-Fi board frames carry no calibration_id; never pass None to the store (the cloud client builds a string key).
+    calibration=store.get('calibration',latest['calibration_id']) if latest and latest.get('calibration_id') else None
     calibration = calibration or {}
     channel_calibration = {
         key: simulated or bool(calibration.get(field))
