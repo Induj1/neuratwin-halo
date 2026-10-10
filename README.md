@@ -17,7 +17,7 @@ See the [briefing features](docs/BRIEFING_FEATURES.md) for impedance-based fault
 
 - **Life & risk** adds inspectable condition screening, conditional time to a temperature limit, modelled remaining life and simulated thermal-ageing risk in both modes. Editable assumptions and PDF exports retain their calculation basis. These are scenario estimates; see [methods and limits](docs/LIFETIME_SCENARIOS.md).
 
-- **Assess readings** in Digital twin runs the observation-only assessor on the selected run and revision. Scenario names, declared cooling, fault labels and future readings are excluded. A changed revision invalidates the review.
+- **Assess readings** in Control centre ? Analysis runs the observation-only assessor on the selected run and revision. Scenario names, declared cooling, fault labels and future readings are excluded. A changed revision invalidates the review.
 - **Reviewed winding forecast reference** identifies rise and time constant from a healthy oil + reported hot-spot prefix, validates against two baselines, and applies only to qualified projections. Diagnostic holds are unchanged. Oil-only and surface-probe records cannot enable it. See [qualification and development results](docs/REVIEWED_WINDING_REFERENCE.md).
 - **External public-data forecasting** in Evidence executes frozen numeric models on the original ETTh1 recording. Validation selected gradient boosting, which was about 1% worse than persistence on the later test segment. All candidates, losses, provenance and a forecast/reveal demonstration remain visible. Results use source units, not verified degrees Celsius. See [the complete public-data experiment](docs/EXTERNAL_ETT_FORECAST.md).
 - The earlier v5 release and its evaluation remain historical; current source matching is checked separately. This release does not establish fivefold superiority, field accuracy or a guaranteed competition result.
@@ -55,7 +55,7 @@ The main navigation focuses on Digital twin, Action Lab, Maintenance, Evidence a
 
 Keep **one selected industrial run** throughout this main story. Its source, run ID and clock stay visible. Independent recordings are a separately introduced experiment, never substituted for this asset.
 
-1. **0:00–0:40 — Rehearsal → Prepare a new rehearsal run.** Identify the labelled simulation, warning, modelled hot-spot and critical reference. Open **Review this run** in Digital twin.
+1. **0:00–0:40 — Rehearsal → Prepare a new rehearsal run.** Identify the labelled simulation, warning, modelled hot-spot and critical reference. Open **Review this run** in Control centre ? Analysis.
 2. **0:40–1:30 — Inspect signals and recorded response.** Distinguish immediate electrical response from delayed heating. Select **Assess readings** beside the warning and show its observation-only assessment, including any forecast hold. The review is invalidated when the run changes.
 3. **1:30–2:30 — Digital twin → Review scenario study.** Explain that this conditional action study uses declared cooling. Inspect a proposed reduction, peak and curtailed energy; apply it only when a nonzero proposal exists. Advance the same simulation five minutes. A 240-minute sensitivity study is not independently validated four-hour forecasting.
 4. **2:30–4:00 — Open run maintenance.** Record an owner, inspection, action and numerical acceptance rules. Demonstrate a hold or temporary stabilization while cooling is impaired. Only demonstrate closure after the configured stable recovery window and all checks pass. No invented repair or prefilled technician observations.

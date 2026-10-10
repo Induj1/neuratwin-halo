@@ -48,16 +48,18 @@
   function prototypeLoading(s,scope){
     const ratedCurrent=1,percent=value=>finite(value)&&value>=0?100*value/ratedCurrent:null;
     const current=scope?scope.values.secondary_i:s?.connection==='live'||s?.replay?s.telemetry?.secondary_current:null;
-    const history=scope?scope.history.map(row=>({timestamp:row.at,loading_percent:percent(row.values.secondary_i)})):
+    const history=scope?scope.history.map(row=>({timestamp:row.at,loading_percent:percent(row.values.secondary_i),estimated_loading_percent:percent(row.values.secondary_i_expected)})):
       (s?.history||[]).map(row=>({timestamp:row.timestamp,loading_percent:percent(row.secondary_current)}));
-    return {value:percent(current),history,ratedCurrent,estimated:scope?.derived?.active===true};
+    return {value:percent(current),history,ratedCurrent,estimated:false,estimate:percent(scope?.values.secondary_i_expected),
+      held:!!scope&&(scope.calibrated!==true||!!scope.derived?.disagreement),
+      reason:scope?.derived?.disagreement?'Measured and estimated current disagree.':scope&&scope.calibrated!==true?'Current calibration is incomplete.':null};
   }
   function demoCurrentHealth(loading){
     const load=loading?.value;
-    if(!finite(load)||load<0)return {held:true,score:null,stress:null,status:'UNKNOWN',title:'Demo health'};
+    if(loading?.held||!finite(load)||load<0)return {held:true,score:null,stress:null,status:'UNKNOWN',title:'Current screening'};
     // Same loading-stress curve as the simulator, displayed as a current-only demo.
     const stress=clamp(load-80);
-    return {held:false,score:100-stress,stress,status:load>100?'CRITICAL':load>80?'WARNING':'NORMAL',title:'Demo health'};
+    return {held:false,score:100-stress,stress,status:load>100?'CRITICAL':load>80?'WARNING':'NORMAL',title:'Current screening'};
   }
   function temperatureReading(s,mode,packet){
     const t=s?.telemetry||{},settings=s?.settings||{},qualified=t.quality==='qualified';
@@ -137,12 +139,12 @@
     $('op-score-direction').textContent=held?'':demo?'Current only · 1 A rating':'Combined screening · 100 = less modelled stress';
     $('op-health-ring').style.strokeDashoffset=String(553*(1-(finite(score)?clamp(score):0)/100));
     $('op-dial').dataset.level=d.status;
-    $('op-dial').setAttribute('aria-label',`${$('op-dial-title').textContent}: ${num(score,0)}${finite(score)?' out of 100':''}. ${held?'Waiting for current. ':''}${d.status}`);
+    $('op-dial').setAttribute('aria-label',`${$('op-dial-title').textContent}: ${num(score,0)}${finite(score)?' out of 100':''}. ${held?'Review current evidence. ':''}${d.status}`);
     $('op-health-band').dataset.level=d.status;
-    $('op-health-band').textContent=demo?(held?'Waiting for current':d.status==='CRITICAL'?'Over rated current':d.status==='WARNING'?'Near rated current':'Within current rating'):held?(d.status==='UNKNOWN'?'Evidence unavailable':d.status+' · health assessment withheld'):a.status==='NORMAL'?'Screening estimate':a.status+' · review signals';
-    $('op-change').textContent=demo?(held?'Waiting for a frontend current reading.':`${num(context.loading.value/100,3)} A / 1 A · ${num(context.loading.value)}% loading`):healthHoldNote(s,mode,context.hardware)||changeNote(s);
+    $('op-health-band').textContent=demo?(held?'Review current evidence':d.status==='CRITICAL'?'Over rated current':d.status==='WARNING'?'Near rated current':'Within current rating'):held?(d.status==='UNKNOWN'?'Evidence unavailable':d.status+' · health assessment withheld'):a.status==='NORMAL'?'Screening estimate':a.status+' · review signals';
+    $('op-change').textContent=demo?(held?(context.loading?.reason||'Waiting for a measured current reading.'):`${num(context.loading.value/100,3)} A measured / 1 A · ${num(context.loading.value)}% loading`):healthHoldNote(s,mode,context.hardware)||changeNote(s);
     const healthNote=document.querySelector('.op-decision > .op-health-note');
-    const explanation=demo?'Demo score from displayed current only. Score = 100 minus loading above 80%, limited to 0–100.':a.health_evidence?.note||'Operating stress and recorded history. A screening index, not a failure probability.';
+    const explanation=demo?'Screening from measured current only; held for uncalibrated or conflicting readings. Score = 100 minus loading above 80%, limited to 0–100.':a.health_evidence?.note||'Operating stress and recorded history. A screening index, not a failure probability.';
     if(healthNote)healthNote.textContent=demo?'Current-based demo · not an asset-health assessment.':'Operating stress and recorded history. A screening index, not a failure probability.';
     $('op-health-explanation-note').textContent=explanation;
     $('op-dial').title=demo?explanation:'';

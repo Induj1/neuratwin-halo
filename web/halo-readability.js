@@ -24,6 +24,7 @@
     if (event.target.closest("[data-view]")) window.scrollTo(0, 0);
   });
   function sync(name) {
+    if (["control", "operate"].includes(name)) name = "physics";
     const button =
       [...nav.querySelectorAll("button[data-view]")].find(
         (b) => b.dataset.view === name,

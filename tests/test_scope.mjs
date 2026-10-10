@@ -35,12 +35,13 @@ test('reconstruction uses √2·RMS at 50 Hz', () => {
   assert.ok(Math.abs(v - 12 * Math.SQRT2) < 1e-9);
   assert.equal(math.instant(null, 5), null); assert.equal(math.instant(-1, 5), null);
 });
-test('prototype preset exposes primary and secondary channels only and marks the expected current trend-only', () => {
+test('prototype preset distinguishes measured and dashed estimated current series', () => {
   const p = presets.prototype();
   assert.deepEqual(p.plots.map(x => x.id), ['voltage', 'current']);
   assert.deepEqual(p.plots[0].channels.map(c => c.id), ['primary_v', 'secondary_v']);
   const expected = p.plots[1].channels.find(c => c.id === 'secondary_i_expected');
-  assert.equal(expected.trendOnly, true);
+  assert.equal(expected.dashed,true);assert(!expected.trendOnly);assert.match(expected.label,/estimated/);
+  assert.equal(p.plots[1].channels.find(c=>c.id==='primary_i_expected').dashed,true);
   assert.ok(p.plots.every(plot => plot.channels.every(c => c.phase === 0)), 'bench channels never claim a phase relationship');
 });
 test('thermometer level and fill follow the thresholds', () => {

@@ -3,6 +3,7 @@ from copy import deepcopy
 from datetime import datetime, timezone
 import hashlib
 import json
+import math
 from typing import Literal
 from fastapi import APIRouter, Depends, HTTPException
 from fastapi.responses import Response
@@ -33,7 +34,7 @@ class DisplaySample(Contract):
     device_id:str|None=Field(None,max_length=64)
     boot_id:str|None=Field(None,max_length=64)
     sequence:int|None=Field(None,ge=0)
-    version:Literal['prototype-display-1']
+    version:Literal['prototype-display-1','prototype-display-2']
     quality:str=Field(max_length=40)
     age_s:float|None=Field(None,ge=0)
     active_branches:int|None=Field(None,ge=0,le=4)
@@ -46,10 +47,13 @@ class DisplaySample(Contract):
     relay_states:tuple[bool,bool,bool,bool]|None=None
     loads:dict[str,bool|int]|None=None
     channels:dict[str,DisplayChannel]
+    estimates:dict[str,DisplayChannel]=Field(default_factory=dict)
+    estimated_loading_percent:float|None=None
+    disagreement:bool=False
     rating_a:Literal[1]=1
     loading_percent:float|None=None
     demo_health:float|None=None
-    demo_health_version:Literal['current-only-1']
+    demo_health_version:Literal['current-only-1','observed-current-2']
     scope:str=Field(max_length=200)
 
     @field_validator('channels')
@@ -63,9 +67,35 @@ class DisplaySample(Contract):
     def consistent(self):
         if self.timestamp is not None and self.timestamp.utcoffset() is None:raise ValueError('Display time needs a timezone.')
         current=self.channels['secondary_current'].value
+        if self.version=='prototype-display-2':
+            if self.demo_health_version!='observed-current-2':raise ValueError('Separated readings require observed-current-2 screening.')
+            for c in self.channels.values():
+                if c.source not in ('measured','unavailable') or c.value is not None and (c.source!='measured' or c.value!=c.raw):
+                    raise ValueError('Observed channels must preserve measured values; estimates belong in estimates.')
+                if not self.live and c.value is not None:raise ValueError('Stale current values must be unavailable; retain them in raw.')
+            if set(self.estimates)!={'primary_current','secondary_current'}:raise ValueError('Two separate current estimates are required.')
+            for c in self.estimates.values():
+                if c.source not in ('frontend_estimated','unavailable'):raise ValueError('Estimates cannot be declared measured.')
+                if c.value is not None and (c.source!='frontend_estimated' or not self.live):raise ValueError('Estimates require live inputs.')
+            estimate=self.estimates['secondary_current'].value
+            estimated_loading=None if estimate is None else estimate*100
+            if self.estimated_loading_percent!=estimated_loading:raise ValueError('Estimated loading must use the separate estimate.')
+            disagreement=current is not None and estimate is not None and abs(current-estimate)>max(.05,.2*estimate)
+            if self.disagreement!=disagreement:raise ValueError('Current disagreement must reflect both series.')
+            if estimate is not None:
+                voltage=self.channels['secondary_voltage'].value
+                resistance=self.branch_ohms/self.active_branches if self.active_branches else None
+                if voltage is None or resistance is None or not math.isclose(estimate,voltage/resistance,rel_tol=1e-9,abs_tol=1e-9):
+                    raise ValueError('Secondary estimate must match its declared voltage and load-bank inputs.')
+            primary_estimate=self.estimates['primary_current'].value
+            if primary_estimate is not None:
+                primary_voltage=self.channels['primary_voltage'].value
+                secondary_voltage=self.channels['secondary_voltage'].value
+                if estimate is None or primary_voltage is None or primary_voltage<=0 or secondary_voltage is None or not math.isclose(primary_estimate,secondary_voltage*estimate/primary_voltage,rel_tol=1e-9,abs_tol=1e-9):
+                    raise ValueError('Primary estimate must match the declared ideal-transformer inputs.')
         expected=None if current is None or not self.live else current*100
         if self.loading_percent!=expected:raise ValueError('Loading must match the supplied 1 A display current.')
-        health=None if expected is None else 100-max(0,min(100,expected-80))
+        health=None if expected is None or self.version=='prototype-display-2' and (not self.calibrated or self.disagreement) else 100-max(0,min(100,expected-80))
         if self.demo_health!=health:raise ValueError('Demo score must match its declared current-only calculation.')
         return self
 
@@ -135,6 +165,8 @@ def physics_result(asset,payload,state=None):
     o=payload.options
     result=physics.assess(rows,o.settings,rated_current=rated,live=live,fault=o.fault,
         fault_at=o.fault_at.timestamp() if o.fault_at else None,reset_at=o.reset_at.timestamp() if o.reset_at else None,branches=branches)
+    if physical and current and current.get('version')=='prototype-display-2' and current.get('disagreement'):
+        result['reason']='Measured current disagrees with the load-bank estimate. Resolve the readings before forecasting.'
     result.update(asset_id=asset,mode='prototype' if physical else 'industrial',revision=None if physical else state['revision'])
     if not physical:result['temperature_basis']='Initial industrial top-oil is modelled, then independently projected with this study profile.'
     if result['available']:result['fem']=physics.fem(result['loading_pu'],o.settings.ambient_c,energized=result['energized'])

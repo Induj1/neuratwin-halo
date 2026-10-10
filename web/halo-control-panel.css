@@ -1,4 +1,6 @@
 /* Instrument cabinet: opaque painted steel, recessed meters and annunciator windows. */
+#view-physics .px-estimate{display:flex;justify-content:space-between;gap:8px;padding:10px 8px;border-top:1px dashed #626a64;background:#dce2dc;color:#1d252b;font-size:15px;flex-wrap:wrap}
+#view-physics .px-estimate strong{font-weight:600;font-size:17px}
 /* The same Digital twin graph instances sit in this cabinet while it is open. */
 #view-physics .px-live-graphs{margin-top:24px;display:grid;gap:20px;min-width:0}
 #view-physics :is(.halo-scope,.halo-waveform,.px-response-panel){background:#bfc4be;border:3px solid #626a64;border-radius:2px;box-shadow:none;backdrop-filter:none;padding:20px;color:#1d252b;min-width:0}
@@ -181,13 +183,13 @@
 #view-physics .px-fem-scale{font-size:14px;color:#1d252b}
 #view-physics :is(.px-meter-label,.px-panel-heading h2,.px-nameplate,.px-annunciator span){font-weight:600}
 #view-physics .px-number>span{flex-shrink:0;white-space:nowrap}
-body.operator-workspace:has(#view-physics.active) :is(.workspace-breadcrumb,.session-bar label,.session-bar a,.top-right button,.top-right #connection,.nav-home){font-size:15px}
-body.operator-workspace:has(#view-physics.active) .tabs button span{font-size:16px}
-body.operator-workspace:has(#view-physics.active) .tabs button{min-height:52px}
-body.operator-workspace:has(#view-physics.active) .session-bar :is(strong,select){font-size:17px}
-body.operator-workspace:has(#view-physics.active) .session-bar label{gap:8px}
-body.operator-workspace:has(#view-physics.active) .session-bar select{min-height:44px;max-width:100%}
-body.operator-workspace:has(#view-physics.active) footer{font-size:13px}
+body.operator-workspace:has(:is(#view-physics,#view-maintenance).active) :is(.workspace-breadcrumb,.session-bar label,.session-bar a,.top-right button,.top-right #connection,.nav-home){font-size:15px}
+body.operator-workspace:has(:is(#view-physics,#view-maintenance).active) .tabs button span{font-size:16px}
+body.operator-workspace:has(:is(#view-physics,#view-maintenance).active) .tabs button{min-height:52px}
+body.operator-workspace:has(:is(#view-physics,#view-maintenance).active) .session-bar :is(strong,select){font-size:17px}
+body.operator-workspace:has(:is(#view-physics,#view-maintenance).active) .session-bar label{gap:8px}
+body.operator-workspace:has(:is(#view-physics,#view-maintenance).active) .session-bar select{min-height:44px;max-width:100%}
+body.operator-workspace:has(:is(#view-physics,#view-maintenance).active) footer{font-size:13px}
 #view-physics .px-alarm{--alarm:#626a64;display:flex;align-items:center;gap:20px;padding:22px;margin-bottom:20px;border:2px solid var(--alarm);border-left-width:8px;background:#eaf2ec;color:#1d252b;box-shadow:inset 0 0 0 2px #bfc4be}
 #view-physics .px-alarm[data-state=warning]{--alarm:#a76400;background:#fff0c7}
 #view-physics .px-alarm[data-state=critical]{--alarm:#981818;background:#fbe2dc}
@@ -257,7 +259,7 @@ body.operator-workspace:has(#view-physics.active) footer{font-size:13px}
  #view-physics .px-fluid>.px-panel-heading{flex-direction:column;align-items:stretch}
  #view-physics .px-fluid select{width:100%;max-width:none}
  #view-physics .px-scene-caption>span{max-width:100%}
- body.operator-workspace:has(#view-physics.active) .top-right #connection{font-size:12px}
- body.operator-workspace:has(#view-physics.active) .mobile-section-nav select{font-size:16px}
- body.operator-workspace:has(#view-physics.active) .session-bar label{min-width:0}
+ body.operator-workspace:has(:is(#view-physics,#view-maintenance).active) .top-right #connection{font-size:12px}
+ body.operator-workspace:has(:is(#view-physics,#view-maintenance).active) .mobile-section-nav select{font-size:16px}
+ body.operator-workspace:has(:is(#view-physics,#view-maintenance).active) .session-bar label{min-width:0}
 }

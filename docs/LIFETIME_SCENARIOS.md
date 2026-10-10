@@ -11,11 +11,11 @@ Digital twin includes a **Life & risk** panel in Prototype and Industrial modes.
 
 ## Inputs and coverage
 
-Prototype uses the existing **displayed secondary current and voltage**, including the existing frontend estimates, and the surface-temperature channel. The reference current remains 1 A. Raw acquisitions, frontend estimates and calculated primary current remain distinct in reports. An assumed surface-to-ageing-temperature offset is not a measured winding hot-spot.
+Prototype uses **observed secondary current and voltage** and the surface-temperature channel. Separate frontend current estimates never fill missing or zero observations. A current disagreement holds new projections. The reference current remains 1 A. Raw acquisitions, frontend estimates and calculated primary current remain distinct in reports. An assumed surface-to-ageing-temperature offset is not a measured winding hot-spot.
 
 Industrial mode uses retained simulated secondary readings and modelled hot-spot temperature. Its default current rating comes from the run's kVA and secondary voltage. This scenario is separate from the existing qualified industrial forecast and its evidence checks.
 
-The latest five minutes supply time-weighted voltage/temperature means and root-mean-square current for future heating. Peaks and overload duration are recorded separately. A single observation is instantaneous, not an established long-term average. Missing latest channels withhold the projections. Cached readings are explicitly dated.
+The latest five minutes supply time-weighted voltage/temperature means and root-mean-square current for future heating. Peaks and overload duration are recorded separately. A single observation is instantaneous, not an established long-term average. Missing latest channels withhold the projections. Cached readings are explicitly dated and cannot supply current inputs. Historical version-1 captures retain their original display provenance.
 
 Observed equivalent ageing integrates only supplied temperature intervals, deduplicated by sample identity. Gaps beyond the configured cadence allowance and board restarts are excluded. Prototype history is bounded to the browser's 300-sample buffer and clears on reboot; there is **no durable lifetime exposure ledger**. Refreshing or exporting never accumulates age again. Unknown history is represented by the editable assumed equivalent age, not invented measurements.
 

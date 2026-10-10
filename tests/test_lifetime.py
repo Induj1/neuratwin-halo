@@ -145,3 +145,64 @@ def test_prototype_pdf_and_preview_share_assumptions_and_inputs(client):
     preview=client.post('/api/halo/twin/lifetime/BENCH-001',headers=OP,json={'assumptions':a.model_dump(),'display_current':sample}).json()
     snapshot=report_snapshot('BENCH-001',PDFRequest(display_current=sample,lifetime_assumptions=a))
     assert snapshot['assessment']['lifetime_scenario_at_export']==preview
+
+
+def separated_sample(current=0):
+    sample=display_sample()
+    estimate=12/(39/2)
+    sample.update(version='prototype-display-2',demo_health_version='observed-current-2',calibrated=True,
+        active_branches=2,branch_ohms=39,resistance_ohms=19.5,disagreement=current is not None and abs(current-estimate)>max(.05,.2*estimate),
+        estimated_loading_percent=estimate*100,loading_percent=None if current is None else current*100)
+    for key,value in [('primary_current',0),('secondary_current',current)]:
+        sample['channels'][key].update(value=value,raw=value,source='measured' if value is not None else 'unavailable')
+    sample['estimates']={key:dict(value=value,raw=None,unit='A',source='frontend_estimated',method='load bank',quality='live')
+        for key,value in [('secondary_current',estimate),('primary_current',12*estimate/230)]}
+    sample['demo_health']=None if current is None or sample['disagreement'] else 100-max(0,min(100,current*100-80))
+    return sample
+
+
+def test_separated_zero_survives_export_and_disagreement_holds_forecasts(client):
+    sample=separated_sample()
+    row=life.from_display(sample)
+    assert row['observed_current_a']==0 and row['estimated_current_a']>0
+    assert row['current_a'] is None and row['current_disagreement']
+    for kind in ['lifetime','physics']:
+        response=client.post('/api/halo/twin/'+kind+'/BENCH-001',headers=OP,json={'display_current':sample})
+        assert response.status_code==200,response.text
+        assert not response.json()['available']
+    pdf=client.post('/api/halo/twin/reports/BENCH-001/pdf',headers=OP,json={'display_current':sample,'display_history':[sample]})
+    assert pdf.status_code==200,pdf.text[:200]
+    text='\n'.join(p.extract_text() for p in PdfReader(BytesIO(pdf.content)).pages)
+    assert 'Measured and estimated currents' in text
+    snapshot=PDFRequest(display_current=sample).display_current.model_dump()
+    assert snapshot['channels']['secondary_current']['value']==0
+    assert snapshot['loading_percent']==0 and snapshot['estimated_loading_percent']>60
+
+
+def test_separated_missing_stale_and_matching_current(client):
+    sample=separated_sample(None)
+    assert life.from_display(sample)['current_a'] is None
+    assert client.post('/api/halo/twin/lifetime/BENCH-001',headers=OP,json={'display_current':sample}).json()['available'] is False
+    sample=separated_sample(12/(39/2))
+    result=client.post('/api/halo/twin/lifetime/BENCH-001',headers=OP,json={'display_current':sample})
+    assert result.status_code==200,result.text
+    assert result.json()['available']
+    assert result.json()['current_sources']==['measured']
+    sample.update(live=False,quality='stale',loading_percent=None,estimated_loading_percent=None,demo_health=None)
+    for channel in [*sample['channels'].values(),*sample['estimates'].values()]:
+        channel.update(value=None,source='unavailable',quality='stale')
+    assert life.from_display(sample)['temperature_c'] is None
+    result=client.post('/api/halo/twin/lifetime/BENCH-001',headers=OP,json={'display_current':sample})
+    assert result.status_code==200,result.text
+    assert not result.json()['available']
+
+
+@pytest.mark.parametrize('tamper',['substitution','source','disagreement','primary_estimate'])
+def test_separated_contract_rejects_mislabelled_or_inconsistent_values(client,tamper):
+    sample=separated_sample()
+    if tamper=='substitution':sample['channels']['secondary_current']['value']=.6
+    elif tamper=='source':sample['channels']['secondary_current']['source']='frontend_estimated'
+    elif tamper=='disagreement':sample['disagreement']=False
+    else:sample['estimates']['primary_current']['value']=99
+    response=client.post('/api/halo/twin/lifetime/BENCH-001',headers=OP,json={'display_current':sample})
+    assert response.status_code==422

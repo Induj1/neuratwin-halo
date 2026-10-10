@@ -1,6 +1,6 @@
 # Physics & protection
 
-Open `/app#physics`. This console shares Digital twin's selected source and preserves the existing voltage/current display calculations. It adds seven-segment instruments, a virtual oil system, an intervention study and a solved thermal field.
+Open `/app#control`. The merged Control centre has one source, one transformer model and one set of live graphs. **Overview** contains instruments, alarms and load controls; **Analysis** contains forecasts, fault scenarios, FEM and model assumptions. Observed voltage/current remain separate from load-bank estimates. The former `/app#operate` and `/app#physics` links both open this surface.
 
 The same panel now includes a [maintenance decision and verification workflow](MAINTENANCE_WORKFLOW.md): uncertainty and entered-cost comparison, frozen job cards, technician evidence, post-action verification, model revisions and a transient FEM study. The steady sensor-placement study below remains available separately.
 
@@ -17,7 +17,7 @@ The same panel now includes a [maintenance decision and verification workflow](M
 The independent oil study uses a loading-guide-style lumped model:
 
 ```
-K = displayed secondary current / rated current
+K = observed secondary current / rated current
 target = ambient + rated_rise * ((1 + R*K*K) / (1 + R))**0.8 / cooling
 oil_next = target + (oil_previous - target) * exp(-dt_model / tau)
 dt_model = dt_source * clock_scale
@@ -63,7 +63,7 @@ Sensor selection uses 60 synthetic training loss cases and greedily chosen acces
 
 The model replays the supplied bounded source window. Duplicates add no exposure; boot changes, invalid channels and gaps above 10 seconds (prototype) or 65 seconds (industrial) exclude integration. Cached offline inputs freeze the response and disable physical commands. Reset discards earlier exposure. Trips latch only within the retained replay window, not in a persistent safety controller: refreshing or losing the triggering history can clear them.
 
-The source matrix preserves exact displayed current, including the existing frontend estimate when active, with provenance. Apparent primary/secondary power differences are not treated as measured losses. Reports distinguish raw acquisition from display estimates. Input digests detect changes relative to retained records; they are not signatures.
+The source matrix preserves observed current and separate estimates with provenance. Missing, invalid or stale readings never fall back to an estimate. Current disagreement holds new prototype forecasts. Historical version-1 captures retain their original display provenance. Apparent primary/secondary power differences are not treated as measured losses. Reports distinguish raw acquisition from display estimates. Input digests detect changes relative to retained records; they are not signatures.
 
 ## Research basis and next validation
 

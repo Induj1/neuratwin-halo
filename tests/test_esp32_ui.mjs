@@ -46,10 +46,10 @@ test('buffer ignores duplicate (boot, sequence), keeps order and clears on reboo
   assert.deepEqual(b.rows().map(r => r.sequence), [1]);
   assert.equal(b.push(math.normalize({ live: false, stale: false, reading: null })), false);
 });
-test('scope packet labels a calculated primary current and reports quality', () => {
+test('firmware-calculated primary current is not exposed as measured', () => {
   const live = math.normalize({ live: true, reading: reading() });
   const s = math.scopePacket(live, [], { configured: true });
-  assert.equal(s.values.primary_i, 0.05); assert.match(s.notes.primary_i, /calculated/); assert.equal(s.quality, 'live');
+  assert.equal(s.values.primary_i, null); assert.match(s.notes.primary_i, /No primary/); assert.equal(s.quality, 'live');assert(s.values.primary_i_expected>0);
   const measured = math.scopePacket(math.normalize({ live: true, reading: reading({ primary_current_method: 'measured' }) }), [], { configured: true });
   assert.equal(measured.notes.primary_i, 'measured');
   assert.equal(math.scopePacket(math.math ? null : null, [], { configured: false }).quality, 'integration off');
@@ -69,7 +69,7 @@ test('effective resistance is 39 Ω divided by the branches that are on', () => 
   assert.equal(math.effectiveResistance(1), 39); assert.equal(math.effectiveResistance(2), 19.5); assert.equal(math.effectiveResistance(3), 13);
   assert.equal(math.effectiveResistance(0), null); assert.equal(math.effectiveResistance(null), null);
 });
-test('flat 0 A on both currents with loads on is replaced by V ÷ R_eff and a secondary-power primary estimate', () => {
+test('measured zero remains zero in the scope and history alongside independent estimates', () => {
   const zero = seq => math.normalize({ live: true, reading: reading({ sequence: seq, current_a: 0, primary_current_a: 0, secondary_v: 11.7, primary_v: 230, loads: { load1: true, load2: true, load4: false, loads_on: 2 } }) });
   const b = createBuffer(); for (const s of [1, 2, 3]) b.push(zero(s));
   const d = math.deriveCurrents(zero(3), b.rows());
@@ -77,16 +77,17 @@ test('flat 0 A on both currents with loads on is replaced by V ÷ R_eff and a se
   assert.ok(Math.abs(d.secondary_i - 11.7 / 19.5) < 1e-9);
   assert.ok(Math.abs(d.primary_i - 11.7 * (11.7 / 19.5) / 230) < 1e-9);
   const s = math.scopePacket(zero(3), b.rows(), { configured: true });
-  assert.ok(Math.abs(s.values.secondary_i - 0.6) < 1e-9); assert.match(s.notes.secondary_i, /R_eff 19\.5/); assert.match(s.notes.primary_i, /reported current near zero/);
-  assert.ok(s.history.every(r => r.values.secondary_i > 0.5), 'trend rows are estimated too');
+  assert.equal(s.values.secondary_i,0);assert.equal(s.values.primary_i,null);assert.ok(Math.abs(s.values.secondary_i_expected-.6)<1e-9);
+  assert.ok(s.history.every(r=>r.values.secondary_i===0&&r.values.secondary_i_expected>.5));assert.equal(s.derived.disagreement,true);
 });
-test('estimates stay off when current is measured, when no load is on, or before enough flat samples', () => {
+test('estimates are independent of current and require live voltage and active loads', () => {
   const live = math.normalize({ live: true, reading: reading() });
   const b = createBuffer(); b.push(live);
-  assert.equal(math.deriveCurrents(live, b.rows()).active, false);
+  assert.equal(math.deriveCurrents(live, b.rows()).active, true);
   const zero = seq => math.normalize({ live: true, reading: reading({ sequence: seq, current_a: 0, primary_current_a: 0 }) });
   const short = createBuffer(); short.push(zero(1));
-  assert.equal(math.deriveCurrents(zero(1), short.rows()).active, false, 'one sample is not "constant"');
+  assert.equal(math.deriveCurrents(zero(1), short.rows()).active, true);
+  assert.equal(math.deriveCurrents({...live,live:false,stale:true},b.rows()).active,false);
   const off = math.normalize({ live: true, reading: reading({ current_a: 0, primary_current_a: 0, loads: { load1: false, load2: false, load4: false, loads_on: 0 } }) });
   const offBuffer = createBuffer(); for (let i = 1; i <= 3; i++) offBuffer.push(Object.assign({}, off, { sequence: i }));
   const d = math.deriveCurrents(off, offBuffer.rows());
@@ -115,7 +116,7 @@ test('client never throws from poll: unconfigured, unreachable and live paths', 
   assert.deepEqual(client.applyLoads(r.loads).loads, { load1: false, load2: true, load4: false, loads_on: 1 });
 });
 
-test('report snapshots preserve the displayed estimate while separating missing and reported zero', () => {
+test('report snapshots separate observed zero or missing from estimates and hold conflicted screening', () => {
   for (const raw of [0, null]) {
     const b=createBuffer();let p;
     for (let sequence=1;sequence<=3;sequence++) {
@@ -124,15 +125,33 @@ test('report snapshots preserve the displayed estimate while separating missing 
     const snapshot=math.displaySnapshot(p,b.rows(),{configured:true}),scope=math.scopePacket(p,b.rows(),{configured:true});
     assert.equal(snapshot.channels.secondary_current.value,scope.values.secondary_i);
     assert.equal(snapshot.channels.secondary_current.raw,raw);
-    assert.equal(snapshot.channels.secondary_current.source,'frontend_estimated');
-    assert.match(snapshot.reason,raw===null?/missing/:/near zero/);
-    assert.equal(snapshot.loading_percent,100*scope.values.secondary_i);
+    assert.equal(snapshot.version,'prototype-display-2');assert.equal(snapshot.channels.secondary_current.value,raw);
+    assert.equal(snapshot.channels.secondary_current.source,raw===null?'unavailable':'measured');
+    assert(snapshot.estimates.secondary_current.value>0);assert.equal(snapshot.disagreement,raw===0);
+    assert.equal(snapshot.loading_percent,raw===null?null:0);assert.equal(snapshot.demo_health,null);
+    assert.equal(snapshot.estimated_loading_percent,100*snapshot.estimates.secondary_current.value);
     const stale=math.displaySnapshot({...p,stale:true,live:false},b.rows(),{configured:true});
     assert.equal(stale.loading_percent,null);assert.equal(stale.demo_health,null);
     assert.equal(stale.channels.secondary_current.quality,'stale');
+    assert.equal(stale.channels.secondary_current.value,null);assert.equal(stale.estimates.secondary_current.value,null);
   }
 });
 
+test('invalid channels stay distinct from missing and cannot drive estimates',()=>{
+ const p=math.normalize({live:true,reading:reading({current_a:99,secondary_v:99})});
+ const s=math.displaySnapshot(p,[],{configured:true});
+ assert.equal(s.channels.secondary_current.value,null);assert.equal(s.channels.secondary_current.raw,99);assert.equal(s.channels.secondary_current.quality,'invalid');
+ assert.equal(s.estimates.secondary_current.value,null);assert.equal(s.channels.secondary_voltage.quality,'invalid');
+});
+test('history retains each estimate and supplied acquisition timestamp without rewriting observations',()=>{
+ const b=createBuffer();let p;
+ for(const [sequence,current_a,secondary_v] of [[1,0,12],[2,.3,6],[3,null,10]]){
+  p=math.normalize({live:true,readings_at:`2026-10-10T10:00:0${sequence}Z`,reading:reading({sequence,current_a,secondary_v})},Date.parse('2026-10-10T10:00:04Z'));b.push(p);
+ }
+ const before=b.rows(),s=math.scopePacket(p,b.rows(),{configured:true});
+ assert.deepEqual(s.history.map(r=>r.values.secondary_i),[0,.3,null]);assert.deepEqual(s.history.map(r=>r.values.secondary_i_expected),[12/19.5,6/19.5,10/19.5]);
+ assert.equal(s.history[0].at,'2026-10-10T10:00:01.000Z');assert.deepEqual(b.rows(),before);
+});
 test('report display buffer is bounded, duplicate-safe and cleared on board reboot', async () => {
   let sequence=0,boot_id='first';
   const client=create(async path=>path==='/esp32/status'?{configured:true}:{live:true,reading:reading({sequence,boot_id})});

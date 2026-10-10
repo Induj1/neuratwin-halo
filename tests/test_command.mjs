@@ -219,7 +219,7 @@ test('prototype loading uses the 1 A rating and existing display current without
     {at:currentTime,values:{secondary_i:null}}
   ]};
   const before=structuredClone(scope),result=prototypeLoading({},scope);
-  assert.equal(result.value,60);assert.equal(result.ratedCurrent,1);assert.equal(result.estimated,true);
+  assert.equal(result.value,60);assert.equal(result.ratedCurrent,1);assert.equal(result.estimated,false);assert.equal(result.held,true);
   assert.deepEqual(result.history.map(r=>r.loading_percent),[0,125,null]);
   assert.deepEqual(scope,before);
   assert.equal(prototypeLoading({connection:'stale',telemetry:{secondary_current:1}},null).value,null);
@@ -229,7 +229,8 @@ test('prototype loading uses the 1 A rating and existing display current without
 
 test('current-only demo health follows frontend loading without altering physical health holds',()=>{
   const {demoCurrentHealth}=require('../web/halo-command.js');
-  for(const value of [0,60,80])assert.deepEqual(demoCurrentHealth({value}),{held:false,score:100,stress:0,status:'NORMAL',title:'Demo health'});
+  for(const value of [0,60,80])assert.deepEqual(demoCurrentHealth({value}),{held:false,score:100,stress:0,status:'NORMAL',title:'Current screening'});
+  assert.equal(demoCurrentHealth({value:0,held:true}).score,null);
   assert.equal(demoCurrentHealth({value:90}).status,'WARNING');
   assert.equal(demoCurrentHealth({value:100}).score,80);
   assert.equal(demoCurrentHealth({value:120}).score,60);

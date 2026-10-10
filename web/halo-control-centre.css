@@ -1,0 +1,66 @@
+/* Consolidated operator layout; painted panels and readable controls. */
+#view-operate{display:none!important}
+#view-physics [hidden],#view-maintenance [hidden]{display:none!important}
+body.operator-workspace:has(#view-physics.active) .top #export,body.operator-workspace:has(#view-maintenance.active) .top #export{display:none}
+#view-physics .cc-tabs{display:flex;gap:6px;border-bottom:2px solid #626a64;margin:8px 0 20px;padding:0 0 8px}
+#view-physics .cc-tabs button{min-width:132px;font-size:18px;padding:12px 24px;background:transparent;border:1px solid transparent;border-radius:2px;color:#1d252b}
+#view-physics .cc-tabs button[aria-selected=true]{background:#1d252b;color:#eaf2ec;border-color:#1d252b}
+#view-physics .cc-tabs button:focus-visible{outline:3px solid #981818;outline-offset:3px}
+#view-physics>.px-alarm{margin-bottom:18px}
+#view-physics[data-panel=overview] #px-clock-label{display:none}
+#view-physics .cc-run-picker{display:flex;align-items:center;gap:10px;font-size:16px;min-width:0}
+#view-physics .cc-run-picker select{max-width:250px;min-width:0;font-size:16px;padding:10px;background:#eaf2ec;border:1px solid #80887e;border-radius:2px}
+#view-physics .cc-load-desk{display:block;margin-top:18px}
+#view-physics .cc-load-desk .px-control-bay{padding:18px}
+#view-physics #px-simulation{display:none!important}
+#view-physics #op-explore{display:grid;grid-template-columns:1fr 1fr auto;gap:20px;align-items:end;margin:0;padding:0;border:0;box-shadow:none;background:transparent;border-radius:0;backdrop-filter:none}
+#view-physics #op-explore>div:first-child{display:none}
+#view-physics #op-explore label{font-size:17px;display:block}
+#view-physics #op-explore output{float:right;font:20px ui-monospace,monospace}
+#view-physics #op-explore input{width:100%;accent-color:#981818}
+#view-physics #op-step{grid-column:3}
+#view-physics .cc-analysis{display:grid;gap:22px}
+#view-physics .cc-analysis-grid{display:grid;grid-template-columns:minmax(0,1.6fr) minmax(280px,1fr);gap:18px;align-items:start}
+#view-physics .cc-analysis-grid>*{min-width:0;grid-column:auto;grid-row:auto}
+#view-physics .cc-fault-panel,#view-physics .cc-detail,#view-physics .cc-analysis>.panel{background:#bfc4be;border:2px solid #626a64;border-radius:2px;padding:20px;box-shadow:none;backdrop-filter:none;color:#1d252b;min-width:0}
+.cc-section-heading{display:flex;align-items:center;justify-content:space-between;gap:18px;flex-wrap:wrap}
+.cc-section-heading h2{font-size:23px;margin:0}
+#view-physics .cc-fault-panel .px-faults{padding:0;margin:18px 0 0;display:flex;flex-wrap:wrap;gap:12px}
+#view-physics .cc-fault-panel .px-faults>span{display:none}
+#view-physics .cc-fault-panel select{font-size:17px;padding:10px;background:#eaf2ec;border:1px solid #80887e;max-width:100%}
+#view-physics .cc-detail{margin-top:20px}
+#view-physics .cc-analysis .cc-detail{margin:0}
+.cc-detail>summary{font-size:20px;font-weight:600;cursor:pointer;padding:3px 0}
+.cc-detail[open]>summary{margin-bottom:20px}
+#view-physics .cc-detail .panel,#view-physics .cc-detail .op-decision{background:transparent;border:0;box-shadow:none;backdrop-filter:none;border-radius:0}
+#view-physics .cc-detail .op-decision{max-width:650px;margin:auto}
+#view-physics .cc-detail .op-replay{display:flex;gap:12px;align-items:center;flex-wrap:wrap;margin-bottom:22px}
+#view-physics .cc-detail .op-replay input{flex:1;min-width:160px}
+#view-physics .cc-review-actions{display:flex;gap:12px;flex-wrap:wrap}
+#view-physics .cc-analysis .px-bottom{margin:0}
+#view-physics .cc-analysis .mt-panel{margin:0}
+#view-physics .cc-analysis .lifetime-metrics,#view-physics .cc-analysis .briefing-metrics{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:18px}
+#view-physics .cc-analysis .lifetime-metrics strong{display:block;font-size:30px}
+#view-physics .cc-analysis :is(.lifetime-metrics small,.lifetime-metrics span){font-size:16px}
+#view-physics .cc-analysis .op-advanced{padding:20px;border:2px solid #626a64;background:#bfc4be;border-radius:2px}
+#view-physics .cc-analysis .op-controls{padding:0;margin:18px 0 0;background:transparent;box-shadow:none;border:0}
+#view-physics .cc-analysis .op-controls :is(input,select,textarea){background:#eaf2ec;color:#1d252b;border:1px solid #80887e;border-radius:2px;font-size:17px}
+#view-physics .cc-analysis .op-control-grid{display:grid;grid-template-columns:1fr 1fr;gap:24px}
+#view-physics #op-thermo{display:none!important}
+#view-physics .cc-load-desk .halo-loads{background:#bfc4be;border:0;box-shadow:none;border-radius:0}
+body[data-twin-source] #view-maintenance>#mt-maintenance-entry{display:none!important}
+body #view-maintenance>:is(#mt-workflow,#cc-maintenance-heading,#cc-maintenance-history){display:block!important}
+body #view-maintenance>#cc-maintenance-heading{display:flex!important;align-items:center;justify-content:space-between;gap:16px;margin-bottom:20px}
+#cc-maintenance-heading h1{font-size:30px;margin:0}
+#view-maintenance #mt-workflow{margin-top:0}
+#cc-maintenance-history{background:#bfc4be;padding:20px;border:2px solid #626a64;margin-top:24px}
+#view-maintenance .mt-panel :is(h2,h3){font-size:24px}
+#view-maintenance .mt-form :is(input,textarea,select){width:100%;box-sizing:border-box;background:#eaf2ec;border:1px solid #80887e;border-radius:2px;color:#1d252b;padding:10px;font-family:inherit;font-size:18px;line-height:1.4;min-height:44px;box-shadow:none}
+#view-maintenance .mt-panel button{font-size:17px;min-height:44px;border-radius:2px;background:#eaf2ec;border:1px solid #626a64;color:#1d252b;box-shadow:none}
+/* Keep source context concise so the instruments stay close to the opening view. */
+body.operator-workspace:has(:is(#view-physics,#view-maintenance).active) .session-bar{padding:12px 18px;margin-bottom:18px}
+#view-physics>.px-alarm{padding:16px 18px}
+#view-physics .px-mimic svg{max-height:145px;min-height:110px}
+@media(max-width:650px){body.operator-workspace:has(:is(#view-physics,#view-maintenance).active) .session-bar{display:flex;flex-direction:column;align-items:stretch;gap:10px;padding:14px}body.operator-workspace:has(:is(#view-physics,#view-maintenance).active) #session-context{width:100%;font-size:15px;line-height:1.45}body.operator-workspace:has(:is(#view-physics,#view-maintenance).active) .session-bar>a{align-self:flex-end}#view-physics .px-toolbar button{flex:1;white-space:nowrap}#view-physics .px-heading{margin-top:0}#view-maintenance .mt-decision-grid{grid-template-columns:1fr}}
+@media(max-width:1000px){#view-physics .cc-analysis-grid{grid-template-columns:1fr}#view-physics #op-explore{grid-template-columns:1fr 1fr}#view-physics #op-step{grid-column:auto}#view-physics .cc-analysis .op-control-grid{grid-template-columns:1fr}}
+@media(max-width:650px){#view-physics .px-heading{align-items:flex-start;flex-direction:column;gap:16px}#view-physics .px-toolbar{flex-direction:row;flex-wrap:wrap;width:100%}#view-physics .cc-run-picker{flex-basis:100%;flex-wrap:wrap}#view-physics .cc-run-picker select{max-width:100%;width:100%}#view-physics .cc-tabs button{flex:1;min-width:0}#view-physics #op-explore{grid-template-columns:1fr}#view-physics .cc-analysis .lifetime-metrics,#view-physics .cc-analysis .briefing-metrics{grid-template-columns:1fr 1fr}#view-physics .cc-fault-panel,#view-physics .cc-detail{padding:16px}#view-physics .cc-analysis .px-charts{grid-template-columns:1fr}.cc-maintenance-heading{flex-wrap:wrap}}

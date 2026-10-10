@@ -110,7 +110,7 @@
     $('op-apply-scenario').disabled=busy||!run||current?.breaker==='OPEN';
     $('op-new').disabled=busy||!ready;$('op-create').disabled=busy||!ready;
     $('op-industrial').disabled=busy||!ready;$('op-prototype').disabled=busy||!ready;
-    document.querySelectorAll('#view-operate form button').forEach(b=>b.disabled=busy||!ready);
+    document.querySelectorAll('#view-operate form button, #op-industrial-controls form button, #op-prototype-controls form button, #op-maintenance button').forEach(b=>b.disabled=busy||!ready);
     $('op-clear').disabled=busy||!run;
     $('op-off').disabled=busy||!(current?.connection==='live'||(esp&&esp.packet().available&&esp.status()?.configured));
     $('op-running-note').textContent=running?(catalog?.server_clock?'Running - shared server clock.':'Running - pauses ticking when this view is hidden.'):'Paused - use Run or Step to advance.';
@@ -147,7 +147,7 @@
   function schedule(){
     clearTimeout(timer);
     const ticket=++pollSerial;
-    if(!ready||switchingSource||requestedSource||replaySource||document.hidden||!['view-operate','view-physics'].some(id=>$(id)?.classList.contains('active')))return;
+    if(!ready||switchingSource||requestedSource||replaySource||document.hidden||!['view-operate','view-physics','view-maintenance'].some(id=>$(id)?.classList.contains('active')))return;
     timer=setTimeout(async()=>{
       if(busy){schedule();return;}
       const source=mode,id=run?.id;
@@ -244,9 +244,11 @@
     $('op-model-note').textContent=physical?'Surface temperature · missing sensors remain unavailable':'Oil + winding thermal model · illustrative geometry';
     const thermalValue=t.quality==='qualified'&&s.settings?.temperature_warning!=null&&s.settings?.temperature_critical!=null?t.transformer_temperature:null;
     const thermalSeverity=thermalValue!=null&&s.settings?.temperature_critical!=null&&thermalValue>=s.settings.temperature_critical?'critical':thermalValue!=null&&s.settings?.temperature_warning!=null&&thermalValue>=s.settings.temperature_warning?'warning':'normal';
+    if(!window.HaloControlCentre?.mounted){
     const changedModel=model().distribution!==!physical;
     model().setDistribution(!physical);if(changedModel)resetModelView();
     model().temperature(thermalValue,thermalSeverity,{warning:s.settings?.temperature_warning,critical:s.settings?.temperature_critical});model().draw();
+    }
     $('op-flow-breaker').textContent=physical?'Contacts unverified':s.breaker==='OPEN'?'Breaker open':'Breaker closed';
     document.querySelector('#view-operate .op-flow').dataset.open=String(!physical&&s.breaker==='OPEN');
     $('op-health-band').dataset.level=a.status;
@@ -258,20 +260,20 @@
     $('op-reconnect').hidden=physical;
     const primaryVerified=!physical||['primary_v','primary_current_a'].every(k=>s.evidence.some(e=>e.channel===k&&e.available&&e.calibrated));
     const temp=HaloCommand.math.temperatureReading(s,mode,physical&&esp?esp.packet():null);
-    // Wi-Fi board: effective load resistance and, when both measured currents are a flat 0 A, V ÷ R_eff estimates.
-    const hwPacket=physical&&esp&&esp.packet().available?esp.packet():null;
+    // Measured channels and independent load-bank estimates never substitute for each other.
+    const display=physical&&esp?esp.displaySnapshot():null;
     const derived=physical&&esp?window.HaloEsp32.math.deriveCurrents(esp.packet(),esp.history()):null;
     const loading=physical?prototypeLoading():null;
     // Voltages are always the board's own values; the live packet beats the stored frame copy.
-    const secondaryV=hwPacket&&hwPacket.secondary.v!=null?hwPacket.secondary.v:t.secondary_voltage;
-    const primaryV=hwPacket&&hwPacket.primary.v!=null?hwPacket.primary.v:t.primary_voltage;
-    const secondaryI=hwPacket&&hwPacket.secondary.i!=null?hwPacket.secondary.i:t.secondary_current;
-    const primaryI=hwPacket&&hwPacket.primary.i!=null?hwPacket.primary.i:t.primary_current;
+    const secondaryV=display?display.channels.secondary_voltage.value:t.secondary_voltage;
+    const primaryV=display?display.channels.primary_voltage.value:t.primary_voltage;
+    const secondaryI=display?display.channels.secondary_current.value:t.secondary_current;
+    const primaryI=display?display.channels.primary_current.value:t.primary_current;
     const rEff=derived&&derived.r_eff!=null?` · R_eff ${fmt(derived.r_eff,1)} Ω (${derived.loads_on} load${derived.loads_on===1?'':'s'} on)`:'';
-    const secondaryNote=derived?.active?`Reported ${fmt(secondaryI,3)} A · est. ${fmt(derived.secondary_i,3)} A (V ÷ R_eff)`:`Current ${fmt(secondaryI,2)} A RMS`;
-    const primaryNote=derived?.active?`Reported ${fmt(primaryI,3)} A · est. ${fmt(derived.primary_i,3)} A (from secondary power)`:`Current ${fmt(primaryI,2)} A RMS${primaryVerified?'':' · unverified'}`;
+    const secondaryNote=physical?`Measured ${fmt(secondaryI,3)} A · Estimated ${fmt(derived?.secondary_i,3)} A${derived?.disagreement?' · Readings disagree':''}`:`Current ${fmt(secondaryI,2)} A RMS`;
+    const primaryNote=physical?`Measured ${fmt(primaryI,3)} A · Estimated ${fmt(derived?.primary_i,3)} A`:`Current ${fmt(primaryI,2)} A RMS${primaryVerified?'':' · unverified'}`;
     const readings=[['thermal',temp.label,temp.value,'°C',`${physical?(t.quality!=='qualified'?'Live probe · unverified':temp.critical===null?'Surface probe':`Critical ${fmt(temp.critical,0)} °C`):`${temp.critical===null?'Critical reference unavailable':`Critical ${fmt(temp.critical,0)} °C`} · oil ${fmt(t.oil_temperature)} °C`}`,temp.level],
-      ['loading',physical?(loading.estimated?'Estimated loading':'Loading'):'Mean-current loading',physical?loading.value:t.loading_percent,'%',physical?'1 A rated current'+rEff:`Highest phase ${fmt(t.max_phase_loading_percent)}%`,null],
+      ['loading',physical?'Measured loading':'Mean-current loading',physical?loading.value:t.loading_percent,'%',physical?`Estimated ${fmt(display?.estimated_loading_percent)}% · 1 A rating`+rEff:`Highest phase ${fmt(t.max_phase_loading_percent)}%`,null],
       ['secondary','Secondary',secondaryV,'V',secondaryNote,null],
       ['primary','Primary',primaryV,'V',primaryNote,null]];
     $('op-readings').innerHTML=readings.map(([key,label,v,unit,note,level])=>`<div class="op-reading" data-reading="${key}" ${level?`data-level="${level}"`:''}><span>${esc(label)}</span><strong>${fmt(v)} <small>${unit}</small></strong><p>${esc(note)}</p></div>`).join('');
@@ -315,7 +317,7 @@
   }
   function prototypeLoading(){
     const packet=esp?.packet();
-    const scope=!replaySource&&packet?.available&&packet.live&&!packet.stale?window.HaloEsp32.math.scopePacket(packet,esp.history(),esp.status()):null;
+    const scope=!replaySource&&esp?window.HaloEsp32.math.scopePacket(packet,esp.history(),esp.status()):null;
     return HaloCommand.math.prototypeLoading(current,scope);
   }
   const trendChannels=[
@@ -326,8 +328,10 @@
   ];
   function trend(){
     if(!current)return;
-    const history=current.history;
-    const loading=mode==='prototype'?prototypeLoading():null;
+    const history=mode==='prototype'&&!replaySource&&esp?esp.displayHistory().map(r=>({timestamp:r.timestamp,
+      transformer_temperature:r.channels.surface_temperature.value,secondary_voltage:r.channels.secondary_voltage.value,
+      secondary_current:r.channels.secondary_current.value,secondary_current_estimated:r.estimates?.secondary_current?.value,
+      loading_percent:r.loading_percent,loading_percent_estimated:r.estimated_loading_percent})):current.history;
     if(!$('op-trend').children.length){
       $('op-trend').innerHTML=trendChannels.map(c=>`<section class="op-trend-card" data-channel="${c.key}"><div class="op-trend-heading"><h3>${c.label}</h3><span>${c.unit}</span></div><div class="op-trend-screen"><svg viewBox="0 0 480 200" role="img" aria-label="${c.label} over time"></svg></div></section>`).join('');
     }
@@ -335,12 +339,13 @@
     const timeLabel=time=>new Date(time).toLocaleTimeString([], {hour:'2-digit',minute:'2-digit',second:'2-digit'});
     for(const channel of trendChannels){
       const {key,color}=channel,svg=$('op-trend').querySelector(`[data-channel="${key}"] svg`);
-      const rows=key==='loading_percent'&&loading?loading.history:history;
+      const rows=history,estimatedKey=mode==='prototype'?key+'_estimated':null;
       const start=Date.parse(rows[0]?.timestamp),end=Date.parse(rows.at(-1)?.timestamp);
-      if(key==='loading_percent')svg.closest('.op-trend-card').querySelector('h3').textContent=loading?.estimated?'Estimated loading':'Loading';
+      if(key==='loading_percent'||key==='secondary_current')svg.closest('.op-trend-card').querySelector('h3').textContent=channel.label+(mode==='prototype'?' · measured / estimated':'');
       const valid=rows.filter(r=>Number.isFinite(r[key])&&Number.isFinite(Date.parse(r.timestamp)));
-      if(!valid.length){svg.innerHTML='<text x="240" y="105" text-anchor="middle" class="op-trend-empty">No data yet</text>';continue;}
-      const values=valid.map(r=>r[key]),low=Math.min(...values),high=Math.max(...values);
+      const estimates=estimatedKey?rows.filter(r=>Number.isFinite(r[estimatedKey])&&Number.isFinite(Date.parse(r.timestamp))):[];
+      if(!valid.length&&!estimates.length){svg.innerHTML='<text x="240" y="105" text-anchor="middle" class="op-trend-empty">No data yet</text>';continue;}
+      const values=[...valid.map(r=>r[key]),...estimates.map(r=>r[estimatedKey])],low=Math.min(...values),high=Math.max(...values);
       const pad=Math.max(key==='secondary_current'?.05:1,(high-low)*.15),min=low-pad,max=high+pad;
       const x=r=>50+(Date.parse(r.timestamp)-start)/Math.max(1,end-start)*414,y=v=>170-(v-min)/(max-min)*150;
       let markup='';
@@ -355,7 +360,8 @@
         path+=`${connected?'L':'M'}${x(row)},${y(row[key])} `;connected=true;
       }
       const last=valid.at(-1);
-      markup+=`<path class="op-trend-line" d="${path}" stroke="${color}"/><circle cx="${x(last)}" cy="${y(last[key])}" r="3" fill="${color}"/><text x="50" y="191">${timeLabel(start)}</text><text x="464" y="191" text-anchor="end">${timeLabel(end)}</text>`;
+      markup+=`<path class="op-trend-line" data-basis="${mode==='prototype'?'measured':'simulated'}" d="${path}" stroke="${color}"/>${last?`<circle cx="${x(last)}" cy="${y(last[key])}" r="3" fill="${color}"/>`:''}<text x="50" y="191">${timeLabel(start)}</text><text x="464" y="191" text-anchor="end">${timeLabel(end)}</text>`;
+      if(estimates.length){let expectedPath='',connected=false;for(const row of rows){if(!Number.isFinite(row[estimatedKey])||!Number.isFinite(Date.parse(row.timestamp))){connected=false;continue;}expectedPath+=`${connected?'L':'M'}${x(row)},${y(row[estimatedKey])} `;connected=true;}markup+=`<path class="op-trend-line" data-basis="estimated" d="${expectedPath}" stroke="#d9b8ff" stroke-dasharray="7 5"/><text x="460" y="14" text-anchor="end">Dashed: estimated</text>`;}
       svg.innerHTML=markup;
     }
   }
@@ -482,7 +488,7 @@
   click('op-report',exportCurrent);window.HaloOperations={export:exportCurrent,selectSource,adopt,act,displaySnapshot:()=>esp?.displaySnapshot(),displayHistory:()=>esp?.displayHistory()||[],current:()=>({snapshot:current,mode,replay:!!replaySource}),refresh:async()=>{if(run){run=await workspace.api('/twin/runs/'+encodeURIComponent(run.id));render(run);}return run;}};
   async function init(){if(ready||initializing)return;initializing=true;try{await loadCatalog();ready=true;if(!requestedSource)requestedSource={next:window.HaloSession?.source()||'prototype',initial:true};await drainSource();}catch(e){error(e.message);}finally{initializing=false;buttons();}}
   window.addEventListener('halo:ready',init);
-  window.addEventListener('halo:view',event=>{if(['operate','physics'].includes(event.detail)){if(switchingSource||requestedSource)return;if(window.HaloSession?.source()==='reference'){workspace.view('twin');return;}if(ready){render(replaySource?HaloCommand.math.replaySnapshot(replaySource,replayIndex):mode==='industrial'?run:current);model().draw();schedule();}else init();}else{clearTimeout(timer);if(replaySource){current=mode==='industrial'?run:replaySource;replaySource=null;window.HaloSession?.paint();}}});
+  window.addEventListener('halo:view',event=>{if(['operate','physics','maintenance'].includes(event.detail)){if(switchingSource||requestedSource)return;if(window.HaloSession?.source()==='reference'){workspace.view('twin');return;}if(ready){render(replaySource?HaloCommand.math.replaySnapshot(replaySource,replayIndex):mode==='industrial'?run:current);if(!window.HaloControlCentre?.mounted)model().draw();schedule();}else init();}else{clearTimeout(timer);if(replaySource){current=mode==='industrial'?run:replaySource;replaySource=null;window.HaloSession?.paint();}}});
   document.addEventListener('visibilitychange',schedule);
   buttons();
 })();

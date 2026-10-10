@@ -131,6 +131,13 @@ def render(snapshot):
                 [[r['timestamp'],r['channels']['primary_voltage']['value'],r['channels']['primary_current']['value'],r['channels']['secondary_voltage']['value'],r['channels']['secondary_current']['value'],r['channels']['surface_temperature']['value'],r['loading_percent'],r['demo_health'],r['channels']['primary_current']['source']+' / '+r['channels']['secondary_current']['source']+' / '+r['quality']] for r in captured],
                 [130,55,60,65,65,60,60,60,170]))
         else:story.append(para('No browser display history supplied.'))
+        separated=[r for r in captured if r.get('version')=='prototype-display-2']
+        if separated:
+            story.append(para('Measured and estimated currents - separate series','Heading2'))
+            story.append(para('Estimates use the declared resistive load bank and ideal primary power balance. They never replace measured zero. Raw values may be stale, invalid or firmware-calculated; consult each channel basis.'))
+            story.append(table(['Time UTC','Measured primary A','Estimated primary A','Measured secondary A','Estimated secondary A','Measured loading %','Estimated loading %','Disagreement'],
+                [[r['timestamp'],r['channels']['primary_current']['value'],r['estimates']['primary_current']['value'],r['channels']['secondary_current']['value'],r['estimates']['secondary_current']['value'],r['loading_percent'],r['estimated_loading_percent'],r['disagreement']] for r in separated],
+                [130,80,80,80,80,80,80,95]))
     for title,values in [('Current browser display snapshot',[snapshot['display_current']] if snapshot['display_current'] else []),
                          ('Events',snapshot['events']),
                          ('Forecasts, comparisons, diagnoses and work orders',snapshot['decisions'])]:

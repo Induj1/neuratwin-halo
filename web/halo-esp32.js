@@ -21,7 +21,7 @@
     const r = reply && reply.reading;
     if (!r || typeof r !== 'object') return empty({ error: reply && reply.error || null });
     const stale = !!reply.stale;
-    const stamped = stale && reply.readings_at ? Date.parse(reply.readings_at) : NaN;
+    const stamped = reply.readings_at ? Date.parse(reply.readings_at) : NaN;
     const at = finite(stamped) ? stamped : now;
     const loads = r.loads && typeof r.loads === 'object' ? r.loads : {};
     const load1 = !!loads.load1, load2 = !!loads.load2, load4 = !!loads.load4;
@@ -60,9 +60,9 @@
         if (key === lastKey) return false;
         if (bootId !== null && packet.boot_id !== bootId) rows = [];
         bootId = packet.boot_id; lastKey = key;
-        rows.push({ at: packet.at, sequence: packet.sequence, values: {
-          primary_v: packet.primary.v, secondary_v: packet.secondary.v, primary_i: packet.primary.i,
-          secondary_i: packet.secondary.i, secondary_i_expected: packet.secondary.i_expected, surface_c: packet.surface_c,
+        const values=observedValues(packet),estimate=deriveCurrents(packet);
+        rows.push({ at: packet.at, sequence: packet.sequence, quality:quality(packet,{configured:true}),values:{...values,
+          primary_i_expected:estimate.primary_i,secondary_i_expected:estimate.secondary_i,
           loads_on: packet.loads ? packet.loads.loads_on : null } });
         if (rows.length > max) rows = rows.slice(rows.length - max);
         return true;
@@ -81,12 +81,19 @@
 
   /* Load bank: identical 39 Ω branches in parallel, so R_eff = 39 Ω ÷ branches on. */
   const BRANCH_OHMS = 39;
-  const ZERO_AMPS = 0.005;
+  function observedValues(p){
+    const live=!!(p?.available&&p.live&&!p.stale),flags=p?.flags||[];
+    const valid=(v,max,keys)=>live&&finite(v)&&v>=0&&v<=max&&!keys.some(k=>flags.includes(k))?v:null;
+    return {primary_v:valid(p?.primary?.v,300,['primary_v_out_of_range','primary_v_invalid']),
+      secondary_v:valid(p?.secondary?.v,60,['secondary_v_out_of_range','secondary_v_invalid']),
+      primary_i:p?.primary?.i_method==='measured'?valid(p.primary.i,30,['primary_current_out_of_range','primary_current_invalid']):null,
+      secondary_i:valid(p?.secondary?.i,30,['current_a_out_of_range','current_invalid']),
+      surface_c:live&&p.probe_ok&&finite(p.surface_c)&&p.surface_c>=-55&&p.surface_c<=125&&!flags.some(f=>['surface_invalid','surface_out_of_range'].includes(f))?p.surface_c:null};
+  }
   function effectiveResistance(loadsOn, branchOhms) {
     const ohms = finite(branchOhms) && branchOhms > 0 ? branchOhms : BRANCH_OHMS;
     return finite(loadsOn) && loadsOn > 0 ? ohms / loadsOn : null;
   }
-  const zeroCurrent = v => v === null || v === undefined || (finite(v) && Math.abs(v) < ZERO_AMPS);
   function estimateFrom(secondaryV, primaryV, loadsOn) {
     const rEff = effectiveResistance(loadsOn);
     if (rEff === null || !finite(secondaryV) || secondaryV <= 0) return { r_eff: rEff, secondary_i: null, primary_i: null };
@@ -94,25 +101,20 @@
     const primaryI = finite(primaryV) && primaryV > 0 ? secondaryV * secondaryI / primaryV : null;
     return { r_eff: rEff, secondary_i: secondaryI, primary_i: primaryI };
   }
-  /* Frontend estimate used only when the board reports a flat 0 A on both currents while loads are on.
-     Secondary: V_s ÷ R_eff. Primary: V_s·I_s ÷ V_p (ideal transformer, unity power factor). */
+  /* Independent load-bank expectation. It never replaces an observed channel.
+     Secondary: V_s / R_eff. Primary: ideal unity-PF power balance, ignoring losses. */
   function deriveCurrents(packet, history, options) {
-    const opts = options || {}, minSamples = finite(opts.minSamples) ? opts.minSamples : 3;
     const p = packet && packet.available ? packet : null;
-    const out = { active: false, r_eff: null, loads_on: null, secondary_i: null, primary_i: null, reason: '' };
+    const out = { active: false, r_eff: null, loads_on: null, secondary_i: null, primary_i: null, disagreement:false, reason: '' };
     if (!p) return out;
     out.loads_on = p.loads ? p.loads.loads_on : null;
     out.r_eff = effectiveResistance(out.loads_on);
-    if (out.r_eff === null || !finite(p.secondary.v) || p.secondary.v <= 0) return out;
-    const recent = (Array.isArray(history) ? history : []).slice(-minSamples);
-    const flatNow = zeroCurrent(p.secondary.i) && zeroCurrent(p.primary.i);
-    const flatRecent = recent.length >= minSamples && recent.every(r => zeroCurrent(r.values.secondary_i) && zeroCurrent(r.values.primary_i));
-    if (!flatNow || !flatRecent) return out;
-    const est = estimateFrom(p.secondary.v, p.primary.v, out.loads_on);
+    const observed=observedValues(p);
+    if (out.r_eff === null || !finite(observed.secondary_v) || observed.secondary_v <= 0) return out;
+    const est = estimateFrom(observed.secondary_v, observed.primary_v, out.loads_on);
     out.secondary_i = est.secondary_i; out.primary_i = est.primary_i; out.active = out.secondary_i !== null;
-    if (out.active) out.reason = [p.secondary.i,p.primary.i].some(v=>!finite(v))
-      ? `Current channel missing; showing V ÷ R_eff estimates with ${out.loads_on} active branches`
-      : `Reported current is near zero with ${out.loads_on} active branches; showing V ÷ R_eff estimates`;
+    out.disagreement=finite(observed.secondary_i)&&Math.abs(observed.secondary_i-out.secondary_i)>Math.max(.05,.2*out.secondary_i);
+    if(out.active)out.reason=out.disagreement?'Measured current differs from the load-bank estimate.':!finite(observed.secondary_i)?'Measured current unavailable; estimate shown separately.':'Load-bank estimate; relay commands do not verify contact state.';
     return out;
   }
 
@@ -121,25 +123,11 @@
     const p = packet && packet.available ? packet : null;
     const rows = Array.isArray(history) ? history : [];
     const d = deriveCurrents(packet, rows);
-    const values = { primary_v: p ? p.primary.v : null, secondary_v: p ? p.secondary.v : null, primary_i: p ? p.primary.i : null,
-      secondary_i: p ? p.secondary.i : null, secondary_i_expected: p ? p.secondary.i_expected : null };
-    const notes = { primary_i: p ? (p.primary.i_method === 'measured' ? 'measured' : 'calculated from secondary power') : '',
+    const values = {...observedValues(p),primary_i_expected:d.primary_i,secondary_i_expected:d.secondary_i};
+    const notes = { primary_i: p?.primary.i_method==='measured'?'measured':'No primary current measurement',
       secondary_i: p && !p.current_calibrated ? 'current sensor not calibrated' : '',
-      secondary_i_expected: 'V × branches ÷ 39 Ω' };
-    let mapped = rows;
-    if (d.active) {
-      values.secondary_i = d.secondary_i; values.primary_i = d.primary_i;
-      const rawNote=[p.secondary.i,p.primary.i].some(v=>!finite(v))?'current channel missing':'reported current near zero';
-      notes.secondary_i = `estimated V ÷ R_eff ${d.r_eff.toFixed(1)} Ω · ${rawNote}`;
-      notes.primary_i = `estimated from secondary power · ${rawNote}`;
-      mapped = rows.map(r => {
-        const v = r.values;
-        if (!(zeroCurrent(v.secondary_i) && zeroCurrent(v.primary_i))) return r;
-        const est = estimateFrom(v.secondary_v, v.primary_v, v.loads_on);
-        return Object.assign({}, r, { values: Object.assign({}, v, { secondary_i: est.secondary_i, primary_i: est.primary_i }) });
-      });
-    }
-    return { values, notes, history: mapped, quality: quality(packet, status), sourceLabel: SOURCE, derived: d };
+      primary_i_expected:'Estimated from secondary power; unity PF, no losses',secondary_i_expected:'Estimated V × branches ÷ 39 Ω' };
+    return { values, notes, history:rows, quality: quality(packet, status), sourceLabel: SOURCE, derived: d,calibrated:!!p?.current_calibrated };
   }
 
   /* Packet for HaloThermo. Thresholds come from /twin/prototype settings (surface limit − 5 / limit). */
@@ -201,24 +189,27 @@
     const scope=scopePacket(packet,history,status),p=packet||empty(),d=scope.derived;
     const live=!!(p.available&&p.live&&!p.stale),loading=live&&finite(scope.values.secondary_i)?100*scope.values.secondary_i:null;
     const channel=(value,raw,unit,source,method)=>({value:num(value),raw:num(raw),unit,
-      source:finite(value)?source:'unavailable',method,quality:scope.quality});
+      source:finite(value)?source:'unavailable',method,quality:!live?scope.quality:finite(value)?'live':method.startsWith('No primary')?'unavailable':finite(raw)?'invalid':'missing'});
     return {timestamp:p.at,device_id:p.device_id,boot_id:p.boot_id,sequence:p.sequence,
-      version:'prototype-display-1',quality:scope.quality,age_s:p.age_s,
+      version:'prototype-display-2',quality:scope.quality,age_s:p.age_s,
       active_branches:p.loads?.loads_on??null,resistance_ohms:d.r_eff,branch_ohms:BRANCH_OHMS,
       reason:d.active?d.reason:null,calibrated:!!p.current_calibrated,probe_valid:!!p.probe_ok,
       live,relay_states:p.relay_states||null,loads:p.loads||null,
       channels:{
         primary_voltage:channel(scope.values.primary_v,p.primary?.v,'V','measured','board_rms'),
         secondary_voltage:channel(scope.values.secondary_v,p.secondary?.v,'V','measured','board_rms'),
-        secondary_current:channel(scope.values.secondary_i,p.secondary?.i,'A',d.active?'frontend_estimated':'measured',d.active?'V_secondary / R_eff':'board_rms'),
-        primary_current:channel(scope.values.primary_i,p.primary?.i,'A',d.active?'frontend_estimated':p.primary?.i_method==='measured'?'measured':'firmware_calculated',d.active?'V_secondary * I_secondary_est / V_primary; unity PF, no losses':p.primary?.i_method==='measured'?'board_rms':'firmware power balance; configured efficiency 0.80'),
-        surface_temperature:channel(live&&p.probe_ok?p.surface_c:null,p.surface_c,'C','measured','surface_probe')
+        secondary_current:channel(scope.values.secondary_i,p.secondary?.i,'A','measured','board_rms'),
+        primary_current:channel(scope.values.primary_i,p.primary?.i,'A','measured',p.primary?.i_method==='measured'?'board_rms':'No primary measurement; raw is firmware-calculated'),
+        surface_temperature:channel(scope.values.surface_c,p.surface_c,'C','measured','surface_probe')
       },rating_a:1,loading_percent:loading,
-      demo_health:loading===null?null:100-Math.max(0,Math.min(100,loading-80)),
-      demo_health_version:'current-only-1',scope:'Bounded browser display snapshot; not the complete acquisition history'};
+      estimates:{secondary_current:channel(d.secondary_i,null,'A','frontend_estimated','V_secondary / R_eff; 39-ohm branches; commanded load count'),
+        primary_current:channel(d.primary_i,null,'A','frontend_estimated','V_secondary * I_secondary_est / V_primary; unity PF, no losses')},
+      estimated_loading_percent:finite(d.secondary_i)?100*d.secondary_i:null,disagreement:d.disagreement,
+      demo_health:loading===null||!p.current_calibrated||d.disagreement?null:100-Math.max(0,Math.min(100,loading-80)),
+      demo_health_version:'observed-current-2',scope:'Separate observed and estimated channels; bounded browser history'};
   }
 
-  const api = { create, createBuffer, math: { normalize, freshness, scopePacket, thermoPacket, quality, empty, effectiveResistance, deriveCurrents, estimateFrom, displaySnapshot }, SOURCE, BRANCH_OHMS };
+  const api = { create, createBuffer, math: { normalize, freshness, scopePacket, thermoPacket, quality, empty, effectiveResistance, deriveCurrents, estimateFrom, displaySnapshot,observedValues }, SOURCE, BRANCH_OHMS };
   if (typeof module !== 'undefined' && module.exports) module.exports = api;
   if (root) root.HaloEsp32 = api;
 })(typeof window !== 'undefined' ? window : globalThis);

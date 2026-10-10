@@ -6,12 +6,12 @@
  const lit={0:'abcdef',1:'bc',2:'abdeg',3:'abcdg',4:'bcfg',5:'acdfg',6:'acdefg',7:'abc',8:'abcdefg',9:'abcdfg','-':'g'};
  const seg={a:'5,1 23,1 26,4 23,7 5,7 2,4',b:'24,8 27,5 27,24 24,27 21,24 21,11',c:'24,29 27,32 27,51 24,54 21,51 21,32',d:'5,53 23,53 26,56 23,59 5,59 2,56',e:'2,29 5,32 5,51 2,54 0,51 0,32',f:'2,5 5,8 5,24 2,27 0,24 0,8',g:'5,27 23,27 26,30 23,33 5,33 2,30'};
  function digits(value,decimals=1){const text=Number.isFinite(value)?value.toFixed(decimals):'---';let x=0;const pieces=[];for(const c of text){if(c==='.'){pieces.push(`<circle class="px-seg-on" cx="${x+2}" cy="56" r="2.5"/>`);x+=9;continue;}pieces.push(`<g transform="translate(${x},0)">${Object.entries(seg).map(([k,p])=>`<polygon points="${p}" class="px-seg-${lit[c]?.includes(k)?'on':'off'}"/>`).join('')}</g>`);x+=35;}return `<svg viewBox="0 0 ${x} 61" role="img" aria-label="${text==='---'?'Unavailable':text}">${pieces.join('')}</svg>`;}
- function meter(name,value,unit,source,decimals=1,max=100,limit=null){
+ function meter(name,value,unit,source,decimals=1,max=100,limit=null,estimate=null){
   const point=(v,r)=>{const a=(210-240*v/max)*Math.PI/180;return [70+r*Math.cos(a),68-r*Math.sin(a)]};
   const ticks=Array.from({length:21},(_,i)=>{const a=point(i*max/20,51),b=point(i*max/20,i%5===0?42:47);return `<path d="M${a}L${b}"/>`}).join('');
   const labels=[0,.5,1].map(v=>{const pos=point(v*max,34);return `<text x="${pos[0]}" y="${pos[1]+3}">${fmt(v*max,max<5?1:0)}</text>`}).join('');
   const needle=point(Math.max(0,Math.min(max,value??0)),43),mark=Number.isFinite(limit)&&limit<=max?point(limit,53):null;
-  return `<div class="px-instrument"><div class="px-meter-label"><span>${esc(name)}</span></div><div class="px-gauge-face"><svg viewBox="0 0 140 104" aria-hidden="true"><g class="px-scale-ticks">${ticks}</g>${labels}<text class="px-dial-unit" x="70" y="56">${esc(unit)}</text>${mark?`<circle cx="${mark[0]}" cy="${mark[1]}" r="2.8" fill="#981818"/>`:''}${Number.isFinite(value)?`<path class="px-needle" d="M70 68L${needle}"/><circle cx="70" cy="68" r="4" fill="#1d252b"/>`:'<text x="70" y="82">NO SIGNAL</text>'}</svg></div><div class="px-number">${digits(value,decimals)}<span>${esc(unit)}</span></div><small>${esc(source)}</small></div>`;
+  return `<div class="px-instrument"><div class="px-meter-label"><span>${esc(name)}</span></div><div class="px-gauge-face"><svg viewBox="0 0 140 104" aria-hidden="true"><g class="px-scale-ticks">${ticks}</g>${labels}<text class="px-dial-unit" x="70" y="56">${esc(unit)}</text>${mark?`<circle cx="${mark[0]}" cy="${mark[1]}" r="2.8" fill="#981818"/>`:''}${Number.isFinite(value)?`<path class="px-needle" d="M70 68L${needle}"/><circle cx="70" cy="68" r="4" fill="#1d252b"/>`:'<text x="70" y="82">NO SIGNAL</text>'}</svg></div><div class="px-number">${digits(value,decimals)}<span>${esc(unit)}</span></div><small>${esc(source)}</small>${estimate?`<div class="px-estimate"><span>Estimated</span><strong>${fmt(estimate.value,decimals)} ${esc(unit)}</strong></div>`:''}</div>`;
  }
  function panelIndicators(r,physical,display){
   const ready=!!r?.available,settings=options.settings;
@@ -32,10 +32,9 @@
  let state=null,result=null,key=null,serial=0,inflight=false,queued=false,last='',model=null,field=false,sensorNodes=[],busy=false;
  let options={settings:{tank:'sealed',clock_scale:60},fault:'none',fault_at:null,reset_at:null};
  const active=()=>root.classList.contains('active');
- // Share the existing instruments, including their histories and interaction state.
- // Anchors restore them to Digital twin when this view closes.
- const graphSlots=['op-scope','op-waveform','op-trend','op-trend-note'].map(id=>{const node=$(id),anchor=document.createComment(id+' home');node.before(anchor);return {node,anchor,host:$(id==='op-scope'||id==='op-waveform'?'px-electrical-graphs':'px-response-graphs')};});
- function syncGraphs(){for(const {node,anchor,host} of graphSlots){if(active()){if(node.parentNode!==host)host.append(node);}else if(node.previousSibling!==anchor)anchor.after(node);}}
+ // One permanent home for the live graphs in the merged control centre.
+ const graphSlots=['op-scope','op-waveform','op-trend','op-trend-note'].map(id=>({node:$(id),host:$(id==='op-scope'||id==='op-waveform'?'px-electrical-graphs':'px-response-graphs')}));
+ function syncGraphs(){for(const {node,host} of graphSlots)if(node.parentNode!==host)host.append(node);}
  function sourceKey(s){return s?.mode+':'+s?.snapshot?.id;}
  function clear(){result=null;sensorNodes=[];last='';serial++;toggle(false);paint();}
  function origin(){return state?.mode==='industrial'?'Industrial simulation':'Physical prototype';}
@@ -73,10 +72,10 @@
   const a=physical?display?.channels.secondary_current:t?{value:t.secondary_current,source:'simulated'}:null;
   const temp=physical?display?.channels.surface_temperature:t?{value:t.oil_temperature,source:'simulated'}:null;
   const channel=c=>c?.source?.replaceAll('_',' ')||'unavailable';
-  $('px-readings').innerHTML=meter('Secondary voltage',v?.value,'V',channel(v),1,physical?30:600)+meter('Secondary current',a?.value,'A',channel(a),physical?3:1,physical?1.5:Math.ceil((t?.secondary_current/(t?.loading_percent/100)||1000)*1.8/100)*100,physical?1:null)+meter(physical?'Surface temperature':'Source top-oil',temp?.value,'°C',channel(temp),1,150)+meter('Source loading',physical?display?.loading_percent:t?.loading_percent,'%',physical?'1 A reference':'Rated current',1,180,100);
+  $('px-readings').innerHTML=meter('Secondary voltage',v?.value,'V',channel(v),1,physical?30:600)+meter('Secondary current',a?.value,'A',channel(a),physical?3:1,physical?1.5:Math.ceil((t?.secondary_current/(t?.loading_percent/100)||1000)*1.8/100)*100,physical?1:null,physical?{value:display?.estimates?.secondary_current?.value}:null)+meter(physical?'Surface temperature':'Source top-oil',temp?.value,'°C',channel(temp),1,150)+meter('Source loading',physical?display?.loading_percent:t?.loading_percent,'%',physical?'Measured · 1 A reference':'Rated current',1,180,100,physical?{value:display?.estimated_loading_percent}:null);
   window.HaloAlarms?.update({key:sourceKey(state),mode:physical?'prototype':'industrial',snapshot:s,display,result:r,settings:options.settings,fault:options.fault,fault_at:options.fault_at,replay:state?.replay});
   panelIndicators(r,physical,display);mimic(physical,display,t);
-  $('px-control-context').textContent=physical?'Physical load switching is in Operator action.':s?'Changes simulated demand.':'Create an industrial run to set demand.';
+  $('px-control-context').textContent=physical?'Bench relay commands; contact feedback is not measured.':s?'Changes simulated demand.':'Create an industrial run to set demand.';
   $('px-origin').textContent=origin()+' · '+(physical?(display?.live?'live readings':display?.timestamp?'cached readings':'offline'):'modelled readings');
   $('px-simulation').hidden=physical||!s;if(!physical&&s){if(document.activeElement!==$('px-load'))$('px-load').value=s.inputs.load_percent;$('px-load-value').textContent=fmt(s.inputs.load_percent,0)+'%';}
   $('px-clock-label').textContent=`MODEL CLOCK · ${options.settings.clock_scale}×`;
@@ -122,7 +121,7 @@
  });
  $('px-reset').onclick=()=>{options.fault='none';options.fault_at=null;options.reset_at=currentTime();$('px-command').textContent='';changed();};
  $('px-assembly').onclick=()=>toggle(false);$('px-field').onclick=()=>toggle(true);
- function toggle(value){field=value;$('px-fem').hidden=!value;$('px-model').hidden=value;$('px-assembly').setAttribute('aria-pressed',String(!value));$('px-field').setAttribute('aria-pressed',String(value));$('px-scene-label').textContent=value?'Declared FEM cross-section':state?.mode==='industrial'?'Industrial transformer':'Physical prototype';$('px-field-value').textContent=value?'Illustrative geometry · °C':'Drag to inspect';if(value)thermalField();else showModel();}
+ function toggle(value){if(value)window.HaloControlCentre?.select('overview');field=value;$('px-fem').hidden=!value;$('px-model').hidden=value;$('px-assembly').setAttribute('aria-pressed',String(!value));$('px-field').setAttribute('aria-pressed',String(value));$('px-scene-label').textContent=value?'Declared FEM cross-section':state?.mode==='industrial'?'Industrial transformer':'Physical prototype';$('px-field-value').textContent=value?'Illustrative geometry · °C':'Drag to inspect';if(value)thermalField();else showModel();}
  $('px-export').onclick=()=>document.getElementById('op-export-pdf').click();
  $('px-new').onclick=()=>document.getElementById('op-new').click();
  $('px-load').oninput=e=>$('px-load-value').textContent=e.target.value+'%';

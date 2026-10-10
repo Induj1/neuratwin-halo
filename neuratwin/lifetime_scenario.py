@@ -51,12 +51,16 @@ def numeric(v):return isinstance(v,(int,float)) and not isinstance(v,bool) and m
 def from_display(sample):
     if not sample:return None
     channels=sample['channels'];temperature=channels['surface_temperature']['value']
-    if temperature is None and sample.get('probe_valid'):
+    if temperature is None and sample.get('probe_valid') and sample.get('version')!='prototype-display-2':
         temperature=channels['surface_temperature']['raw']
+    disputed=sample.get('version')=='prototype-display-2' and sample.get('disagreement',False)
     return {'timestamp':sample['timestamp'],'sample_key':str(sample.get('boot_id'))+':'+str(sample.get('sequence')),
         'boot_id':sample.get('boot_id'),'temperature_c':temperature,
-        'current_a':channels['secondary_current']['value'],'voltage_v':channels['secondary_voltage']['value'],
-        'current_source':channels['secondary_current']['source'],'quality':sample['quality'],
+        'current_a':None if disputed else channels['secondary_current']['value'],'voltage_v':channels['secondary_voltage']['value'],
+        'observed_current_a':channels['secondary_current']['value'],
+        'estimated_current_a':sample.get('estimates',{}).get('secondary_current',{}).get('value'),
+        'current_disagreement':disputed,
+        'current_source':'held_disagreement' if disputed else channels['secondary_current']['source'],'quality':sample['quality'],
         'source':'client-submitted prototype display; surface temperature'}
 
 

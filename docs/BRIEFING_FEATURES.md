@@ -16,9 +16,9 @@ The [Life & risk scenario panel](LIFETIME_SCENARIOS.md) adds condition screening
 
 ## Prototype readings
 
-The existing voltage/current acquisition, frontend fallback values and waveform calculations are preserved. Loading still uses the displayed secondary current against the team's 1 A reference; Demo health remains a current-only score.
+Voltage/current acquisition is preserved. Observed values and load-bank estimates are separate in new captures, cards, plots and reports. Measured loading uses observed secondary current against the team's 1 A reference; estimated loading is separate. Current screening is held for uncalibrated or conflicting readings.
 
-Reports distinguish measured channels, firmware-calculated primary current, frontend estimates and unavailable channels. The firmware power-balance calculation assumes efficiency 0.80. The separate frontend fallback uses secondary voltage divided by effective resistance, then an ideal unity-power-factor primary estimate. Missing current and a reported near-zero current have distinct descriptions, without changing the existing fallback eligibility.
+Reports distinguish measured channels, firmware-calculated primary current, frontend estimates and unavailable channels. The firmware power-balance calculation assumes efficiency 0.80. The separate frontend estimate uses secondary voltage divided by effective resistance, then an ideal unity-power-factor primary estimate. It never replaces measured zero, missing, invalid or stale current. See [Measured and estimated readings](MEASURED_AND_ESTIMATED_READINGS.md) for assumptions and screening rules.
 
 The implemented Wi-Fi load mapping is M1 → load1, M2 → load2, M3 → load4; M4 requests all three OFF and is not a fourth active branch. Relay commands do not prove contact position. The temperature probe measures surface temperature. This bench does not supply oil, hot-spot, pressure or three-phase measurements.
 

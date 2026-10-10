@@ -41,7 +41,7 @@
  }
  function renderJobs(){const jobs=record?.jobs||[];$('mt-job-count').textContent=jobs.length?`${jobs.length} recorded`:'';
   bridge.innerHTML=`<div class="mt-heading"><h2>Asset job cards</h2><button id="mt-open-desk">Open maintenance desk</button></div><p>${state?.mode==='industrial'?'Selected industrial simulation':'Physical prototype'} · ${jobs.length} recorded</p><div class="mt-jobs">${jobs.map(j=>`<button data-mt-linked="${esc(j.id)}">${esc(j.title)}<span>${esc(j.status.replaceAll('_',' '))} · ${esc(j.owner)}</span></button>`).join('')}</div>`;
-  const open=job=>{HaloWorkspace.view('physics');if(job)selectJob(job);requestAnimationFrame(()=>$('mt-workflow').scrollIntoView({behavior:'smooth',block:'start'}));};$('mt-open-desk').onclick=()=>open(null);bridge.querySelectorAll('[data-mt-linked]').forEach(b=>b.onclick=()=>open(jobs.find(j=>j.id===b.dataset.mtLinked)));
+  const open=job=>{HaloWorkspace.view('maintenance');if(job)selectJob(job);requestAnimationFrame(()=>$('mt-workflow').scrollIntoView({behavior:'smooth',block:'start'}));};$('mt-open-desk').onclick=()=>open(null);bridge.querySelectorAll('[data-mt-linked]').forEach(b=>b.onclick=()=>open(jobs.find(j=>j.id===b.dataset.mtLinked)));
   $('mt-jobs').innerHTML=jobs.map(j=>`<button data-mt-job="${esc(j.id)}" aria-pressed="${selected?.id===j.id}">${esc(j.title)}<span>${esc(j.owner)} · ${esc(j.status.replaceAll('_',' '))}</span></button>`).join('')||'<p>No job cards for this asset.</p>';
   $('mt-jobs').querySelectorAll('[data-mt-job]').forEach(b=>b.onclick=()=>selectJob(jobs.find(j=>j.id===b.dataset.mtJob)));
  }

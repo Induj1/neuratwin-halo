@@ -49,9 +49,10 @@
           { id: 'primary_v', label: 'Primary', color: COLORS.primary, phase: 0 },
           { id: 'secondary_v', label: 'Secondary', color: COLORS.secondary, phase: 0 } ] },
         { id: 'current', label: 'Current', unit: 'A', channels: [
-          { id: 'primary_i', label: 'Primary', color: COLORS.primary, phase: 0, dashed: true },
-          { id: 'secondary_i', label: 'Secondary', color: COLORS.secondary, phase: 0 },
-          { id: 'secondary_i_expected', label: 'Expected', color: COLORS.reference, phase: 0, trendOnly: true, dashed: true } ] },
+          { id: 'primary_i', label: 'Primary measured', color: COLORS.primary, phase: 0 },
+          { id: 'secondary_i', label: 'Secondary measured', color: COLORS.secondary, phase: 0 },
+          { id: 'primary_i_expected', label: 'Primary estimated', color: COLORS.neutral, phase: 0, dashed: true },
+          { id: 'secondary_i_expected', label: 'Secondary estimated', color: COLORS.reference, phase: 0, dashed: true } ] },
       ],
       note: 'Single-phase bench · relative phase and power factor are not measured. Each curve uses an arbitrary phase reference; do not infer phase shift, harmonics or power factor.',
     };

@@ -1,5 +1,5 @@
 #view-physics{--px-ink:#1d252b;--px-muted:#626a64;--px-line:#adb6ae;--px-paper:#eaf2ec;--px-blue:#c8d8e8;color:var(--px-ink);padding-bottom:32px}
-body:has(#view-physics.active){background:#eaf2ec;background-image:linear-gradient(120deg,#eaf2ec,#dce3dc)}
+body:has(:is(#view-physics,#view-maintenance).active){background:#eaf2ec;background-image:linear-gradient(120deg,#eaf2ec,#dce3dc)}
 #view-physics button,#view-physics select,#view-physics input{font:inherit;border-radius:6px;box-shadow:none}
 #view-physics button{padding:10px 15px;font-size:13px;border:1px solid #80887e;background:#eaf2ec;color:#1d252b;cursor:pointer;min-height:40px}
 #view-physics button:hover:not(:disabled){background:#d7e2dc;border-color:#1d252b}#view-physics button:disabled{opacity:.45;cursor:not-allowed}
@@ -24,35 +24,35 @@ body:has(#view-physics.active){background:#eaf2ec;background-image:linear-gradie
 #px-model[hidden],#px-fem[hidden]{display:none}
 .px-fem-scale{position:absolute;right:0;top:18%;height:60%;display:flex;flex-direction:column;align-items:center;gap:8px;font:10px monospace;color:#626a64}.px-fem-scale i{width:9px;flex:1;border:1px solid #80887e66;border-radius:3px}
 /* The engineering console owns its entire shell, including shared navigation. */
-body.operator-workspace:has(#view-physics.active){
+body.operator-workspace:has(:is(#view-physics,#view-maintenance).active){
  --paper:#bfc4be;--ink:#1d252b;--muted:#626a64;--line:#80887e;
  --glass-fill:#eaf2ec;--glass-edge:#80887e;--glass-radius:2px;--glass-shadow:none;
  --glass-ink:#1d252b;--glass-muted:#626a64;--glass-accent:#1d252b;
  background:#bfc4be;color:#1d252b;
 }
-body.operator-workspace:has(#view-physics.active)::before{content:none}
-body.operator-workspace:has(#view-physics.active) :is(.top,.tabs,.session-bar,.mobile-section-nav,.source-bar,dialog,button,input,select,textarea){
+body.operator-workspace:has(:is(#view-physics,#view-maintenance).active)::before{content:none}
+body.operator-workspace:has(:is(#view-physics,#view-maintenance).active) :is(.top,.tabs,.session-bar,.mobile-section-nav,.source-bar,dialog,button,input,select,textarea){
  -webkit-backdrop-filter:none;backdrop-filter:none;box-shadow:none;border-radius:2px;
 }
-body.operator-workspace:has(#view-physics.active) .top{margin:0;padding:0 24px;height:64px;min-height:64px;background:#eaf2ec;border:0;border-bottom:2px solid #626a64;border-radius:0}
-body.operator-workspace:has(#view-physics.active) .brand{position:static;min-width:164px;color:#1d252b}
-body.operator-workspace:has(#view-physics.active) .workspace-breadcrumb{color:#626a64}
-body.operator-workspace:has(#view-physics.active) .top-right button{background:#bfc4be;border:1px solid #80887e;color:#1d252b}
-body.operator-workspace:has(#view-physics.active) .tabs{position:fixed;top:64px;left:0;bottom:0;width:212px;padding:18px 10px;gap:5px;background:#626a64;border:0;border-right:1px solid #1d252b;border-radius:0}
-body.operator-workspace:has(#view-physics.active) .tabs button{background:#626a64;border:0;border-left:3px solid transparent;border-radius:0;padding:13px 10px;min-height:46px;gap:10px;color:#eaf2ec;box-shadow:none;text-align:left}
-body.operator-workspace:has(#view-physics.active) .tabs button span{font-size:12px;color:inherit;white-space:normal;line-height:1.4}
-body.operator-workspace:has(#view-physics.active) .tabs button svg{stroke:currentColor;flex-shrink:0}
-body.operator-workspace:has(#view-physics.active) .tabs button.active{background:#1d252b;border-left-color:#f8f888;color:#f8f888;box-shadow:none}
-body.operator-workspace:has(#view-physics.active) .tabs button:hover:not(.active){background:#80887e;color:#eaf2ec}
-body.operator-workspace:has(#view-physics.active) .tabs .case-more{color:#eaf2ec!important;border-top:1px solid #adb6ae!important}
-body.operator-workspace:has(#view-physics.active) .nav-home{color:#eaf2ec;border-color:#80887e}
-body.operator-workspace:has(#view-physics.active) main{margin-left:212px;padding:24px 24px 0}
-body.operator-workspace:has(#view-physics.active) .session-bar{background:#adb6ae;border:1px solid #80887e;border-radius:2px;box-shadow:none;backdrop-filter:none;-webkit-backdrop-filter:none;margin:0 0 24px;padding:14px 18px}
-body.operator-workspace:has(#view-physics.active) .session-bar :is(label,strong,a){color:#1d252b}
-body.operator-workspace:has(#view-physics.active) :is(.session-bar,.mobile-section-nav) select{background:#eaf2ec;border:1px solid #626a64;color:#1d252b;border-radius:2px}
-body.operator-workspace:has(#view-physics.active) dialog{background:#eaf2ec;border:1px solid #626a64;border-radius:2px;box-shadow:none}
-body.operator-workspace:has(#view-physics.active) dialog::backdrop{background:#1d252b99;backdrop-filter:none;-webkit-backdrop-filter:none}
-body.operator-workspace:has(#view-physics.active) footer{border-color:#80887e;color:#626a64}
+body.operator-workspace:has(:is(#view-physics,#view-maintenance).active) .top{margin:0;padding:0 24px;height:64px;min-height:64px;background:#eaf2ec;border:0;border-bottom:2px solid #626a64;border-radius:0}
+body.operator-workspace:has(:is(#view-physics,#view-maintenance).active) .brand{position:static;min-width:164px;color:#1d252b}
+body.operator-workspace:has(:is(#view-physics,#view-maintenance).active) .workspace-breadcrumb{color:#626a64}
+body.operator-workspace:has(:is(#view-physics,#view-maintenance).active) .top-right button{background:#bfc4be;border:1px solid #80887e;color:#1d252b}
+body.operator-workspace:has(:is(#view-physics,#view-maintenance).active) .tabs{position:fixed;top:64px;left:0;bottom:0;width:212px;padding:18px 10px;gap:5px;background:#626a64;border:0;border-right:1px solid #1d252b;border-radius:0}
+body.operator-workspace:has(:is(#view-physics,#view-maintenance).active) .tabs button{background:#626a64;border:0;border-left:3px solid transparent;border-radius:0;padding:13px 10px;min-height:46px;gap:10px;color:#eaf2ec;box-shadow:none;text-align:left}
+body.operator-workspace:has(:is(#view-physics,#view-maintenance).active) .tabs button span{font-size:12px;color:inherit;white-space:normal;line-height:1.4}
+body.operator-workspace:has(:is(#view-physics,#view-maintenance).active) .tabs button svg{stroke:currentColor;flex-shrink:0}
+body.operator-workspace:has(:is(#view-physics,#view-maintenance).active) .tabs button.active{background:#1d252b;border-left-color:#f8f888;color:#f8f888;box-shadow:none}
+body.operator-workspace:has(:is(#view-physics,#view-maintenance).active) .tabs button:hover:not(.active){background:#80887e;color:#eaf2ec}
+body.operator-workspace:has(:is(#view-physics,#view-maintenance).active) .tabs .case-more{color:#eaf2ec!important;border-top:1px solid #adb6ae!important}
+body.operator-workspace:has(:is(#view-physics,#view-maintenance).active) .nav-home{color:#eaf2ec;border-color:#80887e}
+body.operator-workspace:has(:is(#view-physics,#view-maintenance).active) main{margin-left:212px;padding:24px 24px 0}
+body.operator-workspace:has(:is(#view-physics,#view-maintenance).active) .session-bar{background:#adb6ae;border:1px solid #80887e;border-radius:2px;box-shadow:none;backdrop-filter:none;-webkit-backdrop-filter:none;margin:0 0 24px;padding:14px 18px}
+body.operator-workspace:has(:is(#view-physics,#view-maintenance).active) .session-bar :is(label,strong,a){color:#1d252b}
+body.operator-workspace:has(:is(#view-physics,#view-maintenance).active) :is(.session-bar,.mobile-section-nav) select{background:#eaf2ec;border:1px solid #626a64;color:#1d252b;border-radius:2px}
+body.operator-workspace:has(:is(#view-physics,#view-maintenance).active) dialog{background:#eaf2ec;border:1px solid #626a64;border-radius:2px;box-shadow:none}
+body.operator-workspace:has(:is(#view-physics,#view-maintenance).active) dialog::backdrop{background:#1d252b99;backdrop-filter:none;-webkit-backdrop-filter:none}
+body.operator-workspace:has(:is(#view-physics,#view-maintenance).active) footer{border-color:#80887e;color:#626a64}
 #view-physics :is(.px-equipment,.px-fluid,.px-decision,.px-forecast,.px-tools){background:#eaf2ec;border-color:#80887e;border-radius:2px;box-shadow:none}
 #view-physics :is(button,input,select){border-radius:2px}
 #view-physics .px-instrument{background:#1d252b;border:4px solid #626a64;outline:1px solid #80887e;border-radius:2px;box-shadow:none}
@@ -71,12 +71,12 @@ body.operator-workspace:has(#view-physics.active) footer{border-color:#80887e;co
 #view-physics [data-state=trip] .px-status::before{background:#e85848}
 #view-physics .px-faults button[aria-pressed=true]{background:#f8a808!important}
 @media(max-width:700px){
- body.operator-workspace:has(#view-physics.active) .top{padding:0 16px;justify-content:space-between}
- body.operator-workspace:has(#view-physics.active) .brand{min-width:0}
- body.operator-workspace:has(#view-physics.active) .tabs{display:none}
- body.operator-workspace:has(#view-physics.active) .mobile-section-nav{display:block;background:#626a64;border:0;border-radius:0;margin:0;padding:12px 16px}
- body.operator-workspace:has(#view-physics.active) .mobile-section-nav select{width:100%;padding:10px}
- body.operator-workspace:has(#view-physics.active) main{margin-left:0;padding:18px 14px 0}
- body.operator-workspace:has(#view-physics.active) .session-bar{padding:14px;margin-bottom:20px}
+ body.operator-workspace:has(:is(#view-physics,#view-maintenance).active) .top{padding:0 16px;justify-content:space-between}
+ body.operator-workspace:has(:is(#view-physics,#view-maintenance).active) .brand{min-width:0}
+ body.operator-workspace:has(:is(#view-physics,#view-maintenance).active) .tabs{display:none}
+ body.operator-workspace:has(:is(#view-physics,#view-maintenance).active) .mobile-section-nav{display:block;background:#626a64;border:0;border-radius:0;margin:0;padding:12px 16px}
+ body.operator-workspace:has(:is(#view-physics,#view-maintenance).active) .mobile-section-nav select{width:100%;padding:10px}
+ body.operator-workspace:has(:is(#view-physics,#view-maintenance).active) main{margin-left:0;padding:18px 14px 0}
+ body.operator-workspace:has(:is(#view-physics,#view-maintenance).active) .session-bar{padding:14px;margin-bottom:20px}
 }
 @media(prefers-reduced-motion:reduce){.px-level-track i{transition:none}}
