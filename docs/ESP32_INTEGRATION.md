@@ -56,6 +56,23 @@ current is derived from secondary power unless the firmware is built with
 Operator auth is the usual local session token or Supabase operator identity.
 The device token is only ever sent from the backend to the board.
 
+## Operator UI (Physical prototype mode)
+
+`/app#operate` → Working source **Physical prototype**. When `HALO_ESP32_URL` is
+set, the view polls `GET /api/halo/esp32/readings` on the same 2.5 s tick as
+`/twin/prototype` and renders three hardware instruments
+(`web/halo-esp32.js` feeds `web/halo-scope.js`, `web/halo-thermo.js`,
+`web/halo-loads.js`):
+
+| Instrument | Source | Notes |
+| --- | --- | --- |
+| Hardware scope | `primary_v`, `secondary_v`, `primary_current_a`, `current_a`, `expected_current_a` | Waveform mode is a √2·RMS 50 Hz reconstruction; trend mode is RMS over the last 5 min (browser buffer, cleared on `boot_id` change). Primary current is labelled *calculated* unless the firmware reports `measured`. |
+| Surface thermometer | `surface_c`, `temperature_probe_ok`, `surface_invalid` flag | Always labelled surface / DS18B20. Warning and critical ticks come from the prototype settings (commissioned surface limit − 5 / limit); without a limit the ticks are absent. |
+| Load controls M1–M4 | `loads`, `POST /api/halo/esp32/loads` | The UI shows four identical loads. The remap is frontend-only: M1→`load1`, M2→`load2`, M3→`load4`, M4→no hardware. Switching M4 sends `{load1:false,load2:false,load4:false}` and shows the "Load exceeded, supply cut off" banner until **Restore supply**. The cutoff state survives a reload (`sessionStorage`) and clears on board reboot. Switches are disabled when the board is unreachable or stale, when `HALO_ALLOW_CONTROL` is off (423), or while a trip is latched. The backend and firmware are unchanged. |
+
+Without `HALO_ESP32_URL` the view falls back to the older `/relays` command
+queue (USB bridge).
+
 ## What the integration does not claim
 
 An acknowledged load request is a relay drive state, not contact feedback.

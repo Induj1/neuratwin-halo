@@ -1,0 +1,42 @@
+/* Load bank panel and the prototype hardware row that holds it beside the thermometer. */
+.op-hw-grid{display:grid;grid-template-columns:minmax(300px,.9fr) minmax(0,1.3fr);gap:16px;margin:16px 0}
+.halo-loads{--hl-ink:#24372f;--hl-muted:#596c62;background:linear-gradient(125deg,rgba(255,255,255,.97),rgba(241,247,243,.91));border:1px solid #d4e1d7;border-radius:20px;padding:20px 22px;color:var(--hl-ink);box-shadow:0 8px 28px #20352b08;backdrop-filter:blur(14px);min-width:0}
+.halo-loads *{box-sizing:border-box}
+.halo-loads .hl-heading{display:flex;align-items:flex-start;justify-content:space-between;gap:14px}
+.halo-loads .hl-eyebrow{font-size:12px;letter-spacing:.09em;font-weight:700;color:#667b69;margin:0 0 6px}
+.halo-loads h3{font-size:20px;line-height:1.2;letter-spacing:-.03em;margin:0;font-weight:650}
+.halo-loads .hl-origin{font-size:12px;line-height:1.5;text-align:right;color:var(--hl-muted);max-width:190px}
+.halo-loads .hl-banner{margin:14px 0 0;padding:14px 16px;border-radius:12px;background:#fff0ec;border:1px solid #e3b4ab;border-left:5px solid #b3372a;color:#5a241d}
+.halo-loads .hl-banner strong{display:block;font-size:15px;color:#972e25;margin-bottom:4px}
+.halo-loads .hl-banner p{margin:0 0 10px;font-size:13px;line-height:1.55}
+.halo-loads .hl-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px;margin:14px 0 10px}
+.halo-loads .hl-load{border:1px solid #d5e0d8;border-radius:12px;padding:12px;background:#ffffffb3;min-width:0;display:flex;flex-direction:column;gap:6px}
+.halo-loads .hl-load[data-on=true]{border-color:#7fb89a;background:#eef7f1}
+.halo-loads[data-cutoff=true] .hl-load[data-ui=M4]{border-color:#b3372a;background:#fff4f1}
+.halo-loads .hl-load header{display:flex;justify-content:space-between;align-items:baseline;gap:6px}
+.halo-loads .hl-load header strong{font-size:18px;font-weight:700}
+.halo-loads .hl-map{font-size:11px;color:var(--hl-muted);white-space:nowrap}
+.halo-loads .hl-desc,.halo-loads .hl-state{margin:0;font-size:12px;line-height:1.45;color:var(--hl-muted)}
+.halo-loads .hl-state{color:#3b5366;font-weight:600}
+.halo-loads .hl-load[data-unknown=true] .hl-state{color:#7e8b96}
+.halo-loads button{min-height:44px;border:1px solid #ccdad0;background:#fff;color:var(--hl-ink);border-radius:9px;padding:8px 12px;font:inherit;font-size:13px;font-weight:650;cursor:pointer}
+.halo-loads button:hover:not(:disabled){background:#eaf2ec;border-color:#94b3a0}
+.halo-loads button:focus-visible{outline:3px solid #547f62;outline-offset:3px}
+.halo-loads button:disabled{color:#8b968f;cursor:not-allowed;background:#f5f7f5}
+.halo-loads [role=switch]{display:flex;align-items:center;gap:10px;margin-top:auto;width:100%;justify-content:flex-start}
+.halo-loads [role=switch] i{position:relative;flex:none;width:38px;height:22px;border-radius:22px;background:#c5d0c8;transition:background 160ms ease-out}
+.halo-loads [role=switch] i::after{content:'';position:absolute;top:3px;left:3px;width:16px;height:16px;border-radius:50%;background:#fff;box-shadow:0 1px 2px #0003;transition:transform 160ms ease-out}
+.halo-loads [role=switch][aria-checked=true] i{background:#2a7a62}
+.halo-loads [role=switch][aria-checked=true] i::after{transform:translateX(16px)}
+.halo-loads .hl-load[data-ui=M4] [role=switch][aria-checked=true] i{background:#b3372a}
+.halo-loads .hl-footer{display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap;font-size:12px;color:var(--hl-muted);font-variant-numeric:tabular-nums}
+.halo-loads .hl-gate{margin:8px 0 0;font-size:13px;line-height:1.5;color:#4d6171;min-height:1.5em}
+.halo-loads .hl-gate[data-error=true]{color:#972e25;font-weight:600}
+.halo-loads .hl-gate:empty{display:none}
+.halo-loads .hl-actions{display:flex;gap:10px;margin-top:12px}
+.halo-loads .hl-alloff{border-color:#b3372a;color:#972e25;background:#fff}
+.halo-loads .hl-alloff:hover:not(:disabled){background:#fff0ec;border-color:#b3372a}
+.halo-loads [hidden]{display:none!important}
+@media(max-width:1100px){.op-hw-grid{grid-template-columns:1fr}}
+@media(max-width:760px){.halo-loads .hl-grid{grid-template-columns:1fr 1fr}.halo-loads{padding:16px}.halo-loads .hl-heading{display:block}.halo-loads .hl-origin{text-align:left;max-width:none;margin-top:6px}}
+@media(prefers-reduced-motion:reduce){.halo-loads [role=switch] i,.halo-loads [role=switch] i::after{transition:none}}

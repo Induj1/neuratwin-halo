@@ -1,0 +1,36 @@
+/* Thermometer instrument: shares the readings tile colours (#op-readings data-level). */
+.halo-thermo{--ht-ink:#24372f;--ht-muted:#596c62;--ht-level:#2a7a62;background:linear-gradient(125deg,rgba(255,255,255,.97),rgba(241,247,243,.91));border:1px solid #d4e1d7;border-radius:20px;padding:20px 22px;color:var(--ht-ink);box-shadow:0 8px 28px #20352b08;backdrop-filter:blur(14px);min-width:0}
+.halo-thermo[data-level=WARNING]{--ht-level:#a66810}
+.halo-thermo[data-level=CRITICAL]{--ht-level:#b3372a}
+.halo-thermo[data-level=UNKNOWN]{--ht-level:#7e8b96}
+.halo-thermo *{box-sizing:border-box}
+.halo-thermo .ht-heading{display:flex;align-items:flex-start;justify-content:space-between;gap:14px}
+.halo-thermo .ht-eyebrow{font-size:12px;letter-spacing:.09em;font-weight:700;color:#667b69;margin:0 0 6px}
+.halo-thermo h3{font-size:20px;line-height:1.2;letter-spacing:-.03em;margin:0;font-weight:650}
+.halo-thermo .ht-origin{font-size:12px;line-height:1.5;text-align:right;color:var(--ht-muted);max-width:170px}
+.halo-thermo[data-quality=stale] .ht-origin{color:#a3650c;font-weight:650}
+.halo-thermo .ht-body{display:grid;grid-template-columns:120px minmax(0,1fr);gap:16px;align-items:center;margin-top:12px}
+.halo-thermo .ht-gauge{width:120px;height:252px;overflow:visible}
+.halo-thermo .ht-tube{fill:#ffffff;stroke:#b9c9bf;stroke-width:1.5}
+.halo-thermo .ht-bulb-back{fill:#ffffff;stroke:#b9c9bf;stroke-width:1.5}
+.halo-thermo .ht-fill{fill:var(--ht-level);transition:y 320ms ease-out,height 320ms ease-out,fill 180ms ease-out}
+.halo-thermo .ht-bulb{fill:var(--ht-level);transition:fill 180ms ease-out}
+.halo-thermo .ht-ticks line{stroke:#9fb0a6;stroke-width:1}
+.halo-thermo .ht-ticks text{font-size:10px;fill:#5e7164;font-variant-numeric:tabular-nums}
+.halo-thermo .ht-limits line{stroke-width:1.6;stroke-dasharray:3 2}
+.halo-thermo .ht-limits text{font-size:9.5px;font-weight:700;font-variant-numeric:tabular-nums}
+.halo-thermo .ht-warning line{stroke:#a66810}.halo-thermo .ht-warning text{fill:#a66810}
+.halo-thermo .ht-critical line{stroke:#b3372a}.halo-thermo .ht-critical text{fill:#b3372a}
+.halo-thermo .ht-readout{min-width:0}
+.halo-thermo .ht-value-row{display:flex;align-items:baseline;gap:6px}
+.halo-thermo .ht-value{font-size:44px;line-height:1;letter-spacing:-1.5px;font-weight:650;font-variant-numeric:tabular-nums;color:var(--ht-level)}
+.halo-thermo .ht-unit{font-size:18px;font-weight:600;color:var(--ht-muted)}
+.halo-thermo .ht-label{margin:6px 0 2px;font-size:14px;font-weight:650;color:var(--ht-level)}
+.halo-thermo .ht-status{margin:0;font-size:12px;line-height:1.5;color:var(--ht-muted)}
+.halo-thermo .ht-status:empty{display:none}
+.halo-thermo .ht-limits-text{margin:8px 0 0;font-size:12px;line-height:1.5;color:var(--ht-muted);font-variant-numeric:tabular-nums}
+.halo-thermo .ht-spark{display:block;width:100%;height:56px;margin-top:10px;background:#f4f8f5;border:1px solid #dfe8e0;border-radius:8px}
+.halo-thermo .ht-spark-path{fill:none;stroke:var(--ht-level);stroke-width:2;vector-effect:non-scaling-stroke}
+.halo-thermo .ht-spark-note{margin:4px 0 0;font-size:11px;color:var(--ht-muted);font-variant-numeric:tabular-nums}
+@media(max-width:600px){.halo-thermo{padding:16px}.halo-thermo .ht-body{grid-template-columns:96px minmax(0,1fr);gap:10px}.halo-thermo .ht-gauge{width:96px;height:202px}.halo-thermo .ht-value{font-size:36px}}
+@media(prefers-reduced-motion:reduce){.halo-thermo .ht-fill,.halo-thermo .ht-bulb{transition:none}}
