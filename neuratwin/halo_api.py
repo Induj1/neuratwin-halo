@@ -26,10 +26,28 @@ from . import cloud, auth
 
 router=APIRouter(prefix='/api/halo')
 LOCAL_TOKEN=secrets.token_urlsafe(32)
+MOBILE_DEMO_TOKEN=secrets.token_urlsafe(32)
 WRITE_LOCK=threading.RLock()
 ANALYSIS_LEASE_SECONDS=120
 ANALYSIS_BACKOFF_SECONDS=2
 ANALYSIS_MAX_BACKOFF_SECONDS=60
+
+
+def mobile_demo_enabled():
+    return (os.getenv('HALO_MOBILE_DEMO')=='1' and os.getenv('HALO_ALLOW_CONTROL')!='1'
+            and (not cloud.enabled() or os.getenv('HALO_LOCAL_OPERATOR')=='1'))
+
+
+def mobile_demo_identity(request):
+    supplied=request.headers.get('authorization','').removeprefix('Bearer ').strip()
+    if not supplied or not hmac.compare_digest(supplied,MOBILE_DEMO_TOKEN) or not mobile_demo_enabled():
+        return None
+    path=request.url.path
+    allowed=(path.startswith('/api/halo/mobile/') or path=='/api/halo/twin/runs'
+             or path.startswith('/api/halo/twin/runs/')
+             or (request.method in ('GET','HEAD') and path in ('/api/halo/twin/catalog','/api/halo/twin/prototype')))
+    if not allowed: raise HTTPException(403,'This demo session cannot change hardware or configuration.')
+    return {'user_id':'hackathon-demo','email':None,'role':'operator','mode':'mobile demo'}
 
 
 def local_request(request):
@@ -44,6 +62,7 @@ def operator(request:Request):
         return "user:"+user["user_id"]
     expected=os.getenv('HALO_OPERATOR_TOKEN') or LOCAL_TOKEN
     supplied=request.headers.get('authorization','').removeprefix('Bearer ')
+    if mobile_demo_identity(request): return 'hackathon demo'
     if not supplied or not hmac.compare_digest(supplied,expected):
         raise HTTPException(401,'Operator authentication required. An asset tag is not a credential.')
     if not os.getenv('HALO_OPERATOR_TOKEN') and not local_request(request):
@@ -415,6 +434,19 @@ def obtain(mode='bench',scenario='normal',cursor=180,dataset_id=None):
         except ValueError as e: raise HTTPException(422,str(e))
     c=engine.config()
     return engine.snapshot(store.frames(c.device_id),c=c)
+
+
+@router.get('/replay-history')
+def replay_history(scenario:str='normal',dataset_id:str|None=None):
+    """Chart-only replay samples; never reads the physical bench or blind cases."""
+    if dataset_id:
+        data=store.get('bench_dataset',dataset_id)
+        if not data: raise HTTPException(404,'Bench replay not found.')
+        rows=data['rows']
+    else:
+        try: rows=engine.demonstration(scenario,720)
+        except ValueError as e: raise HTTPException(422,str(e))
+    return {'rows':[{key:row.get(key) for key in ('timestamp','surface_c','ambient_c')} for row in rows]}
 
 
 @router.get('/snapshot')

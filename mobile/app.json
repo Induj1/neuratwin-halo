@@ -1,0 +1,56 @@
+{
+  "expo": {
+    "name": "NeuraTwin Halo",
+    "slug": "neuratwin-halo",
+    "version": "1.0.0",
+    "scheme": "neuratwin",
+    "orientation": "portrait",
+    "userInterfaceStyle": "light",
+    "icon": "./assets/icon.png",
+    "ios": {
+      "supportsTablet": true,
+      "infoPlist": { "NSAppTransportSecurity": { "NSAllowsLocalNetworking": true }, "NSLocalNetworkUsageDescription": "Connect to your NeuraTwin demo server on the same Wi-Fi." },
+      "bundleIdentifier": "in.neurarangers.neuratwin"
+    },
+    "android": {
+      "package": "in.neurarangers.neuratwin",
+      "adaptiveIcon": {
+        "foregroundImage": "./assets/adaptive-icon.png",
+        "backgroundColor": "#e1ede5"
+      },
+      "permissions": [
+        "CAMERA",
+        "POST_NOTIFICATIONS"
+      ]
+    },
+    "web": {
+      "bundler": "metro",
+      "output": "single",
+      "favicon": "./assets/favicon.png"
+    },
+    "plugins": [
+      "expo-router",
+      "expo-secure-store",
+      [
+        "expo-image-picker",
+        {
+          "photosPermission": "Attach photos to transformer inspections.",
+          "cameraPermission": "Photograph the transformer for an inspection.",
+          "microphonePermission": false
+        }
+      ],
+      [
+        "expo-notifications",
+        {
+          "color": "#287862",
+          "defaultChannel": "transformer-alerts"
+        }
+      ],
+      ["expo-build-properties", { "android": { "usesCleartextTraffic": true } }],
+      "expo-system-ui"
+    ],
+    "experiments": {
+      "typedRoutes": true
+    }
+  }
+}

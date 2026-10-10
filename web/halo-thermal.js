@@ -79,9 +79,7 @@
         title.textContent = def.title;
         button.append(title, value);
         button.addEventListener("click", () => {
-          const rotation = document.getElementById("model-motion");
-          if (rotation?.getAttribute("aria-pressed") === "false")
-            rotation.click();
+          twin.pauseRotation?.();
           twin.focus(def.part);
         });
         const line = document.createElementNS(
@@ -373,8 +371,7 @@
       note.textContent = "";
       note.hidden = true;
       // Keep labels steady while the heating sequence is being demonstrated.
-      const rotation = document.getElementById("model-motion");
-      if (rotation?.getAttribute("aria-pressed") === "false") rotation.click();
+      twin.pauseRotation?.();
       step(0, ticket);
     });
     toggle.addEventListener("click", () => {

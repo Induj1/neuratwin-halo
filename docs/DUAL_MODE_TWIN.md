@@ -61,10 +61,13 @@ revision-controlled records table. SQLite remains an explicit local development 
 
 Run commands include a unique request ID and expected revision. Identical retries
 are idempotent; different payloads reusing an ID and concurrent edits are rejected.
-Reads do not advance time or change simulation state. Simulation progress is driven
-by authenticated step requests. Hidden tabs and disconnected clients do not silently
-simulate elapsed wall time. Reloading restores the persisted state; a running run
-continues ticking only while its view is visible. The screen shows 240 recent samples
+Reads do not advance time or change simulation state. By default, simulation progress
+is driven by authenticated step requests from the visible web view. For shared web
+and native use, enable `HALO_SERVER_CLOCK=1` or start `scripts/run_mobile_demo.py`.
+One API worker then advances explicitly running simulations every 1.5 seconds, even
+when clients close; both clients poll without adding ticks. Pause stops that run.
+Server downtime is not caught up. Run one API worker with this option. The mobile
+five-minute action advances and pauses atomically. The screen shows 240 recent samples
 and 100 recent events; the report contains the full retained run. A run is bounded at
 5,000 samples/commands; export it and create another rather than silently losing data.
 

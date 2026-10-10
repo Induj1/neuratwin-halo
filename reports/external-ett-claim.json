@@ -1,6 +1,6 @@
 {
-  "run_id": "ETT-bafa2cf5b9fa4c9baaf738b8c9b8b887",
-  "started_at": "2026-10-09T03:45:49.927666+00:00",
-  "protocol_sha256": "18d863834ad5cc9f08adfb6ee373b629ff7fec3b5945a26ca771d334761b3cc4",
+  "run_id": "ETT-2e3ea1105bb34bd089c767dcf966432e",
+  "started_at": "2026-10-10T09:57:32.689543+00:00",
+  "protocol_sha256": "4d43f4faf29bc99adb8d21210aec8f3a2c4aaf86981fd1e2c212061bd8180f2b",
   "scope": "Retrospective forecast of public ETTh1 oil-temperature observations. Not physical-bench validation, a fault classifier, a calibrated safety deadline or an asset-life estimate."
 }

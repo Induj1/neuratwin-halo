@@ -1,6 +1,7 @@
 """Offline-capable prototype API. Bind to loopback for the local demonstration."""
 import csv
-from contextlib import asynccontextmanager
+import asyncio
+from contextlib import asynccontextmanager, suppress
 from functools import lru_cache
 import hashlib
 import io
@@ -30,6 +31,8 @@ async def lifespan(application):
     # Wi-Fi board poller idles unless HALO_ESP32_URL is set; it only ever makes HTTP calls.
     esp32=Esp32Poller()
     application.state.esp32_poller=esp32
+    from .mobile_runtime import run as mobile_run
+    mobile_task=asyncio.create_task(mobile_run())
     try:
         await worker.start()
         await esp32.start()
@@ -37,6 +40,9 @@ async def lifespan(application):
     finally:
         # Stop taking work immediately, let the current fenced transaction finish,
         # and wake any polling delay. No serial or hardware operations are started.
+        mobile_task.cancel()
+        with suppress(asyncio.CancelledError):
+            await mobile_task
         await esp32.stop()
         await worker.stop()
 
@@ -59,12 +65,18 @@ from .twin_study_api import router as twin_study_router
 app.include_router(twin_study_router)
 from .twin_challenge import router as twin_challenge_router
 app.include_router(twin_challenge_router)
+from .briefing_api import router as briefing_router
+app.include_router(briefing_router)
+from .maintenance_api import router as maintenance_router
+app.include_router(maintenance_router)
 from .evidence_workflow import router as observation_workflow_router
 app.include_router(observation_workflow_router)
 from .bench_lab import router as bench_lab_router
 app.include_router(bench_lab_router)
 from .auth import router as auth_router
 app.include_router(auth_router)
+from .mobile_api import router as mobile_router
+app.include_router(mobile_router)
 from .cloud_middleware import CloudMiddleware
 app.add_middleware(CloudMiddleware)
 
@@ -258,6 +270,8 @@ def operations_console():
     page=page.replace('<!-- HALO_ARENA -->',(ROOT/'web/halo-arena.html').read_text(encoding='utf-8'))
     page=page.replace('<!-- HALO_OPERATE -->',(ROOT/'web/halo-operate.html').read_text(encoding='utf-8'))
     page=page.replace('<!-- HALO_LAB -->',(ROOT/'web/halo-lab.html').read_text(encoding='utf-8'))
+    page=page.replace('<!-- HALO_PHYSICS -->',(ROOT/'web/halo-physics.html').read_text(encoding='utf-8'))
+    page=page.replace('<!-- HALO_MAINTENANCE -->',(ROOT/'web/halo-maintenance.html').read_text(encoding='utf-8'))
     return Response(page,media_type='text/html')
 
 

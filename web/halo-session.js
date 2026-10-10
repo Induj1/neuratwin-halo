@@ -2,8 +2,13 @@
 (() => {
   'use strict';
   const params=new URLSearchParams(location.search);
-  let source=params.has('challenge')?'reference':params.get('asset')==='BENCH-001'?'prototype':'industrial';
-  let run=null;
+  let source=params.has('challenge')?'reference':params.get('asset')==='DT-SIM'?'industrial':'prototype';
+  let run=null,pending=null;
+  // Blind challenges have their own context; recordings are not live working sources.
+  if(params.has('challenge')){
+    const select=document.getElementById('session-source');
+    if(select){const option=new Option('Blind challenge','reference');option.disabled=true;select.add(option);}
+  }
   function paint(){
     document.body.dataset.twinSource=source;
     if(document.getElementById('view-lab')?.classList.contains('active')){
@@ -12,7 +17,7 @@
     const label=document.getElementById('session-context');
     if(label)label.textContent=source==='industrial'?(run?`${run.profile?.name||'Distribution transformer'} · ${run.id.slice(-8).toUpperCase()} · ${Math.round(run.elapsed_s/60)} simulated min`:'Industrial simulation · select or create a run'):
       source==='prototype'?'BENCH-001 · physical ESP32 · measurements only':'Independent reference studies · replay source selected below';
-    const select=document.getElementById('session-source');if(select)select.value=source;
+    const select=document.getElementById('session-source');if(select)select.value=pending||source;
     if(source==='industrial'){
       const status=document.getElementById('connection');if(status)status.textContent='Industrial · simulated';
       const count=document.getElementById('incident-count');if(count)count.textContent='';
@@ -21,6 +26,7 @@
   }
   function select(next){if(!['industrial','prototype','reference'].includes(next))return;source=next;paint();window.dispatchEvent(new CustomEvent('halo:session',{detail:{source,run}}));}
   window.HaloSession={source:()=>source,industrial:()=>source==='industrial',run:()=>run,
+    request:next=>{pending=next;paint();},requested:()=>pending,settled:()=>{pending=null;paint();},
     select,bind:s=>{run=s;paint();window.dispatchEvent(new CustomEvent('halo:run',{detail:s}));},paint};
   paint();window.addEventListener('halo:snapshot',paint);window.addEventListener('halo:view',paint);
 })();

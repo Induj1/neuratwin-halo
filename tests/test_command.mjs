@@ -191,6 +191,54 @@ test('surface or unqualified channels are not promoted to modelled hot-spot obse
   assert.equal(temperatureReading({telemetry:{quality:'qualified',transformer_temperature:80}},'industrial').critical,null);
 });
 
+test('a live surface probe remains visible without inventing a qualified condition',()=>{
+  const s={telemetry:{quality:'unverified',transformer_temperature:20},settings:{temperature_warning:45,temperature_critical:55}};
+  const packet={available:true,live:true,stale:false,probe_ok:true,surface_c:60};
+  const reading=temperatureReading(s,'prototype',packet);
+  assert.equal(reading.value,60);
+  assert.equal(reading.label,'Measured surface');
+  assert.equal(reading.level,'UNKNOWN');
+  for(const invalid of [{stale:true},{live:false},{probe_ok:false},{surface_c:null}])assert.equal(temperatureReading(s,'prototype',{...packet,...invalid}).value,null);
+  assert.equal(temperatureReading(s,'industrial',packet).value,null);
+});
+
+test('prototype health explains actual holds without substituting a score',()=>{
+  const {healthHoldNote}=require('../web/halo-command.js');
+  const s={connection:'live',analysis:{health_index:null},configuration_binding:{state:'unbound'}};
+  assert.match(healthHoldNote(s,'prototype',{live:true,current_calibrated:false,calibration_status:'FAULT: No load current.'}),/No load current.*configuration/);
+  assert.match(healthHoldNote({...s,connection:'stale'},'prototype'),/fresh ESP32/);
+  assert.equal(healthHoldNote({...s,analysis:{health_index:0}},'prototype'),null);
+  assert.equal(healthHoldNote(s,'industrial'),null);
+});
+
+test('prototype loading uses the 1 A rating and existing display current without changing its source',()=>{
+  const {prototypeLoading}=require('../web/halo-command.js');
+  const scope={values:{secondary_i:.6},derived:{active:true},history:[
+    {at:oldTime,values:{secondary_i:0}},
+    {at:currentTime,values:{secondary_i:1.25}},
+    {at:currentTime,values:{secondary_i:null}}
+  ]};
+  const before=structuredClone(scope),result=prototypeLoading({},scope);
+  assert.equal(result.value,60);assert.equal(result.ratedCurrent,1);assert.equal(result.estimated,true);
+  assert.deepEqual(result.history.map(r=>r.loading_percent),[0,125,null]);
+  assert.deepEqual(scope,before);
+  assert.equal(prototypeLoading({connection:'stale',telemetry:{secondary_current:1}},null).value,null);
+  assert.equal(prototypeLoading({connection:'live',telemetry:{secondary_current:0}},null).value,0);
+  assert.equal(prototypeLoading({replay:true,telemetry:{secondary_current:.4}},null).value,40);
+});
+
+test('current-only demo health follows frontend loading without altering physical health holds',()=>{
+  const {demoCurrentHealth}=require('../web/halo-command.js');
+  for(const value of [0,60,80])assert.deepEqual(demoCurrentHealth({value}),{held:false,score:100,stress:0,status:'NORMAL',title:'Demo health'});
+  assert.equal(demoCurrentHealth({value:90}).status,'WARNING');
+  assert.equal(demoCurrentHealth({value:100}).score,80);
+  assert.equal(demoCurrentHealth({value:120}).score,60);
+  assert.equal(demoCurrentHealth({value:120}).status,'CRITICAL');
+  assert.equal(demoCurrentHealth({value:250}).score,0);
+  for(const value of [null,undefined,NaN,-1])assert.equal(demoCurrentHealth({value}).held,true);
+  assert.equal(dialState({health_index:null,operating_stress_index:100}).held,true);
+});
+
 test('guided review remains on its selected simulation source while the revision advances',()=>{
   const context=reviewContext({id:'run-a',revision:3},'industrial');
   assert.equal(context.available,true);

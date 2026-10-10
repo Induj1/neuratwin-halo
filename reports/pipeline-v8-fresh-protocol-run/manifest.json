@@ -1,0 +1,27 @@
+{
+  "run_id": "EVAL-37b5efda9539474c91ce041539ab9f95",
+  "started_at": "2026-10-10T10:06:25.355780+00:00",
+  "protocol_sha256": "309911f298dd4d6a21fd0c2b9540bdb9c79de06e0050d50a762e1d2d9aa820d6",
+  "scope": "Previously unused internally generated synthetic seeds under a local frozen protocol. Not externally supplied data, third-party preregistration, field validation, or a prospective physical trial.",
+  "completed_at": "2026-10-10T10:06:58.694252+00:00",
+  "status": "complete",
+  "source_sha256": {
+    "neuratwin/twin_core.py": "998cf995d810c38d877a321fce26c83112b5aa3665c8e396a3ad193078daa1d9",
+    "neuratwin/twin_studies.py": "5f73152d57820a2bb34c8d86c311c1c7cddf9d4c5ad11029fa3ccd4d42bbd102",
+    "neuratwin/twin_observer.py": "761ff0563bbff443ebea83a9e2126295a554dc69e11e0e1fcb28b0e11fd6265f",
+    "neuratwin/electrical_model.py": "0c8ad78cc65cdc386d9cd55cc342b457ed8afcfae0e9dae2fdde6234380b56bd",
+    "neuratwin/thermal_reference.py": "f13de8362d0b3e53c327ee788a720ad862cb562d10829462dd08e4c17401f38d",
+    "neuratwin/thermal_adaptation.py": "591b688aa83f2286b78ab0486599f852609cd7c33129fe63df567f89400913f2",
+    "neuratwin/validation_plant.py": "ef8b3a57c78a06a7a8c2b3b0016b35f0226252f5d8ca9ec0f15de9150092f358",
+    "scripts/benchmark_pipeline.py": "b346ef9463e4aaf8614721e999e53b4643ff1ef754fdfc978c501c8f27156249",
+    "scripts/evaluation_metrics.py": "91386000325788cb70c6d52234329c4197fc965a096b33164fb9faed2898cb24",
+    "scripts/prospective_evaluation.py": "65adcd3c21b994b3c2167bedf8c7305540c8e5098eb8579ada0124e96f537b7a"
+  },
+  "files": {
+    "benchmark.json": "036ce5cd7c58ba5b2bd21842ea21d6310f39fb3947fc2cf7271dc1abc2e54d04",
+    "decisions.csv": "4b5c480a968a347d208ce03f499715b963fc942f24562bee117fbda985b44fde",
+    "forecasts.csv": "f3eef03a60fc9bb824ae8952b1c081dd9061aaec760e34f329e26b3b8144ac1b"
+  },
+  "note": "Protocol, claim and report bind one local run. Hashes detect changes against retained copies, not authorship. The result is now known; do not tune and rerun these seeds as fresh.",
+  "sha256": "bb6be0bfe7c5f9173e4b936904195bc1f98a6caa15182b4ceba197ef13142405"
+}

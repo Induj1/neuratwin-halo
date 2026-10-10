@@ -1,0 +1,40 @@
+<section class="mt-panel" id="mt-workflow">
+ <div class="mt-heading"><h2>Maintenance desk</h2><span id="mt-source"></span><button id="mt-refresh">Refresh assessment</button></div>
+ <div class="mt-decision-grid">
+  <div class="mt-recommendation"><span class="mt-label">CONDITIONAL ACTION</span><h3 id="mt-action">Waiting for source readings</h3><p id="mt-agreement"></p><div id="mt-summary" class="mt-values"></div><button id="mt-create-open" disabled>Create job card</button></div>
+  <div class="mt-recorder"><div class="mt-heading"><h3 id="mt-channel">Temperature forecast</h3><span>°C</span></div><div id="mt-forecast"></div><p>Current load <i class="mt-key coral"></i> Reduced load <i class="mt-key blue"></i> Configured limit <i class="mt-key amber"></i></p></div>
+ </div>
+ <details class="mt-details"><summary>Uncertainty & measurement cost</summary><p>Would better information change the action?</p><div id="mt-measurements"></div><form id="mt-options" class="mt-form">
+  <label>Forecast · min<input name="horizon_min" type="number" min="10" max="240" value="120" required></label>
+  <label>Cooling lower bound<input name="cooling_min" type="number" min="0.3" max="1.5" step=".05" value=".6" required></label>
+  <label>Cooling upper bound<input name="cooling_max" type="number" min=".3" max="1.5" step=".05" value="1" required></label>
+  <label>Rise uncertainty · ±%<input name="rise_uncertainty_percent" type="number" min="0" max="40" value="15" required></label>
+  <label>Maximum reduction · %<input name="max_reduction_percent" type="number" min="0" max="100" value="70" required></label>
+  <label>Demand · kW<input name="site_kw" type="number" min=".001" step="any" placeholder="Enter demand"></label>
+  <label>Energy · ₹/kWh<input name="energy_cost_per_kwh" type="number" min="0" step="any" placeholder="Enter tariff"></label>
+  <label>Intervention · ₹<input name="intervention_cost" type="number" min="0" placeholder="Enter cost"></label>
+  <label>Inspection · ₹<input name="inspection_cost" type="number" min="0" placeholder="Enter cost"></label>
+  <label>Sensor purchase · ₹<input name="sensor_purchase_cost" type="number" min="0" placeholder="Enter cost"></label>
+  <label>Installation · ₹<input name="sensor_install_cost" type="number" min="0" placeholder="Enter cost"></label>
+  <label>Sensor service · ₹<input name="sensor_service_cost" type="number" min="0" placeholder="Same decision period"></label>
+  <button type="submit">Compare decisions</button>
+ </form><p class="mt-note">Scenario range, not a probability interval. Costs compare the same decision period. Measurement benefit assumes perfect resolution of one parameter; it is an optimistic bound.</p><div class="mt-table-wrap" id="mt-scenarios"></div></details>
+ <form id="mt-create" class="mt-form mt-job-form" hidden><label>Job title<input name="title" value="Inspect thermal response" minlength="3" maxlength="180" required></label><label>Assigned to<input name="owner" placeholder="Technician name" minlength="2" maxlength="100" required></label><label>Acceptance window · min<input name="stable_minutes" type="number" value="5" min="1" max="60" required></label><button type="submit">Save job card</button><button type="button" id="mt-create-cancel">Cancel</button></form>
+ <div class="mt-heading mt-jobs-heading"><h3>Asset jobs</h3><span id="mt-job-count"></span></div><div class="mt-jobs" id="mt-jobs"></div>
+ <section id="mt-job" class="mt-job" hidden>
+  <div class="mt-heading"><h3 id="mt-job-title"></h3><span id="mt-job-status"></span><button id="mt-job-pdf">Export job PDF</button></div>
+  <div id="mt-job-origin" class="mt-values"></div><p id="mt-job-recommendation"></p>
+  <div class="mt-job-columns"><form id="mt-findings" class="mt-form"><h4>Technician findings</h4><label>Findings<textarea name="note" rows="3" minlength="3" maxlength="3000" required></textarea></label><label>Photo · JPEG / PNG<input name="photo" type="file" accept="image/jpeg,image/png"></label><label class="mt-check"><input name="issue_resolved" type="checkbox">Corrective action completed</label><button type="submit">Save findings</button><div id="mt-photos"></div></form>
+   <form id="mt-record-action" class="mt-form"><h4>Record corrective action</h4><label>Action performed<textarea name="note" rows="3" minlength="3" maxlength="3000" placeholder="What was inspected or changed?" required></textarea></label><p>Record after the action. The next forecast starts from the current readings.</p><button type="submit" id="mt-action-save">Freeze follow-up forecast</button><p id="mt-action-recorded"></p></form></div>
+  <div class="mt-heading"><h3>Follow-up verification</h3><button id="mt-verify">Check new readings</button></div><div id="mt-verification"></div>
+  <details class="mt-details"><summary>Job history & frozen evidence</summary><div id="mt-trail"></div></details>
+ </section>
+ <details class="mt-details"><summary>Asset model & maintenance history</summary><p id="mt-profile-origin"></p><form id="mt-profile" class="mt-form">
+  <label>Rated current · A<input name="rated_current_a" type="number" min=".001" step="any" required></label><label>Rated temperature rise · °C<input name="rated_rise_c" type="number" min="5" max="150" step="any" required></label><label>Time constant · min<input name="tau_min" type="number" min="1" max="600" step="any" required></label><label>Load / no-load loss ratio<input name="loss_ratio" type="number" min=".1" max="30" step="any" required></label><label>Assumed ambient · °C<input name="ambient_c" type="number" min="-20" max="55" step="any" required></label><label>Configured temperature limit · °C<input name="temperature_limit_c" type="number" min="30" max="180" step="any" required></label><label>Model loading envelope · pu<input name="max_loading_pu" type="number" min=".1" max="3" step="any" required></label><label>Reason for change<input name="note" minlength="5" maxlength="1000" required></label><button type="submit">Save model assumptions</button>
+ </form><div class="mt-heading"><button id="mt-calibrate">Check calibration evidence</button><button id="mt-accept-fit" hidden>Accept proposed fit</button></div><p id="mt-calibration"></p><div id="mt-history"></div></details>
+ <p id="mt-status" role="status"></p>
+</section>
+<details class="mt-panel mt-transient" id="tf-panel"><summary>Transient thermal field</summary><div class="mt-heading"><h2>Heat through time</h2><button id="tf-checks">Run numerical checks</button><button id="tf-download" disabled>Download study</button></div>
+ <form id="tf-form" class="mt-form"><label>Initial load · pu<input name="initial_load" type="number" value=".7" min="0" max="3" step=".1" required></label><label>Load at 20 min · pu<input name="high_load" type="number" value="1.4" min="0" max="3" step=".1" required></label><label>Load at 60 min · pu<input name="final_load" type="number" value=".7" min="0" max="3" step=".1" required></label><label>Ambient · °C<input name="ambient" type="number" value="25" min="-20" max="55" required></label><label>Initial field · °C<input name="initial" type="number" value="25" min="-20" max="150" required></label><button type="submit">Solve 120 minutes</button></form>
+ <div class="tf-grid"><div class="tf-scene"><canvas id="tf-canvas" aria-label="Extruded solved 2D transient temperature field"></canvas><span id="tf-scale"></span></div><div><div id="tf-values" class="mt-values"></div><div id="tf-chart" class="mt-recorder"></div><p>2D FEM extruded through depth. Declared geometry and losses; no fluid-flow simulation.</p><p id="tf-check-result"></p></div></div><div class="tf-playback"><button id="tf-play" disabled>Play</button><label>Model minute <output id="tf-minute">0</output><input id="tf-frame" type="range" min="0" max="60" value="0" step=".01" disabled></label></div><p id="tf-status" role="status"></p>
+</details>

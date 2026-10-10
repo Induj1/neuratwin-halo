@@ -77,7 +77,7 @@ test('flat 0 A on both currents with loads on is replaced by V ÷ R_eff and a se
   assert.ok(Math.abs(d.secondary_i - 11.7 / 19.5) < 1e-9);
   assert.ok(Math.abs(d.primary_i - 11.7 * (11.7 / 19.5) / 230) < 1e-9);
   const s = math.scopePacket(zero(3), b.rows(), { configured: true });
-  assert.ok(Math.abs(s.values.secondary_i - 0.6) < 1e-9); assert.match(s.notes.secondary_i, /R_eff 19\.5/); assert.match(s.notes.primary_i, /measured 0 A/);
+  assert.ok(Math.abs(s.values.secondary_i - 0.6) < 1e-9); assert.match(s.notes.secondary_i, /R_eff 19\.5/); assert.match(s.notes.primary_i, /reported current near zero/);
   assert.ok(s.history.every(r => r.values.secondary_i > 0.5), 'trend rows are estimated too');
 });
 test('estimates stay off when current is measured, when no load is on, or before enough flat samples', () => {
@@ -113,4 +113,33 @@ test('client never throws from poll: unconfigured, unreachable and live paths', 
   const r = await client.setLoads({ load: 1, state: false });
   assert.deepEqual(calls.at(-1), ['/esp32/loads', { load: 1, state: false }]);
   assert.deepEqual(client.applyLoads(r.loads).loads, { load1: false, load2: true, load4: false, loads_on: 1 });
+});
+
+test('report snapshots preserve the displayed estimate while separating missing and reported zero', () => {
+  for (const raw of [0, null]) {
+    const b=createBuffer();let p;
+    for (let sequence=1;sequence<=3;sequence++) {
+      p=math.normalize({live:true,reading:reading({sequence,current_a:raw,primary_current_a:raw,loads:{load1:true,load2:true,load4:false,loads_on:2}})});b.push(p);
+    }
+    const snapshot=math.displaySnapshot(p,b.rows(),{configured:true}),scope=math.scopePacket(p,b.rows(),{configured:true});
+    assert.equal(snapshot.channels.secondary_current.value,scope.values.secondary_i);
+    assert.equal(snapshot.channels.secondary_current.raw,raw);
+    assert.equal(snapshot.channels.secondary_current.source,'frontend_estimated');
+    assert.match(snapshot.reason,raw===null?/missing/:/near zero/);
+    assert.equal(snapshot.loading_percent,100*scope.values.secondary_i);
+    const stale=math.displaySnapshot({...p,stale:true,live:false},b.rows(),{configured:true});
+    assert.equal(stale.loading_percent,null);assert.equal(stale.demo_health,null);
+    assert.equal(stale.channels.secondary_current.quality,'stale');
+  }
+});
+
+test('report display buffer is bounded, duplicate-safe and cleared on board reboot', async () => {
+  let sequence=0,boot_id='first';
+  const client=create(async path=>path==='/esp32/status'?{configured:true}:{live:true,reading:reading({sequence,boot_id})});
+  for(sequence=0;sequence<305;sequence++)await client.poll();
+  assert.equal(client.displayHistory().length,300);
+  sequence=304;await client.poll();assert.equal(client.displayHistory().length,300);
+  boot_id='second';sequence=0;await client.poll();
+  assert.equal(client.displayHistory().length,1);assert.equal(client.displayHistory()[0].boot_id,'second');
+  client.reset();assert.deepEqual(client.displayHistory(),[]);
 });

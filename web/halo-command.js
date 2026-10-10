@@ -34,13 +34,39 @@
     return {available,reduction,series,title:reduction?'Compare the next hour':'If present inputs continue',
       status:!p?.available?(p?.holds||[]).join(' ')||'A qualified comparison is unavailable.':!r?'No demand reduction meets the declared constraints. Inspect the active condition.':reduction?`${r.reduction_pct}% demand reduction · immediate simulated action.`:'No intervention proposed. One unchanged-input trajectory is shown; this is not a safety clearance.'};
   }
-  function temperatureReading(s,mode){
+  function healthHoldNote(s,mode,packet){
+    if(finite(s?.analysis?.health_index)||mode!=='prototype')return null;
+    if(s.connection!=='live')return 'Waiting for fresh ESP32 readings.';
+    const reasons=[];
+    if(packet?.live&&!packet.stale&&!packet.current_calibrated){
+      reasons.push(packet.calibration_status?.startsWith('FAULT:')?packet.calibration_status.replace(/^FAULT:\s*/, ''):'Current sensor calibration is incomplete.');
+    }
+    if(s.configuration_binding?.state==='unbound')reasons.push('Rig configuration and limits need review.');
+    return reasons.join(' ')||'Channel calibration and signal quality need review.';
+  }
+  // User-specified secondary rating. Display only; this does not configure protection.
+  function prototypeLoading(s,scope){
+    const ratedCurrent=1,percent=value=>finite(value)&&value>=0?100*value/ratedCurrent:null;
+    const current=scope?scope.values.secondary_i:s?.connection==='live'||s?.replay?s.telemetry?.secondary_current:null;
+    const history=scope?scope.history.map(row=>({timestamp:row.at,loading_percent:percent(row.values.secondary_i)})):
+      (s?.history||[]).map(row=>({timestamp:row.timestamp,loading_percent:percent(row.secondary_current)}));
+    return {value:percent(current),history,ratedCurrent,estimated:scope?.derived?.active===true};
+  }
+  function demoCurrentHealth(loading){
+    const load=loading?.value;
+    if(!finite(load)||load<0)return {held:true,score:null,stress:null,status:'UNKNOWN',title:'Demo health'};
+    // Same loading-stress curve as the simulator, displayed as a current-only demo.
+    const stress=clamp(load-80);
+    return {held:false,score:100-stress,stress,status:load>100?'CRITICAL':load>80?'WARNING':'NORMAL',title:'Demo health'};
+  }
+  function temperatureReading(s,mode,packet){
     const t=s?.telemetry||{},settings=s?.settings||{},qualified=t.quality==='qualified';
-    const value=qualified&&finite(t.transformer_temperature)?t.transformer_temperature:null;
+    const liveSurface=mode==='prototype'&&packet?.available&&packet.live&&!packet.stale&&packet.probe_ok&&finite(packet.surface_c);
+    const value=liveSurface?packet.surface_c:qualified&&finite(t.transformer_temperature)?t.transformer_temperature:null;
     const critical=finite(settings.temperature_critical)?settings.temperature_critical:null;
     const warning=finite(settings.temperature_warning)?settings.temperature_warning:null;
     return {value,critical,warning,label:mode==='prototype'?'Measured surface':'Modelled hot-spot',
-      level:value===null?'UNKNOWN':critical!==null&&value>=critical?'CRITICAL':warning!==null&&value>=warning?'WARNING':'NORMAL'};
+      level:value===null||!qualified?'UNKNOWN':critical!==null&&value>=critical?'CRITICAL':warning!==null&&value>=warning?'WARNING':'NORMAL'};
   }
   function reviewContext(s,mode,replay=false){
     const id=s?.id||null;
@@ -71,7 +97,7 @@
       history:rows.slice(0,index+1),events:(source.events||[]).filter(e=>(e.timestamp||e.created_at)<row.timestamp||((e.timestamp||e.created_at)===row.timestamp&&finite(row.event_cursor)&&finite(e.id)&&e.id<=row.event_cursor)),
       replay:true,component_data_available:!!retained};
   }
-  const math={components,changeNote,replaySnapshot,dialState,planPresentation,temperatureReading,reviewContext,sameReviewSource,sameObservationSource};
+  const math={components,changeNote,replaySnapshot,dialState,planPresentation,temperatureReading,healthHoldNote,prototypeLoading,demoCurrentHealth,reviewContext,sameReviewSource,sameObservationSource};
   if(typeof module!=='undefined'&&module.exports)module.exports=math;
   if(typeof window==='undefined')return;
   const $=id=>document.getElementById(id),esc=v=>String(v??'—').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
@@ -101,24 +127,32 @@
     }
     const referenceCurrent=finite(s.settings?.rated_kva)&&finite(s.settings?.secondary_v)&&s.settings.secondary_v>0?s.settings.rated_kva*1000/(Math.sqrt(3)*s.settings.secondary_v):null;
     wave?.update({mode,telemetry:t,quality:t.quality,replay,referenceCurrent,sourceLabel:replay?'Recorded incident':mode==='industrial'?'Industrial simulation':'Physical prototype'});
-    const d=dialState(a),{held,score}=d;
-    // A health hold is the headline. A separate stress metric cannot replace it.
+    const demo=mode==='prototype'&&!replay;
+    const d=demo?demoCurrentHealth(context.loading):dialState(a),{held,score}=d;
+    // The requested frontend demo is separate from the unchanged hardware assessment.
     $('op-dial-title').textContent=d.title;
     $('op-health').textContent=held?(d.status==='UNKNOWN'?'—':d.status==='NORMAL'?'Held':d.status==='TRIP'?'Tripped':'Review'):num(score,0);$('op-dial-scale').hidden=held;
     $('op-dial').dataset.held=String(held);
     $('op-score-direction').hidden=held;
-    $('op-score-direction').textContent=held?'':'Combined screening · 100 = less modelled stress';
+    $('op-score-direction').textContent=held?'':demo?'Current only · 1 A rating':'Combined screening · 100 = less modelled stress';
     $('op-health-ring').style.strokeDashoffset=String(553*(1-(finite(score)?clamp(score):0)/100));
     $('op-dial').dataset.level=d.status;
-    $('op-dial').setAttribute('aria-label',`${$('op-dial-title').textContent}: ${num(score,0)}${finite(score)?' out of 100':''}. ${held?'Health assessment unavailable. ':''}${a.status}`);
-    $('op-health-band').textContent=held?(d.status==='UNKNOWN'?'Evidence unavailable':d.status+' · health assessment withheld'):a.status==='NORMAL'?'Screening estimate':a.status+' · review signals';
-    $('op-change').textContent=changeNote(s);
+    $('op-dial').setAttribute('aria-label',`${$('op-dial-title').textContent}: ${num(score,0)}${finite(score)?' out of 100':''}. ${held?'Waiting for current. ':''}${d.status}`);
+    $('op-health-band').dataset.level=d.status;
+    $('op-health-band').textContent=demo?(held?'Waiting for current':d.status==='CRITICAL'?'Over rated current':d.status==='WARNING'?'Near rated current':'Within current rating'):held?(d.status==='UNKNOWN'?'Evidence unavailable':d.status+' · health assessment withheld'):a.status==='NORMAL'?'Screening estimate':a.status+' · review signals';
+    $('op-change').textContent=demo?(held?'Waiting for a frontend current reading.':`${num(context.loading.value/100,3)} A / 1 A · ${num(context.loading.value)}% loading`):healthHoldNote(s,mode,context.hardware)||changeNote(s);
+    const healthNote=document.querySelector('.op-decision > .op-health-note');
+    const explanation=demo?'Demo score from displayed current only. Score = 100 minus loading above 80%, limited to 0–100.':a.health_evidence?.note||'Operating stress and recorded history. A screening index, not a failure probability.';
+    if(healthNote)healthNote.textContent=demo?'Current-based demo · not an asset-health assessment.':'Operating stress and recorded history. A screening index, not a failure probability.';
+    $('op-health-explanation-note').textContent=explanation;
+    $('op-dial').title=demo?explanation:'';
     const focusedContribution=$('op-stress').contains(document.activeElement)?document.activeElement.dataset.component:null;
-    const extraOpen=$('op-stress').querySelector('details')?.open,contributions=components(s,mode).map(c=>`<button type="button" class="op-contribution" data-component="${c.key}" ${c.value===null?'disabled':''} aria-pressed="${c.key===selection}"><span>${c.label}</span><i><b style="transform:scaleX(${c.value===null?0:clamp(c.value)/100})"></b></i><strong>${c.value===null?'N/A':num(c.value,0)}</strong></button>`);
+    const extraOpen=$('op-stress').querySelector('details')?.open,contributions=(demo?[{key:'loading',label:'Load stress',value:d.stress}]:components(s,mode)).map(c=>`<button type="button" class="op-contribution" data-component="${c.key}" ${c.value===null?'disabled':''} aria-pressed="${c.key===selection}"><span>${c.label}</span><i><b style="transform:scaleX(${c.value===null?0:clamp(c.value)/100})"></b></i><strong>${c.value===null?'N/A':num(c.value,0)}</strong></button>`);
     $('op-stress').innerHTML=contributions.slice(0,4).join('')+`<details ${extraOpen?'open':''}><summary>Ambient & simulated oil input</summary>${contributions.slice(4).join('')}${mode==='industrial'?`<p class="op-oil-input">Simulated oil condition: <strong>${num(t.oil_condition,0)}/100</strong>. A scenario input, separate from the combined health screening above; no oil measurement is implied.</p>`:''}</details>`;
     $('op-stress').querySelectorAll('button').forEach(b=>b.onclick=()=>{selection=b.dataset.component;highlight();});
+    if(demo)$('op-stress').querySelector('details')?.remove();
     if(focusedContribution)$('op-stress').querySelector(`[data-component="${focusedContribution}"]:not(:disabled)`)?.focus({preventScroll:true});
-    $('op-component-note').textContent=mode==='prototype'?'Oil and accumulated insulation stress are unavailable on this prototype.':'Stress factors · 0 = none indicated, 100 = high. Select a factor to inspect.';
+    $('op-component-note').textContent=demo?'':mode==='prototype'?'Oil and accumulated insulation stress are unavailable on this prototype.':'Stress factors · 0 = none indicated, 100 = high. Select a factor to inspect.';
     highlight();
     $('op-phase-readout').hidden=mode!=='industrial';
     $('op-phase-readout').textContent=`A ${num(t.phase_current_a)} A · B ${num(t.phase_current_b)} A · C ${num(t.phase_current_c)} A · neutral ${num(t.neutral_current)} A RMS`;

@@ -1,15 +1,21 @@
 # NeuraTwin Halo — Neura Rangers / CPRI Track 2
 
-A distribution-transformer condition-monitoring prototype with an inspectable decision chain:
+A distribution-transformer maintenance prototype combining available measurements, an asset-specific conditional model and recorded maintenance history:
 **observe → freeze a forecast → reveal later data → compare interventions → verify follow-up → export evidence.**
 
 Start with [the submission dossier](web/submission-guide.html), [the current hardware handoff](web/hardware-guide.html) and [the model specification](docs/DUAL_MODE_TWIN.md).
 
 The [synchronized operations workspace](docs/SYNCHRONIZED_OPERATIONS.md) adds a condition dial, illustrative phase waveforms, continuous simulation controls, an inline intervention comparison and recorded-state replay at `/app#operate`. Hardware remains single-phase and RMS-only; unavailable measurements stay unavailable.
 
-See the [v6 model and evidence release record](docs/MODEL_AND_EVIDENCE_UPGRADE_V6.md) for measured gains and remaining checks.
+See the [briefing features](docs/BRIEFING_FEATURES.md) for impedance-based fault current, blind electrical diagnosis, industrial pressure scenarios, cold/hot comparisons and direct PDF exports in both modes. Prototype voltage/current behaviour is preserved, with separate raw and displayed-value provenance in reports. The [v6 model and evidence release record](docs/MODEL_AND_EVIDENCE_UPGRADE_V6.md) remains a historical record of that release.
 
 ## Current model and evidence upgrades
+
+- **Maintenance desk** connects readings, uncertainty-aware thermal actions, frozen job cards, technician findings/photos, post-action verification and versioned asset models. Entered-cost comparisons identify when better information could change an action. Job PDFs retain forecasts, readings and evidence; numerical transient FEM checks and an extruded temperature-field view are available in Physics & protection. See [workflow and methods](docs/MAINTENANCE_WORKFLOW.md).
+
+- **Physics & protection** adds seven-segment instruments, virtual oil/pressure forecasts, a load-reduction study, injected faults, a solved finite-element thermal field and synthetic sensor-placement comparison. It shares the selected source and exports assumptions and results to PDF. See [methods and demonstration](docs/PHYSICS_AND_PROTECTION.md).
+
+- **Life & risk** adds inspectable condition screening, conditional time to a temperature limit, modelled remaining life and simulated thermal-ageing risk in both modes. Editable assumptions and PDF exports retain their calculation basis. These are scenario estimates; see [methods and limits](docs/LIFETIME_SCENARIOS.md).
 
 - **Assess readings** in Digital twin runs the observation-only assessor on the selected run and revision. Scenario names, declared cooling, fault labels and future readings are excluded. A changed revision invalidates the review.
 - **Reviewed winding forecast reference** identifies rise and time constant from a healthy oil + reported hot-spot prefix, validates against two baselines, and applies only to qualified projections. Diagnostic holds are unchanged. Oil-only and surface-probe records cannot enable it. See [qualification and development results](docs/REVIEWED_WINDING_REFERENCE.md).

@@ -1,0 +1,31 @@
+<section class="view" id="view-physics">
+ <div class="px-heading"><div><h1>Physics & protection</h1></div><div class="px-toolbar"><button id="px-new">New industrial run</button><button id="px-export">Export report ↗</button></div></div>
+ <div class="px-source-line"><span id="px-origin">Connecting to selected source…</span><span id="px-clock-label">MODEL CLOCK · 60×</span></div>
+ <div class="px-cabinet">
+ <section class="px-alarm" id="px-alarm" data-state="unavailable" aria-label="Control panel alarms">
+  <div class="px-alarm-beacon" aria-hidden="true"><i></i></div>
+  <div class="px-alarm-copy"><div role="status" aria-live="polite" aria-atomic="true"><h2 id="px-alarm-title">Waiting for readings</h2><p id="px-alarm-detail">Monitoring temperature and virtual oil protection.</p></div><div id="px-alarm-signals" hidden></div></div>
+  <div class="px-alarm-controls"><button id="px-alarm-ack" disabled>Acknowledge</button></div>
+ </section>
+ <div class="px-alarm-header"><span>PROTECTION ANNUNCIATOR</span><span>VIRTUAL OIL SYSTEM</span></div>
+ <div class="px-annunciators" id="px-annunciators" role="status" aria-label="Source and model indications"></div>
+ <div class="px-wall-grid">
+ <section class="px-meter-bay"><h2 class="px-nameplate">SOURCE INSTRUMENTS</h2><div class="px-instruments" id="px-readings"></div></section>
+  <section class="px-equipment"><div class="px-panel-heading"><h2>TRANSFORMER MIMIC</h2><div class="px-switch" role="group" aria-label="Transformer view"><button id="px-assembly" aria-pressed="true">Assembly</button><button id="px-field" aria-pressed="false">Thermal field</button></div></div>
+   <div class="px-mimic" id="px-mimic" aria-label="Electrical mimic diagram"></div><div id="px-branches" hidden></div>
+   <div class="px-scene"><canvas id="px-model" aria-label="Interactive industrial transformer model"></canvas><div id="px-fem" hidden></div><div class="px-scene-caption"><span id="px-scene-label">Virtual oil-filled transformer</span><span id="px-field-value">Drag to inspect</span></div></div>
+   <div class="px-equipment-foot"><span><i class="px-dot"></i> <span id="px-model-status">Waiting for readings</span></span><span id="px-part">Model outputs, not oil sensors</span></div>
+  </section>
+  <aside class="px-side"><section class="px-fluid"><div class="px-panel-heading"><h2>OIL SYSTEM</h2><select id="px-tank" aria-label="Tank construction"><option value="sealed">Sealed · gas cushion</option><option value="conservator">Conservator</option></select></div><div id="px-oil-meters"></div><div class="px-level"><div><span id="px-level-label">Oil inventory</span><b id="px-level-value">—</b></div><div class="px-level-track"><i id="px-level-fill"></i></div></div></section>
+  </aside>
+ </div>
+ <div class="px-desk"><section class="px-control-bay"><h2 class="px-nameplate">LOAD CONTROL</h2> <div class="px-simulation" id="px-simulation" hidden><label>Simulated load <input id="px-load" type="range" min="0" max="180" step="5" value="70"><output id="px-load-value">70%</output></label><button id="px-advance">Advance source 1 min</button></div>
+<p id="px-control-context">Select an industrial run for simulated demand control.</p></section> <section class="px-forecast"><div class="px-panel-heading"><h2>THERMAL RECORDER</h2><div class="px-legend"><span><i></i>Continue operating</span><span><i></i>Recommended load</span></div></div><div class="px-charts" id="px-charts"></div><p id="px-projection-note"></p></section>
+   <section class="px-decision" id="px-decision"><div class="px-panel-heading"><h2>OPERATOR ACTION</h2><span class="px-status" id="px-state">WAITING</span></div><h3 id="px-action">Waiting for current and temperature</h3><p id="px-action-detail">Open Industrial simulation to explore without the board.</p><div class="px-action-numbers"><div><span>Limit crossing</span><strong id="px-limit">—</strong></div><div><span>Load retained</span><strong id="px-retained">—</strong></div></div><button id="px-apply" disabled>Apply load reduction</button><button id="px-trip" class="px-trip" disabled>All bench loads OFF</button><p id="px-command" role="status"></p></section>
+</div></div>
+ <section class="px-live-graphs"><div id="px-electrical-graphs"></div><div class="px-response-panel"><h2>Response over time</h2><div id="px-response-graphs"></div></div></section>
+ <!-- HALO_MAINTENANCE -->
+ <div class="px-bottom"><details class="px-tools"><summary>Model & fault scenarios</summary><form id="px-settings"><div class="px-fields"><label>Model clock<select name="clock_scale"><option value="60">60× · accelerated</option><option value="1">1× · physical time</option></select></label><label>Ambient °C<input name="ambient_c" type="number" value="25" min="-20" max="55" required></label><label>Rated oil rise °C<input name="rated_rise_c" type="number" value="55" min="10" max="90" required></label><label>Oil time constant · min<input name="oil_tau_min" type="number" value="90" min="10" max="300" required></label><label>Oil volume · L<input name="oil_litres" type="number" value="100" min="5" max="5000" required></label><label>Gas cushion · L<input name="gas_litres" type="number" value="15" min="1" max="1000" required></label><label>Oil limit °C<input name="oil_limit_c" type="number" value="95" min="60" max="130" required></label><label>Pressure limit · kPa gauge<input name="pressure_limit_kpa" type="number" value="50" min="10" max="150" required></label></div><button type="submit">Update model</button></form><div class="px-faults"><span>Inject a scenario</span><button data-px-fault="leak">Oil leak</button><button data-px-fault="gas">Gas accumulation</button><button data-px-fault="surge">Pressure surge</button><button id="px-reset">Reset scenario</button></div><p id="px-basis"></p><div id="px-events"></div></details>
+ <details class="px-tools"><summary>Finite elements & sensor placement</summary><p>Steady thermal cross-section · declared geometry and material properties.</p><div id="px-fem-facts"></div><div class="px-tool-actions"><button id="px-sensors">Compare sensor locations</button><button id="px-json">Download physics data</button></div><div id="px-sensor-result"></div></details></div>
+ <p id="px-error" role="status"></p>
+</section>

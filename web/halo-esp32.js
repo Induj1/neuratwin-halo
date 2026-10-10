@@ -110,7 +110,9 @@
     if (!flatNow || !flatRecent) return out;
     const est = estimateFrom(p.secondary.v, p.primary.v, out.loads_on);
     out.secondary_i = est.secondary_i; out.primary_i = est.primary_i; out.active = out.secondary_i !== null;
-    if (out.active) out.reason = `Measured current reads 0 A with ${out.loads_on} load${out.loads_on === 1 ? '' : 's'} on; showing V ÷ R_eff estimates`;
+    if (out.active) out.reason = [p.secondary.i,p.primary.i].some(v=>!finite(v))
+      ? `Current channel missing; showing V ÷ R_eff estimates with ${out.loads_on} active branches`
+      : `Reported current is near zero with ${out.loads_on} active branches; showing V ÷ R_eff estimates`;
     return out;
   }
 
@@ -127,8 +129,9 @@
     let mapped = rows;
     if (d.active) {
       values.secondary_i = d.secondary_i; values.primary_i = d.primary_i;
-      notes.secondary_i = `estimated V ÷ R_eff ${d.r_eff.toFixed(1)} Ω · measured 0 A`;
-      notes.primary_i = 'estimated from secondary power · measured 0 A';
+      const rawNote=[p.secondary.i,p.primary.i].some(v=>!finite(v))?'current channel missing':'reported current near zero';
+      notes.secondary_i = `estimated V ÷ R_eff ${d.r_eff.toFixed(1)} Ω · ${rawNote}`;
+      notes.primary_i = `estimated from secondary power · ${rawNote}`;
       mapped = rows.map(r => {
         const v = r.values;
         if (!(zeroCurrent(v.secondary_i) && zeroCurrent(v.primary_i))) return r;
@@ -158,7 +161,7 @@
   function create(api, options) {
     if (typeof api !== 'function') throw new TypeError('An api(path, body?) function is required.');
     const opts = options || {}, buffer = createBuffer(opts.bufferLimit), statusEvery = finite(opts.statusEveryMs) ? opts.statusEveryMs : 10000;
-    let status = null, statusAt = 0, packet = empty();
+    let status = null, statusAt = 0, packet = empty(), displayRows=[], displayBoot=null;
     async function refreshStatus(force) {
       if (!force && status && Date.now() - statusAt < statusEvery) return status;
       try { status = await api('/esp32/status'); }
@@ -172,7 +175,11 @@
       try {
         const reply = await api('/esp32/readings');
         packet = freshness(normalize(reply), status.poll_seconds);
-        if (packet.available) buffer.push(packet);
+        if (packet.available) {
+          const added=buffer.push(packet);
+          if(displayBoot!==packet.boot_id){displayRows=[];displayBoot=packet.boot_id;}
+          if(added){displayRows.push(displaySnapshot(packet,buffer.rows(),status));if(displayRows.length>BUFFER_LIMIT)displayRows.shift();}
+        }
       } catch (e) {
         packet = empty({ error: e.message, unreachable: true, status_code: e.status || null });
       }
@@ -185,10 +192,33 @@
       packet = Object.assign({}, packet, { loads: { load1, load2, load4, loads_on: finite(loads.loads_on) ? loads.loads_on : [load1, load2, load4].filter(Boolean).length } });
       return packet;
     }
-    return { poll, refreshStatus, setLoads, applyLoads, status: () => status, packet: () => packet, history: () => buffer.rows(), reset: () => buffer.clear() };
+    return { poll, refreshStatus, setLoads, applyLoads, status: () => status, packet: () => packet, history: () => buffer.rows(),
+      displaySnapshot:()=>displaySnapshot(packet,buffer.rows(),status),displayHistory:()=>structuredClone(displayRows),
+      reset: () => {buffer.clear();displayRows=[];displayBoot=null;} };
   }
 
-  const api = { create, createBuffer, math: { normalize, freshness, scopePacket, thermoPacket, quality, empty, effectiveResistance, deriveCurrents, estimateFrom }, SOURCE, BRANCH_OHMS };
+  function displaySnapshot(packet,history,status){
+    const scope=scopePacket(packet,history,status),p=packet||empty(),d=scope.derived;
+    const live=!!(p.available&&p.live&&!p.stale),loading=live&&finite(scope.values.secondary_i)?100*scope.values.secondary_i:null;
+    const channel=(value,raw,unit,source,method)=>({value:num(value),raw:num(raw),unit,
+      source:finite(value)?source:'unavailable',method,quality:scope.quality});
+    return {timestamp:p.at,device_id:p.device_id,boot_id:p.boot_id,sequence:p.sequence,
+      version:'prototype-display-1',quality:scope.quality,age_s:p.age_s,
+      active_branches:p.loads?.loads_on??null,resistance_ohms:d.r_eff,branch_ohms:BRANCH_OHMS,
+      reason:d.active?d.reason:null,calibrated:!!p.current_calibrated,probe_valid:!!p.probe_ok,
+      live,relay_states:p.relay_states||null,loads:p.loads||null,
+      channels:{
+        primary_voltage:channel(scope.values.primary_v,p.primary?.v,'V','measured','board_rms'),
+        secondary_voltage:channel(scope.values.secondary_v,p.secondary?.v,'V','measured','board_rms'),
+        secondary_current:channel(scope.values.secondary_i,p.secondary?.i,'A',d.active?'frontend_estimated':'measured',d.active?'V_secondary / R_eff':'board_rms'),
+        primary_current:channel(scope.values.primary_i,p.primary?.i,'A',d.active?'frontend_estimated':p.primary?.i_method==='measured'?'measured':'firmware_calculated',d.active?'V_secondary * I_secondary_est / V_primary; unity PF, no losses':p.primary?.i_method==='measured'?'board_rms':'firmware power balance; configured efficiency 0.80'),
+        surface_temperature:channel(live&&p.probe_ok?p.surface_c:null,p.surface_c,'C','measured','surface_probe')
+      },rating_a:1,loading_percent:loading,
+      demo_health:loading===null?null:100-Math.max(0,Math.min(100,loading-80)),
+      demo_health_version:'current-only-1',scope:'Bounded browser display snapshot; not the complete acquisition history'};
+  }
+
+  const api = { create, createBuffer, math: { normalize, freshness, scopePacket, thermoPacket, quality, empty, effectiveResistance, deriveCurrents, estimateFrom, displaySnapshot }, SOURCE, BRANCH_OHMS };
   if (typeof module !== 'undefined' && module.exports) module.exports = api;
   if (root) root.HaloEsp32 = api;
 })(typeof window !== 'undefined' ? window : globalThis);

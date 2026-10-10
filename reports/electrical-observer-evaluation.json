@@ -1,0 +1,1102 @@
+{
+  "version": "electrical-observer-1",
+  "source": "Independent synthetic event seeds; no field validation or calibrated probabilities",
+  "split": "Entire events held out by seed; no adjacent-window train/test split; rules are fixed, not fitted to this evaluation",
+  "count": 140,
+  "confusion_matrix": {
+    "normal": {
+      "normal": 20,
+      "overload": 0,
+      "inrush": 0,
+      "external_fault": 0,
+      "suspected_internal_fault": 0,
+      "sensor_failure": 0,
+      "ambiguous": 0
+    },
+    "overload": {
+      "normal": 0,
+      "overload": 20,
+      "inrush": 0,
+      "external_fault": 0,
+      "suspected_internal_fault": 0,
+      "sensor_failure": 0,
+      "ambiguous": 0
+    },
+    "inrush": {
+      "normal": 0,
+      "overload": 0,
+      "inrush": 20,
+      "external_fault": 0,
+      "suspected_internal_fault": 0,
+      "sensor_failure": 0,
+      "ambiguous": 0
+    },
+    "external_fault": {
+      "normal": 0,
+      "overload": 0,
+      "inrush": 0,
+      "external_fault": 20,
+      "suspected_internal_fault": 0,
+      "sensor_failure": 0,
+      "ambiguous": 0
+    },
+    "suspected_internal_fault": {
+      "normal": 0,
+      "overload": 0,
+      "inrush": 0,
+      "external_fault": 0,
+      "suspected_internal_fault": 20,
+      "sensor_failure": 0,
+      "ambiguous": 0
+    },
+    "sensor_failure": {
+      "normal": 0,
+      "overload": 0,
+      "inrush": 0,
+      "external_fault": 0,
+      "suspected_internal_fault": 0,
+      "sensor_failure": 20,
+      "ambiguous": 0
+    },
+    "ambiguous": {
+      "normal": 0,
+      "overload": 0,
+      "inrush": 0,
+      "external_fault": 0,
+      "suspected_internal_fault": 0,
+      "sensor_failure": 0,
+      "ambiguous": 20
+    }
+  },
+  "classes": {
+    "normal": {
+      "count": 20,
+      "precision": 1.0,
+      "recall": 1.0
+    },
+    "overload": {
+      "count": 20,
+      "precision": 1.0,
+      "recall": 1.0
+    },
+    "inrush": {
+      "count": 20,
+      "precision": 1.0,
+      "recall": 1.0
+    },
+    "external_fault": {
+      "count": 20,
+      "precision": 1.0,
+      "recall": 1.0
+    },
+    "suspected_internal_fault": {
+      "count": 20,
+      "precision": 1.0,
+      "recall": 1.0
+    },
+    "sensor_failure": {
+      "count": 20,
+      "precision": 1.0,
+      "recall": 1.0
+    },
+    "ambiguous": {
+      "count": 20,
+      "precision": 1.0,
+      "recall": 1.0
+    }
+  },
+  "coverage": 0.8571428571428571,
+  "false_alarm_events": 0,
+  "normal_event_denominator": 20,
+  "accuracy": 1.0,
+  "baseline_accuracy": 0.2857142857142857,
+  "limitations": [
+    "Synthetic generator and deterministic observer are not independent physical validation.",
+    "Low-harmonic inrush, CT saturation and overlapping faults can be ambiguous; robustness is not established."
+  ],
+  "cases": [
+    {
+      "seed": 1000,
+      "truth": "normal",
+      "predicted": "normal",
+      "delay_s": null,
+      "baseline": "normal"
+    },
+    {
+      "seed": 1000,
+      "truth": "overload",
+      "predicted": "overload",
+      "delay_s": 0,
+      "baseline": "overload"
+    },
+    {
+      "seed": 1000,
+      "truth": "inrush",
+      "predicted": "inrush",
+      "delay_s": 0.07999999999999999,
+      "baseline": "overload"
+    },
+    {
+      "seed": 1000,
+      "truth": "external_fault",
+      "predicted": "external_fault",
+      "delay_s": 0,
+      "baseline": "overload"
+    },
+    {
+      "seed": 1000,
+      "truth": "suspected_internal_fault",
+      "predicted": "suspected_internal_fault",
+      "delay_s": 0,
+      "baseline": "overload"
+    },
+    {
+      "seed": 1000,
+      "truth": "sensor_failure",
+      "predicted": "sensor_failure",
+      "delay_s": 0,
+      "baseline": "normal"
+    },
+    {
+      "seed": 1000,
+      "truth": "ambiguous",
+      "predicted": "ambiguous",
+      "delay_s": null,
+      "baseline": "overload"
+    },
+    {
+      "seed": 1001,
+      "truth": "normal",
+      "predicted": "normal",
+      "delay_s": null,
+      "baseline": "normal"
+    },
+    {
+      "seed": 1001,
+      "truth": "overload",
+      "predicted": "overload",
+      "delay_s": 0,
+      "baseline": "overload"
+    },
+    {
+      "seed": 1001,
+      "truth": "inrush",
+      "predicted": "inrush",
+      "delay_s": 0.06666666666666667,
+      "baseline": "overload"
+    },
+    {
+      "seed": 1001,
+      "truth": "external_fault",
+      "predicted": "external_fault",
+      "delay_s": 0,
+      "baseline": "overload"
+    },
+    {
+      "seed": 1001,
+      "truth": "suspected_internal_fault",
+      "predicted": "suspected_internal_fault",
+      "delay_s": 0,
+      "baseline": "overload"
+    },
+    {
+      "seed": 1001,
+      "truth": "sensor_failure",
+      "predicted": "sensor_failure",
+      "delay_s": 0,
+      "baseline": "normal"
+    },
+    {
+      "seed": 1001,
+      "truth": "ambiguous",
+      "predicted": "ambiguous",
+      "delay_s": null,
+      "baseline": "overload"
+    },
+    {
+      "seed": 1002,
+      "truth": "normal",
+      "predicted": "normal",
+      "delay_s": null,
+      "baseline": "normal"
+    },
+    {
+      "seed": 1002,
+      "truth": "overload",
+      "predicted": "overload",
+      "delay_s": 0,
+      "baseline": "overload"
+    },
+    {
+      "seed": 1002,
+      "truth": "inrush",
+      "predicted": "inrush",
+      "delay_s": 0.06666666666666667,
+      "baseline": "overload"
+    },
+    {
+      "seed": 1002,
+      "truth": "external_fault",
+      "predicted": "external_fault",
+      "delay_s": 0,
+      "baseline": "overload"
+    },
+    {
+      "seed": 1002,
+      "truth": "suspected_internal_fault",
+      "predicted": "suspected_internal_fault",
+      "delay_s": 0,
+      "baseline": "overload"
+    },
+    {
+      "seed": 1002,
+      "truth": "sensor_failure",
+      "predicted": "sensor_failure",
+      "delay_s": 0,
+      "baseline": "normal"
+    },
+    {
+      "seed": 1002,
+      "truth": "ambiguous",
+      "predicted": "ambiguous",
+      "delay_s": null,
+      "baseline": "overload"
+    },
+    {
+      "seed": 1003,
+      "truth": "normal",
+      "predicted": "normal",
+      "delay_s": null,
+      "baseline": "normal"
+    },
+    {
+      "seed": 1003,
+      "truth": "overload",
+      "predicted": "overload",
+      "delay_s": 0,
+      "baseline": "overload"
+    },
+    {
+      "seed": 1003,
+      "truth": "inrush",
+      "predicted": "inrush",
+      "delay_s": 0.07999999999999999,
+      "baseline": "overload"
+    },
+    {
+      "seed": 1003,
+      "truth": "external_fault",
+      "predicted": "external_fault",
+      "delay_s": 0,
+      "baseline": "overload"
+    },
+    {
+      "seed": 1003,
+      "truth": "suspected_internal_fault",
+      "predicted": "suspected_internal_fault",
+      "delay_s": 0,
+      "baseline": "overload"
+    },
+    {
+      "seed": 1003,
+      "truth": "sensor_failure",
+      "predicted": "sensor_failure",
+      "delay_s": 0,
+      "baseline": "normal"
+    },
+    {
+      "seed": 1003,
+      "truth": "ambiguous",
+      "predicted": "ambiguous",
+      "delay_s": null,
+      "baseline": "overload"
+    },
+    {
+      "seed": 1004,
+      "truth": "normal",
+      "predicted": "normal",
+      "delay_s": null,
+      "baseline": "normal"
+    },
+    {
+      "seed": 1004,
+      "truth": "overload",
+      "predicted": "overload",
+      "delay_s": 0,
+      "baseline": "overload"
+    },
+    {
+      "seed": 1004,
+      "truth": "inrush",
+      "predicted": "inrush",
+      "delay_s": 0.06666666666666667,
+      "baseline": "overload"
+    },
+    {
+      "seed": 1004,
+      "truth": "external_fault",
+      "predicted": "external_fault",
+      "delay_s": 0,
+      "baseline": "overload"
+    },
+    {
+      "seed": 1004,
+      "truth": "suspected_internal_fault",
+      "predicted": "suspected_internal_fault",
+      "delay_s": 0,
+      "baseline": "overload"
+    },
+    {
+      "seed": 1004,
+      "truth": "sensor_failure",
+      "predicted": "sensor_failure",
+      "delay_s": 0,
+      "baseline": "normal"
+    },
+    {
+      "seed": 1004,
+      "truth": "ambiguous",
+      "predicted": "ambiguous",
+      "delay_s": null,
+      "baseline": "overload"
+    },
+    {
+      "seed": 1005,
+      "truth": "normal",
+      "predicted": "normal",
+      "delay_s": null,
+      "baseline": "normal"
+    },
+    {
+      "seed": 1005,
+      "truth": "overload",
+      "predicted": "overload",
+      "delay_s": 0,
+      "baseline": "overload"
+    },
+    {
+      "seed": 1005,
+      "truth": "inrush",
+      "predicted": "inrush",
+      "delay_s": 0.07999999999999999,
+      "baseline": "overload"
+    },
+    {
+      "seed": 1005,
+      "truth": "external_fault",
+      "predicted": "external_fault",
+      "delay_s": 0,
+      "baseline": "overload"
+    },
+    {
+      "seed": 1005,
+      "truth": "suspected_internal_fault",
+      "predicted": "suspected_internal_fault",
+      "delay_s": 0,
+      "baseline": "overload"
+    },
+    {
+      "seed": 1005,
+      "truth": "sensor_failure",
+      "predicted": "sensor_failure",
+      "delay_s": 0,
+      "baseline": "normal"
+    },
+    {
+      "seed": 1005,
+      "truth": "ambiguous",
+      "predicted": "ambiguous",
+      "delay_s": null,
+      "baseline": "overload"
+    },
+    {
+      "seed": 1006,
+      "truth": "normal",
+      "predicted": "normal",
+      "delay_s": null,
+      "baseline": "normal"
+    },
+    {
+      "seed": 1006,
+      "truth": "overload",
+      "predicted": "overload",
+      "delay_s": 0,
+      "baseline": "overload"
+    },
+    {
+      "seed": 1006,
+      "truth": "inrush",
+      "predicted": "inrush",
+      "delay_s": 0.06666666666666667,
+      "baseline": "overload"
+    },
+    {
+      "seed": 1006,
+      "truth": "external_fault",
+      "predicted": "external_fault",
+      "delay_s": 0,
+      "baseline": "overload"
+    },
+    {
+      "seed": 1006,
+      "truth": "suspected_internal_fault",
+      "predicted": "suspected_internal_fault",
+      "delay_s": 0,
+      "baseline": "overload"
+    },
+    {
+      "seed": 1006,
+      "truth": "sensor_failure",
+      "predicted": "sensor_failure",
+      "delay_s": 0,
+      "baseline": "normal"
+    },
+    {
+      "seed": 1006,
+      "truth": "ambiguous",
+      "predicted": "ambiguous",
+      "delay_s": null,
+      "baseline": "overload"
+    },
+    {
+      "seed": 1007,
+      "truth": "normal",
+      "predicted": "normal",
+      "delay_s": null,
+      "baseline": "normal"
+    },
+    {
+      "seed": 1007,
+      "truth": "overload",
+      "predicted": "overload",
+      "delay_s": 0,
+      "baseline": "overload"
+    },
+    {
+      "seed": 1007,
+      "truth": "inrush",
+      "predicted": "inrush",
+      "delay_s": 0.07999999999999999,
+      "baseline": "overload"
+    },
+    {
+      "seed": 1007,
+      "truth": "external_fault",
+      "predicted": "external_fault",
+      "delay_s": 0,
+      "baseline": "overload"
+    },
+    {
+      "seed": 1007,
+      "truth": "suspected_internal_fault",
+      "predicted": "suspected_internal_fault",
+      "delay_s": 0,
+      "baseline": "overload"
+    },
+    {
+      "seed": 1007,
+      "truth": "sensor_failure",
+      "predicted": "sensor_failure",
+      "delay_s": 0,
+      "baseline": "normal"
+    },
+    {
+      "seed": 1007,
+      "truth": "ambiguous",
+      "predicted": "ambiguous",
+      "delay_s": null,
+      "baseline": "overload"
+    },
+    {
+      "seed": 1008,
+      "truth": "normal",
+      "predicted": "normal",
+      "delay_s": null,
+      "baseline": "normal"
+    },
+    {
+      "seed": 1008,
+      "truth": "overload",
+      "predicted": "overload",
+      "delay_s": 0,
+      "baseline": "overload"
+    },
+    {
+      "seed": 1008,
+      "truth": "inrush",
+      "predicted": "inrush",
+      "delay_s": 0.07999999999999999,
+      "baseline": "overload"
+    },
+    {
+      "seed": 1008,
+      "truth": "external_fault",
+      "predicted": "external_fault",
+      "delay_s": 0,
+      "baseline": "overload"
+    },
+    {
+      "seed": 1008,
+      "truth": "suspected_internal_fault",
+      "predicted": "suspected_internal_fault",
+      "delay_s": 0,
+      "baseline": "overload"
+    },
+    {
+      "seed": 1008,
+      "truth": "sensor_failure",
+      "predicted": "sensor_failure",
+      "delay_s": 0,
+      "baseline": "normal"
+    },
+    {
+      "seed": 1008,
+      "truth": "ambiguous",
+      "predicted": "ambiguous",
+      "delay_s": null,
+      "baseline": "overload"
+    },
+    {
+      "seed": 1009,
+      "truth": "normal",
+      "predicted": "normal",
+      "delay_s": null,
+      "baseline": "normal"
+    },
+    {
+      "seed": 1009,
+      "truth": "overload",
+      "predicted": "overload",
+      "delay_s": 0,
+      "baseline": "overload"
+    },
+    {
+      "seed": 1009,
+      "truth": "inrush",
+      "predicted": "inrush",
+      "delay_s": 0.06666666666666667,
+      "baseline": "overload"
+    },
+    {
+      "seed": 1009,
+      "truth": "external_fault",
+      "predicted": "external_fault",
+      "delay_s": 0,
+      "baseline": "overload"
+    },
+    {
+      "seed": 1009,
+      "truth": "suspected_internal_fault",
+      "predicted": "suspected_internal_fault",
+      "delay_s": 0,
+      "baseline": "overload"
+    },
+    {
+      "seed": 1009,
+      "truth": "sensor_failure",
+      "predicted": "sensor_failure",
+      "delay_s": 0,
+      "baseline": "normal"
+    },
+    {
+      "seed": 1009,
+      "truth": "ambiguous",
+      "predicted": "ambiguous",
+      "delay_s": null,
+      "baseline": "overload"
+    },
+    {
+      "seed": 1010,
+      "truth": "normal",
+      "predicted": "normal",
+      "delay_s": null,
+      "baseline": "normal"
+    },
+    {
+      "seed": 1010,
+      "truth": "overload",
+      "predicted": "overload",
+      "delay_s": 0,
+      "baseline": "overload"
+    },
+    {
+      "seed": 1010,
+      "truth": "inrush",
+      "predicted": "inrush",
+      "delay_s": 0.06666666666666667,
+      "baseline": "overload"
+    },
+    {
+      "seed": 1010,
+      "truth": "external_fault",
+      "predicted": "external_fault",
+      "delay_s": 0,
+      "baseline": "overload"
+    },
+    {
+      "seed": 1010,
+      "truth": "suspected_internal_fault",
+      "predicted": "suspected_internal_fault",
+      "delay_s": 0,
+      "baseline": "overload"
+    },
+    {
+      "seed": 1010,
+      "truth": "sensor_failure",
+      "predicted": "sensor_failure",
+      "delay_s": 0,
+      "baseline": "normal"
+    },
+    {
+      "seed": 1010,
+      "truth": "ambiguous",
+      "predicted": "ambiguous",
+      "delay_s": null,
+      "baseline": "overload"
+    },
+    {
+      "seed": 1011,
+      "truth": "normal",
+      "predicted": "normal",
+      "delay_s": null,
+      "baseline": "normal"
+    },
+    {
+      "seed": 1011,
+      "truth": "overload",
+      "predicted": "overload",
+      "delay_s": 0,
+      "baseline": "overload"
+    },
+    {
+      "seed": 1011,
+      "truth": "inrush",
+      "predicted": "inrush",
+      "delay_s": 0.07999999999999999,
+      "baseline": "overload"
+    },
+    {
+      "seed": 1011,
+      "truth": "external_fault",
+      "predicted": "external_fault",
+      "delay_s": 0,
+      "baseline": "overload"
+    },
+    {
+      "seed": 1011,
+      "truth": "suspected_internal_fault",
+      "predicted": "suspected_internal_fault",
+      "delay_s": 0,
+      "baseline": "overload"
+    },
+    {
+      "seed": 1011,
+      "truth": "sensor_failure",
+      "predicted": "sensor_failure",
+      "delay_s": 0,
+      "baseline": "normal"
+    },
+    {
+      "seed": 1011,
+      "truth": "ambiguous",
+      "predicted": "ambiguous",
+      "delay_s": null,
+      "baseline": "overload"
+    },
+    {
+      "seed": 1012,
+      "truth": "normal",
+      "predicted": "normal",
+      "delay_s": null,
+      "baseline": "normal"
+    },
+    {
+      "seed": 1012,
+      "truth": "overload",
+      "predicted": "overload",
+      "delay_s": 0,
+      "baseline": "overload"
+    },
+    {
+      "seed": 1012,
+      "truth": "inrush",
+      "predicted": "inrush",
+      "delay_s": 0.06666666666666667,
+      "baseline": "overload"
+    },
+    {
+      "seed": 1012,
+      "truth": "external_fault",
+      "predicted": "external_fault",
+      "delay_s": 0,
+      "baseline": "overload"
+    },
+    {
+      "seed": 1012,
+      "truth": "suspected_internal_fault",
+      "predicted": "suspected_internal_fault",
+      "delay_s": 0,
+      "baseline": "overload"
+    },
+    {
+      "seed": 1012,
+      "truth": "sensor_failure",
+      "predicted": "sensor_failure",
+      "delay_s": 0,
+      "baseline": "normal"
+    },
+    {
+      "seed": 1012,
+      "truth": "ambiguous",
+      "predicted": "ambiguous",
+      "delay_s": null,
+      "baseline": "overload"
+    },
+    {
+      "seed": 1013,
+      "truth": "normal",
+      "predicted": "normal",
+      "delay_s": null,
+      "baseline": "normal"
+    },
+    {
+      "seed": 1013,
+      "truth": "overload",
+      "predicted": "overload",
+      "delay_s": 0,
+      "baseline": "overload"
+    },
+    {
+      "seed": 1013,
+      "truth": "inrush",
+      "predicted": "inrush",
+      "delay_s": 0.07999999999999999,
+      "baseline": "overload"
+    },
+    {
+      "seed": 1013,
+      "truth": "external_fault",
+      "predicted": "external_fault",
+      "delay_s": 0,
+      "baseline": "overload"
+    },
+    {
+      "seed": 1013,
+      "truth": "suspected_internal_fault",
+      "predicted": "suspected_internal_fault",
+      "delay_s": 0,
+      "baseline": "overload"
+    },
+    {
+      "seed": 1013,
+      "truth": "sensor_failure",
+      "predicted": "sensor_failure",
+      "delay_s": 0,
+      "baseline": "normal"
+    },
+    {
+      "seed": 1013,
+      "truth": "ambiguous",
+      "predicted": "ambiguous",
+      "delay_s": null,
+      "baseline": "overload"
+    },
+    {
+      "seed": 1014,
+      "truth": "normal",
+      "predicted": "normal",
+      "delay_s": null,
+      "baseline": "normal"
+    },
+    {
+      "seed": 1014,
+      "truth": "overload",
+      "predicted": "overload",
+      "delay_s": 0,
+      "baseline": "overload"
+    },
+    {
+      "seed": 1014,
+      "truth": "inrush",
+      "predicted": "inrush",
+      "delay_s": 0.06666666666666667,
+      "baseline": "overload"
+    },
+    {
+      "seed": 1014,
+      "truth": "external_fault",
+      "predicted": "external_fault",
+      "delay_s": 0,
+      "baseline": "overload"
+    },
+    {
+      "seed": 1014,
+      "truth": "suspected_internal_fault",
+      "predicted": "suspected_internal_fault",
+      "delay_s": 0,
+      "baseline": "overload"
+    },
+    {
+      "seed": 1014,
+      "truth": "sensor_failure",
+      "predicted": "sensor_failure",
+      "delay_s": 0,
+      "baseline": "normal"
+    },
+    {
+      "seed": 1014,
+      "truth": "ambiguous",
+      "predicted": "ambiguous",
+      "delay_s": null,
+      "baseline": "overload"
+    },
+    {
+      "seed": 1015,
+      "truth": "normal",
+      "predicted": "normal",
+      "delay_s": null,
+      "baseline": "normal"
+    },
+    {
+      "seed": 1015,
+      "truth": "overload",
+      "predicted": "overload",
+      "delay_s": 0,
+      "baseline": "overload"
+    },
+    {
+      "seed": 1015,
+      "truth": "inrush",
+      "predicted": "inrush",
+      "delay_s": 0.06666666666666667,
+      "baseline": "overload"
+    },
+    {
+      "seed": 1015,
+      "truth": "external_fault",
+      "predicted": "external_fault",
+      "delay_s": 0,
+      "baseline": "overload"
+    },
+    {
+      "seed": 1015,
+      "truth": "suspected_internal_fault",
+      "predicted": "suspected_internal_fault",
+      "delay_s": 0,
+      "baseline": "overload"
+    },
+    {
+      "seed": 1015,
+      "truth": "sensor_failure",
+      "predicted": "sensor_failure",
+      "delay_s": 0,
+      "baseline": "normal"
+    },
+    {
+      "seed": 1015,
+      "truth": "ambiguous",
+      "predicted": "ambiguous",
+      "delay_s": null,
+      "baseline": "overload"
+    },
+    {
+      "seed": 1016,
+      "truth": "normal",
+      "predicted": "normal",
+      "delay_s": null,
+      "baseline": "normal"
+    },
+    {
+      "seed": 1016,
+      "truth": "overload",
+      "predicted": "overload",
+      "delay_s": 0,
+      "baseline": "overload"
+    },
+    {
+      "seed": 1016,
+      "truth": "inrush",
+      "predicted": "inrush",
+      "delay_s": 0.06666666666666667,
+      "baseline": "overload"
+    },
+    {
+      "seed": 1016,
+      "truth": "external_fault",
+      "predicted": "external_fault",
+      "delay_s": 0,
+      "baseline": "overload"
+    },
+    {
+      "seed": 1016,
+      "truth": "suspected_internal_fault",
+      "predicted": "suspected_internal_fault",
+      "delay_s": 0,
+      "baseline": "overload"
+    },
+    {
+      "seed": 1016,
+      "truth": "sensor_failure",
+      "predicted": "sensor_failure",
+      "delay_s": 0,
+      "baseline": "normal"
+    },
+    {
+      "seed": 1016,
+      "truth": "ambiguous",
+      "predicted": "ambiguous",
+      "delay_s": null,
+      "baseline": "overload"
+    },
+    {
+      "seed": 1017,
+      "truth": "normal",
+      "predicted": "normal",
+      "delay_s": null,
+      "baseline": "normal"
+    },
+    {
+      "seed": 1017,
+      "truth": "overload",
+      "predicted": "overload",
+      "delay_s": 0,
+      "baseline": "overload"
+    },
+    {
+      "seed": 1017,
+      "truth": "inrush",
+      "predicted": "inrush",
+      "delay_s": 0.06666666666666667,
+      "baseline": "overload"
+    },
+    {
+      "seed": 1017,
+      "truth": "external_fault",
+      "predicted": "external_fault",
+      "delay_s": 0,
+      "baseline": "overload"
+    },
+    {
+      "seed": 1017,
+      "truth": "suspected_internal_fault",
+      "predicted": "suspected_internal_fault",
+      "delay_s": 0,
+      "baseline": "overload"
+    },
+    {
+      "seed": 1017,
+      "truth": "sensor_failure",
+      "predicted": "sensor_failure",
+      "delay_s": 0,
+      "baseline": "normal"
+    },
+    {
+      "seed": 1017,
+      "truth": "ambiguous",
+      "predicted": "ambiguous",
+      "delay_s": null,
+      "baseline": "overload"
+    },
+    {
+      "seed": 1018,
+      "truth": "normal",
+      "predicted": "normal",
+      "delay_s": null,
+      "baseline": "normal"
+    },
+    {
+      "seed": 1018,
+      "truth": "overload",
+      "predicted": "overload",
+      "delay_s": 0,
+      "baseline": "overload"
+    },
+    {
+      "seed": 1018,
+      "truth": "inrush",
+      "predicted": "inrush",
+      "delay_s": 0.06666666666666667,
+      "baseline": "overload"
+    },
+    {
+      "seed": 1018,
+      "truth": "external_fault",
+      "predicted": "external_fault",
+      "delay_s": 0,
+      "baseline": "overload"
+    },
+    {
+      "seed": 1018,
+      "truth": "suspected_internal_fault",
+      "predicted": "suspected_internal_fault",
+      "delay_s": 0,
+      "baseline": "overload"
+    },
+    {
+      "seed": 1018,
+      "truth": "sensor_failure",
+      "predicted": "sensor_failure",
+      "delay_s": 0,
+      "baseline": "normal"
+    },
+    {
+      "seed": 1018,
+      "truth": "ambiguous",
+      "predicted": "ambiguous",
+      "delay_s": null,
+      "baseline": "overload"
+    },
+    {
+      "seed": 1019,
+      "truth": "normal",
+      "predicted": "normal",
+      "delay_s": null,
+      "baseline": "normal"
+    },
+    {
+      "seed": 1019,
+      "truth": "overload",
+      "predicted": "overload",
+      "delay_s": 0,
+      "baseline": "overload"
+    },
+    {
+      "seed": 1019,
+      "truth": "inrush",
+      "predicted": "inrush",
+      "delay_s": 0.07999999999999999,
+      "baseline": "overload"
+    },
+    {
+      "seed": 1019,
+      "truth": "external_fault",
+      "predicted": "external_fault",
+      "delay_s": 0,
+      "baseline": "overload"
+    },
+    {
+      "seed": 1019,
+      "truth": "suspected_internal_fault",
+      "predicted": "suspected_internal_fault",
+      "delay_s": 0,
+      "baseline": "overload"
+    },
+    {
+      "seed": 1019,
+      "truth": "sensor_failure",
+      "predicted": "sensor_failure",
+      "delay_s": 0,
+      "baseline": "normal"
+    },
+    {
+      "seed": 1019,
+      "truth": "ambiguous",
+      "predicted": "ambiguous",
+      "delay_s": null,
+      "baseline": "overload"
+    }
+  ],
+  "source_sha256": {
+    "neuratwin/electrical_diagnostics.py": "b91ad3dec9cd5f2b0b3ddb1548ea9fa723c560bd78913fba152c65dcaae40c4c"
+  }
+}

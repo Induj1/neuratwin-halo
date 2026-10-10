@@ -216,7 +216,13 @@ def investigation(s):
     s=deepcopy(s);core.add_forward_risk(s)
     observed=twin_observer.assess(twin_observer.from_history(s),s['settings'])
     a=s['analysis']; t=s['telemetry'];codes={x['code'] for x in a['alerts']}
-    if 'sensor_residual' in codes or 'channel_disagreement' in observed.get('hypotheses',[]):
+    if codes & {'tank_pressure','pressure_rise','pressure_sensor'}:
+        title='Investigate the pressure scenario';next_check='Inspect the pressure channel, tank arrangement and protection/relief assumptions; retain the work order until the pressure finding and recovery checks are resolved.'
+        alternatives=['Abnormal gas-space pressure scenario','Pressure instrumentation failure; pressure alone does not establish an internal fault']
+    elif s['breaker']=='OPEN' and any((r.get('secondary_current') or 0)>2*core.terminal_fault(s['settings'])['rated_secondary_a'] for r in [(s.get('trip') or {}).get('before',{})]):
+        title='Investigate a high-current clearing event';next_check='Review pre-trip evidence and protection coordination. RMS data alone cannot distinguish inrush from internal or external faults.'
+        alternatives=['External fault','Internal fault','Inrush or instrumentation problem; independent waveform evidence required']
+    elif 'sensor_residual' in codes or 'channel_disagreement' in observed.get('hypotheses',[]):
         title='Resolve a temperature-channel disagreement';next_check='Compare the suspect channel with an independent temperature reference; check wiring and calibration.'
         alternatives=['Sensor offset or connection problem','Reference-model error or an unobserved local thermal gradient']
     elif 'thermal_deviation' in observed.get('hypotheses',[]):

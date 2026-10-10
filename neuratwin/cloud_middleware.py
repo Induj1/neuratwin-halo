@@ -15,7 +15,7 @@ class CloudMiddleware(BaseHTTPMiddleware):
             path=request.url.path
             if path.startswith('/api/'):
                 if request.method not in ('GET','HEAD','OPTIONS'): auth.csrf(request)
-                public=path in ('/api/health','/api/auth/config','/api/auth/login','/api/auth/refresh','/api/auth/logout','/api/halo/session')
+                public=path in ('/api/health','/api/auth/config','/api/auth/login','/api/auth/refresh','/api/auth/logout','/api/halo/session','/api/halo/mobile/login','/api/halo/mobile/refresh','/api/halo/mobile/demo-session')
                 device=path=='/api/halo/telemetry' or path.startswith('/api/halo/device/')
                 judge=bool(re.fullmatch(r'/api/halo/arena/rooms/[^/]+/(judge|inject)',path))
                 if not (public or device or judge):

@@ -159,6 +159,26 @@ def frames(device_id, limit=600):
     return [{**json.loads(r['content']), 'received_at':r['received_at'], 'evidence_id':f'T-{r["id"]}'} for r in reversed(rows)]
 
 
+def report_frames(device_id, captured_at):
+    """All immutable retained acquisitions at a fixed cutoff, not the UI window."""
+    if cloud.enabled():
+        found=cloud.rows('halo_frames',{'device_id':'eq.'+device_id,'received_at':'lte.'+captured_at,
+            'order':'id.asc','select':'id,content,received_at'})
+        return [{**r['content'],'received_at':r['received_at'],'evidence_id':f'T-{r["id"]}'} for r in found]
+    with connection() as db:
+        found=db.execute('SELECT id,content,received_at FROM halo_frames WHERE device_id=? AND received_at<=? ORDER BY id',
+                         (device_id,captured_at)).fetchall()
+    return [{**json.loads(r['content']),'received_at':r['received_at'],'evidence_id':f'T-{r["id"]}'} for r in found]
+
+
+def report_events(asset_id, captured_at):
+    if cloud.enabled():
+        return cloud.rows('halo_events',{'asset_id':'eq.'+asset_id,'created_at':'lte.'+captured_at,'order':'created_at.asc,id.asc'})
+    with connection() as db:
+        found=db.execute('SELECT * FROM halo_events WHERE asset_id=? AND created_at<=? ORDER BY id',(asset_id,captured_at)).fetchall()
+    return [{**dict(r),'content':json.loads(r['content'])} for r in found]
+
+
 def photo(value, data):
     """Store already validated JPEG/PNG bytes; return metadata without bytes."""
     value=dict(value)

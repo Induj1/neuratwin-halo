@@ -90,8 +90,9 @@
     }
     function pause() { paused = true; stopFrame(); motionState(); draw(true); }
     function resume() { paused = false; motionState(); renderReadout(); schedule(); }
+    const leftMargin = () => host.closest?.('#view-physics') ? 88 : 56;
     function draw(readout = true) {
-      const channels = shown(), left = 56, right = width - 18, top = 20, bottom = 211, middle = (top + bottom) / 2;
+      const channels = shown(), left = leftMargin(), right = width - 18, top = 20, bottom = 211, middle = (top + bottom) / 2;
       const scale = axisScale(channels, packet, group), limit = scale.limit, x = ms => left + ms / 40 * (right - left), y = value => middle - value / limit * (bottom - top) / 2;
       q('.hw-scale-note').textContent = scale.kind === 'nameplate' ? `Scale ±${fmt(limit, 1)} A peak · ${scale.expanded ? 'expanded above' : 'fixed at 160% of'} rated phase current (${fmt(scale.referenceRms, 1)} A RMS).` : `Auto scale · selected ${group} channels${packet.mode === 'industrial' && group === 'current' ? ' · rated-current reference unavailable' : ''}.`;
       svg.setAttribute('viewBox', `0 0 ${width} 247`); grid.replaceChildren(); traces.replaceChildren(); cross.replaceChildren();
@@ -154,7 +155,7 @@
     motion.addEventListener('click', () => paused ? resume() : pause());
     function inspect(value) { cursor = Math.max(0, Math.min(40, value)); q('.hw-details').open=true; pause(); }
     slider.addEventListener('input', () => inspect(Number(slider.value)));
-    function pointer(event) { const bounds = svg.getBoundingClientRect(); if (!bounds.width) return; const localX = (event.clientX - bounds.left) * width / bounds.width; inspect((localX - 56) / (width - 74) * 40); }
+    function pointer(event) { const bounds = svg.getBoundingClientRect(); if (!bounds.width) return; const localX = (event.clientX - bounds.left) * width / bounds.width, left=leftMargin(); inspect((localX - left) / (width - 18 - left) * 40); }
     svg.addEventListener('pointerdown', event => { if (event.pointerType !== 'mouse' || event.button === 0) { svg.setPointerCapture?.(event.pointerId); pointer(event); } });
     svg.addEventListener('pointermove', event => { if (event.pointerType === 'mouse' || svg.hasPointerCapture?.(event.pointerId)) pointer(event); });
     svg.addEventListener('pointerup', event => { if (svg.hasPointerCapture?.(event.pointerId)) svg.releasePointerCapture(event.pointerId); });

@@ -19,7 +19,9 @@
 .halo-scope .hs-motion{white-space:nowrap;background:transparent}
 .halo-scope .hs-motion[aria-pressed=false]::before{content:'▶';font-size:10px;margin-right:7px}
 .halo-scope .hs-motion[aria-pressed=true]::before{content:'Ⅱ';font-size:12px;margin-right:7px}
-.halo-scope .hs-plots{display:grid;gap:14px}
+.halo-scope .hs-plots{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:20px}
+.halo-scope .hs-plot{min-width:0}
+@media(max-width:640px){.halo-scope .hs-plots{grid-template-columns:1fr}}
 .halo-scope .hs-plot-head{display:flex;justify-content:space-between;align-items:baseline;gap:10px;margin:0 0 6px;font-size:13px}
 .halo-scope .hs-plot-head strong{font-weight:650}
 .halo-scope .hs-scale{color:var(--hs-muted);font-size:12px;font-variant-numeric:tabular-nums}

@@ -28,9 +28,14 @@ class AssetProfile(Contract):
     basis: Literal['illustrative','manufacturer_document','lab_reference','synthetic_reference'] = 'illustrative'
     reference: str = Field('No manufacturer test sheet supplied',min_length=5,max_length=1000)
     reviewer: str = Field('Unreviewed',min_length=3,max_length=120)
+    impedance_basis: Literal['illustrative','nameplate','test_report','reviewed_configuration']='illustrative'
+    impedance_reference: str = Field('No impedance reference supplied',min_length=5,max_length=1000)
+    impedance_reviewer: str = Field('Unreviewed',min_length=3,max_length=120)
 
     @model_validator(mode='after')
     def reviewed(self):
+        if self.impedance_basis!='illustrative' and (self.impedance_reviewer=='Unreviewed' or self.impedance_reference=='No impedance reference supplied'):
+            raise ValueError('Documented impedance needs a reference and reviewer.')
         if self.basis!='illustrative' and (self.reviewer.lower()=='unreviewed' or self.reference=='No manufacturer test sheet supplied'):
             raise ValueError('Documented profiles require a reference identifier and reviewer. This records provenance, not automatic verification.')
         return self
@@ -45,7 +50,7 @@ class NewRun(Contract):
 class Action(Contract):
     request_id: str = Field(pattern=r'^[\w-]{8,80}$')
     revision: int = Field(ge=0)
-    action: Literal['start','pause','step','inputs','scenario','inject','clear_fault','trip','reconnect','maintenance','settings','profile']
+    action: Literal['start','pause','step','advance_paused','inputs','scenario','inject','clear_fault','trip','reconnect','maintenance','settings','profile']
     inputs: core.Inputs | None = None
     settings: core.Settings | None = None
     seconds: int = Field(60, ge=1, le=3600)
@@ -66,7 +71,7 @@ def run_or_404(key):
 
 @router.get('/twin/catalog')
 def catalog():
-    return {'scenarios':core.SCENARIOS,'faults':sorted(core.FAULTS),'maintenance':sorted(core.MAINTENANCE),
+    return {'server_clock':os.getenv('HALO_SERVER_CLOCK')=='1','scenarios':core.SCENARIOS,'faults':sorted(core.FAULTS),'maintenance':sorted(core.MAINTENANCE),
             'settings':core.Settings().model_dump(),'inputs':core.Inputs().model_dump(),
             'runs':[{k:s[k] for k in ('id','started_at','scenario','elapsed_s','breaker')} for s in store.records('twin_run')][:30]}
 
@@ -110,6 +115,11 @@ def apply_action(key:str,payload:Action,actor=Depends(operator)):
             if action in ('start','pause'):
                 s['running']=action=='start';core.log(s,action,'Simulation '+('started.' if s['running'] else 'paused.'))
             elif action=='step':core.advance(s,payload.seconds)
+            elif action=='advance_paused':
+                s['running']=True
+                core.advance(s,payload.seconds)
+                s['running']=False
+                core.log(s,'paused','Manual step completed; simulation paused.')
             elif action=='inputs':
                 if payload.inputs is None:raise ValueError('Provide the complete input settings.')
                 before=s['inputs'];s['inputs']=payload.inputs.model_dump()
@@ -340,8 +350,9 @@ def report(key:str):
     proofs=[p for p in store.records('twin_proof') if p['run_id']==key]
     plans=[p for p in store.records('twin_plan') if p['run_id']==key]
     work=[{**p,'current_verification':studies.closure_check(s,p)} for p in store.records('twin_work') if p['run_id']==key]
+    inspections=[p for p in store.records('mobile_inspection') if p['asset_id']==key]
     report={'summary':v,'metrics':metrics,'full_history':rows,'full_events':s['events'],'initial_settings':s['initial_settings'],
-            'forecasts':[{'proof':p,'score':studies.score(p,s)} for p in proofs],'interventions':plans,'work_orders':work}
+            'forecasts':[{'proof':p,'score':studies.score(p,s)} for p in proofs],'interventions':plans,'work_orders':work,'inspections':inspections}
     text=json.dumps(report,indent=2,allow_nan=False)
     csvbuf=io.StringIO();writer=csv.DictWriter(csvbuf,fieldnames=list(dict.fromkeys(k for row in rows for k in row)));writer.writeheader();writer.writerows(rows)
     esc=html.escape
@@ -351,6 +362,8 @@ def report(key:str):
         display=f'{value:.3f}' if value is not None else 'Unavailable while condition evidence is withheld'
         body+=f'<dt>{esc(k.replace("_"," "))}</dt><dd>{esc(display)}</dd>'
     body+='</dl><h2>Maintenance recommendations</h2><ul>'+''.join('<li>'+esc(x)+'</li>' for x in v['analysis']['maintenance'])+'</ul>'
+    if inspections:
+        body+='<h2>Mobile inspections</h2>'+''.join('<p><b>'+esc(p['component'])+'</b> '+esc(p['captured_at'])+'</p><p>'+esc(p['note'])+'</p>' for p in inspections)
     body+='<h2>Linked evidence</h2><p>'+str(len(proofs))+' frozen forecasts; '+str(len(plans))+' intervention studies; '+str(len(work))+' maintenance work orders. Complete records and scores are in run.json.</p>'
     for p in proofs:
         scored=studies.score(p,s);m=scored['unchanged_inputs']

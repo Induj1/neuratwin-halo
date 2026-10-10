@@ -16,6 +16,7 @@ from .validation_plant import generate,SCENARIOS,MIXED,FAMILIES
 from . import thermal_reference,thermal_adaptation
 from .evidence_workflow import RecordingProvenance, immutable_binding, checked_binding
 from .storage import now
+from . import electrical_diagnostics as electrical
 
 router=APIRouter(prefix='/api/halo/twin/challenges')
 
@@ -23,6 +24,7 @@ router=APIRouter(prefix='/api/halo/twin/challenges')
 class Create(Contract):
     request_id:str=Field(pattern=r'^[\w-]{8,80}$')
     temperature_mode:Literal['oil_only','oil_and_hotspot']='oil_and_hotspot'
+    domain:Literal['thermal','electrical']='thermal'
 
 
 class Import(Contract):
@@ -48,6 +50,13 @@ def get(key):
 
 
 def public(c):
+    if c.get('domain')=='electrical':
+        return {'id':c['id'],'domain':'electrical','source':'synthetic sampled waveforms',
+                'name':'Blind electrical event','commitment':c['commitment'],
+                'observations':deepcopy(c['rows']),'acquisition':deepcopy(c['acquisition']),
+                'waveforms':deepcopy(c['truth']['waveforms']),
+                'assessment':deepcopy(c.get('assessment')),'revealed':c.get('revealed',False),
+                'note':'Event label and seed stay hidden until assessment is frozen. Synthetic screening only.'}
     index,minute,mode=context(c)
     observations=deepcopy([r for r in c['rows'][:index+1] if r['elapsed_s']>=(minute-30)*60])
     if mode=='oil_only':
@@ -76,8 +85,17 @@ def create(payload:Create,actor=Depends(operator)):
     with WRITE_LOCK:
         key='BLIND-'+payload.request_id;prior=store.get('twin_challenge',key)
         if prior:
+            if prior.get('domain','thermal')!=payload.domain:raise HTTPException(409,'Request ID belongs to a different challenge domain.')
             if prior.get('temperature_mode','oil_and_hotspot')!=payload.temperature_mode:raise HTTPException(409,'Request ID already used with a different channel capability.')
             return public(prior)
+        if payload.domain=='electrical':
+            seed=secrets.randbelow(2**31);kind=secrets.choice(electrical.CLASSES)
+            rows,acquisition,truth=electrical.generate(seed,kind)
+            hidden={'rows':rows,'truth':truth,'meta':acquisition,'nonce':secrets.token_hex(16)}
+            c={'id':key,'domain':'electrical',**hidden,'acquisition':acquisition,
+               'created_at':now(),'created_by':actor,'commitment':studies.digest(hidden),'revealed':False}
+            store.put('twin_challenge',key,c)
+            return public(c)
         seed=secrets.randbelow(2**31);kind=secrets.choice((*SCENARIOS,*MIXED))
         rows,truth,meta=generate(seed,kind,family=secrets.choice(FAMILIES),variable_event=True);nonce=secrets.token_hex(16)
         fit=thermal_reference.fit(observer.reference_rows(rows[:70]));settings=core.Settings().model_dump()
@@ -155,6 +173,13 @@ def assess(key:str,actor=Depends(operator)):
     with WRITE_LOCK,store.transaction():
         c=get(key)
         if not c.get('assessment'):
+            if c.get('domain')=='electrical':
+                result=electrical.assess(c['rows'],c['acquisition'])
+                c['assessment']={'result':result,'sha256':studies.digest(result),'actor':actor,
+                    'recorded_at':now(),'input_sha256':studies.digest({'rows':c['rows'],'acquisition':c['acquisition']}),
+                    'model_version':electrical.VERSION,'model_source_sha256':hashlib.sha256((Path(__file__).parent/'electrical_diagnostics.py').read_bytes()).hexdigest()}
+                store.put('twin_challenge',key,c)
+                return public(c)
             index,minute,mode=context(c)
             value=observer.assess(c['rows'][:index+1],c['settings'],30,temperature_mode=mode)
             c['assessment']={'result':value,'sha256':studies.digest(value),'actor':actor,'origin_min':minute,
@@ -177,6 +202,11 @@ def reveal(key:str,actor=Depends(operator)):
 
 
 def reveal_result(c):
+        if c.get('domain')=='electrical':
+            hidden={k:c[k] for k in ('rows','truth','meta','nonce')}
+            return {**public(c),'reveal':deepcopy(c['truth']),
+                    'commitment_verified':studies.digest(hidden)==c['commitment'],
+                    'correct':c['assessment']['result']['classification']==c['truth']['label']}
         index,origin,mode=context(c)
         result=c['assessment']['result'];future=[r for r in c['rows'][index+1:] if r['elapsed_s']/60<=origin+30];scored=[]
         target='oil_c' if mode=='oil_only' else 'hotspot_c';point_key='oil_c' if mode=='oil_only' else 'temperature_c'

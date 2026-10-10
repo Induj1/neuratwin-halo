@@ -83,6 +83,26 @@ def test_anonymous_legacy_and_halo_routes_protected(backend):
         assert client.post('/api/halo/telemetry',json={}).status_code==401
 
 
+def test_mobile_cloud_demo_is_explicit_and_scoped(backend,monkeypatch):
+    monkeypatch.setenv('HALO_MOBILE_DEMO','1')
+    monkeypatch.setenv('HALO_ALLOW_CONTROL','0')
+    with TestClient(app) as client:
+        assert client.get('/api/halo/mobile/demo-session').status_code==404
+        monkeypatch.setenv('HALO_LOCAL_OPERATOR','1')
+        session=client.get('/api/halo/mobile/demo-session')
+        assert session.status_code==200
+        headers={'Authorization':'Bearer '+session.json()['access_token']}
+        assert client.get('/api/halo/twin/catalog',headers=headers).status_code==200
+        response=client.post('/api/halo/twin/runs',headers=headers,json={'request_id':'cloud-mobile-demo'})
+        assert response.status_code==200
+        assert ('twin_run',response.json()['id']) in backend[0]
+        assert client.get('/api/auth/members',headers=headers).status_code==403
+        assert client.put('/api/halo/config',headers=headers,json={}).status_code==403
+        assert client.post('/api/halo/telemetry',headers=headers,json={}).status_code==401
+        monkeypatch.setenv('HALO_ALLOW_CONTROL','1')
+        assert client.get('/api/halo/mobile/demo-session').status_code==404
+
+
 def test_local_owner_is_explicit_and_cross_origin_denied(backend,monkeypatch):
     monkeypatch.setenv('HALO_LOCAL_OPERATOR','1')
     with TestClient(app) as client:

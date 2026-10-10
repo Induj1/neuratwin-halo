@@ -77,7 +77,8 @@ def case(key:str):
     s=run_or_404(key)
     return {'run':core.summary(s),'investigation':studies.investigation(s),
             'proofs':[{'proof':p,'score':studies.score(p,s)} for p in scoped('twin_proof',key)],
-            'plans':scoped('twin_plan',key),'work_orders':[{**w,'verification':studies.closure_check(s,w)} for w in scoped('twin_work',key)]}
+            'plans':scoped('twin_plan',key),'work_orders':[{**w,'verification':studies.closure_check(s,w)} for w in scoped('twin_work',key)],
+            'inspections':[r for r in store.records('mobile_inspection') if r['asset_id']==key]}
 
 
 @router.post('/runs/{key}/proofs')
@@ -224,7 +225,7 @@ def validation():
         import hashlib
         root=path.parents[1]
         result['pipeline']['source_matches']=all((root/n).exists() and hashlib.sha256((root/n).read_bytes()).hexdigest()==v for n,v in result['pipeline']['source_sha256'].items())
-    release='v6' if (path.parent/'pipeline-v6-fresh-protocol-run'/'manifest.json').exists() else 'v5'
+    release=next((v for v in ('v8','v7','v6','v5') if (path.parent/f'pipeline-{v}-fresh-protocol-run'/'manifest.json').exists()),'v5')
     fresh=path.parent/f'pipeline-{release}-fresh-protocol-run'/'benchmark.json'
     manifest=fresh.with_name('manifest.json')
     protocol=path.parent/f'pipeline-{release}-fresh-protocol.json'

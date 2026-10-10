@@ -86,9 +86,9 @@
     });
     const rms = id => (finite(packet.values[id]) && packet.values[id] >= 0 ? packet.values[id] : null);
     const activeChannels = plot => plot.def.channels.filter(c => selected.get(c.id) !== false && !(mode === 'waveform' && c.trendOnly));
-    function motionState() { motion.textContent = paused ? 'Play sweep' : 'Pause sweep'; motion.setAttribute('aria-pressed', String(!paused)); motion.hidden = mode !== 'waveform'; }
+    function motionState() { const live=packet.quality==='live'; motion.textContent = !live ? 'Waiting for ESP32' : paused ? 'Play sweep' : 'Pause sweep'; motion.disabled=!live; motion.setAttribute('aria-pressed', String(live&&!paused)); motion.hidden = mode !== 'waveform'; }
     function stopFrame() { if (frame) win.cancelAnimationFrame(frame); frame = 0; lastTick = 0; }
-    function canAnimate() { return !destroyed && mode === 'waveform' && !paused && visible && !doc.hidden && panel.getClientRects().length > 0; }
+    function canAnimate() { return !destroyed && packet.quality==='live' && mode === 'waveform' && !paused && visible && !doc.hidden && panel.getClientRects().length > 0; }
     function schedule() { if (canAnimate() && !frame) frame = win.requestAnimationFrame(tick); }
     function tick(time) {
       frame = 0; if (!canAnimate()) { lastTick = 0; return; }
@@ -167,7 +167,7 @@
     }
     function rebuild() {
       for (const button of panel.querySelectorAll('[data-hs-mode]')) button.setAttribute('aria-pressed', String(button.dataset.hsMode === mode));
-      origin.textContent = (packet.sourceLabel || 'Physical prototype') + (packet.quality ? ` · ${packet.quality}` : '');
+      origin.textContent = packet.quality==='stale'?'ESP32 offline · last received readings':packet.quality==='unreachable'?'ESP32 unreachable':(packet.sourceLabel || 'Physical prototype') + (packet.quality ? ` · ${packet.quality}` : '');
       panel.dataset.quality = packet.quality || '';
       renderChannels(); drawPlots(); motionState();
       if (canAnimate()) schedule(); else stopFrame();

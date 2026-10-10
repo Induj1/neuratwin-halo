@@ -1,0 +1,20 @@
+export type Source = 'industrial' | 'prototype';
+export type Signal = { code: string; severity: string; parameter: string; value: number | string | null; threshold: number | string | null; detail: string; timestamp?: string };
+export type Snapshot = {
+  id: string; source: Source; revision: number; running: boolean; elapsed_s?: number;
+  scenario?: string; profile?: { name: string }; breaker: string; protection_state: string;
+  telemetry: { timestamp: string; transformer_temperature: number | null; primary_voltage: number | null; secondary_voltage: number | null; primary_current: number | null; secondary_current: number | null; loading_percent: number | null; ambient_temperature: number | null; quality: string; phase_current_a?: number | null; phase_current_b?: number | null; phase_current_c?: number | null; neutral_current?: number | null; phase_imbalance_percent?: number | null; oil_temperature?: number | null; oil_condition?: number | null };
+  analysis: { status: string; health_index: number | null; alerts: Signal[]; maintenance: string[]; stress?: Record<string, number> };
+  inputs: { load_percent: number; voltage_pu: number; ambient_c: number; cooling: string; oil_level_percent: number; oil_condition: number; protection_enabled: boolean; speed: number; phase_imbalance_percent?: number } | null;
+  history: HistoryRow[];
+  events: { id?: number; kind: string; timestamp?: string; elapsed_s?: number; detail?: string; created_at?: string; content?: { note?: string; detail?: string; reason?: string } }[];
+  trip?: { reason: string } | null; fault?: object | null; holds?: string[]; recovery_holds?: string[];
+  prediction?: { minutes_to_critical: number | null; note: string };
+  connection?: string;
+};
+export type Catalog = { server_clock: boolean; runs: { id: string; started_at: string; scenario: string; elapsed_s: number; breaker: string }[] };
+export type Draft = { request_id: string; source: Source; run_id: string | null; component: 'transformer' | 'surface' | 'voltage' | 'current' | 'relay' | 'controller'; note: string; independent_surface_c: number | null; captured_at: string; photo_base64?: string; queued?: boolean; error?: string };
+export type Inspection = Draft & { id: string; received_at: string; actor: string; photo?: { id: string; mime: string } };
+export type HistoryRow = Partial<Snapshot['telemetry']> & { timestamp: string; transformer_temperature: number | null; health_index?: number | null; status?: string; breaker?: string; elapsed_s?: number; analysis?: Snapshot['analysis'] };
+export type ProjectionPoint = { minute: number; temperature_c: number };
+export type Plan = { id: string; run_id: string; origin_revision: number; applied: boolean; horizon_min: number; recommendation: { reduction_pct: number; peak_c: number; curtailed_kwh: number; points: ProjectionPoint[] } | null; baseline: { peak_c: number; points: ProjectionPoint[] }; note: string };

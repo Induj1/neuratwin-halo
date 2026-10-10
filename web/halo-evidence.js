@@ -19,7 +19,7 @@ function chart(id,series,labels=[],unit='°C'){
  out+=`<text x="12" y="17" font-size="12" fill="#586972">${esc(unit)}</text>`;
  for(const s of series){let segment=[];const flush=()=>{if(segment.length)out+=`<polyline points="${segment.join(' ')}" fill="none" stroke="${s.color}" stroke-width="3" stroke-linejoin="round"/>`;segment=[];};s.values.forEach((v,i)=>{if(Number.isFinite(v))segment.push(`${x(i,s.values.length)},${y(v)}`);else flush();});flush();}
  if(labels.length)out+=`<text x="65" y="250" font-size="13" fill="#586972">${esc(labels[0])}</text><text x="875" y="250" text-anchor="end" font-size="13" fill="#586972">${esc(labels.at(-1))}</text>`;
- svg.innerHTML=out;
+ HaloCharts.render(svg,out);
 }
 async function guarded(button,fn){if(H.challenge)throw Error('Finish the blind challenge in Digital twin. Evidence Lab uses ordinary asset contexts.');if(H.offline())throw Error('Reconnect before calculating or recording new evidence.');button.disabled=true;const original=button.textContent;button.textContent='Working…';try{return await fn();}finally{button.disabled=false;button.textContent=original;}}
 const actions={};

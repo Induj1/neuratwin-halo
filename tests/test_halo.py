@@ -58,6 +58,21 @@ def test_no_data_is_not_healthy(client):
     assert all(e['value'] is None for e in s['evidence']) and len(s['holds'])>=6
 
 
+def test_replay_chart_samples_match_snapshots_and_preserve_gaps(client):
+    for scenario in ('normal','heating','dropout'):
+        rows=client.get('/api/halo/replay-history',params={'scenario':scenario}).json()['rows']
+        assert len(rows)==721
+        assert set(rows[0])=={'timestamp','surface_c','ambient_c'}
+        for cursor in (1,139,240,720):
+            history=client.get('/api/halo/snapshot',params={**ctx(scenario),'cursor':cursor}).json()['history']
+            expected=[{key:row[key] for key in rows[0]} for row in history]
+            assert rows[max(0,cursor+1-240):cursor+1]==expected
+        if scenario=='dropout':
+            assert all(row['surface_c'] is None for row in rows[140:])
+    assert client.get('/api/halo/replay-history?scenario=unknown').status_code==422
+    assert client.get('/api/halo/replay-history?dataset_id=missing').status_code==404
+
+
 @pytest.mark.parametrize('scenario',['normal','overload','heating','sensor','dropout'])
 def test_synthetic_provenance(client,scenario):
     s=client.get('/api/halo/snapshot',params=ctx(scenario)).json()

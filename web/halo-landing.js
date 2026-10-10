@@ -1,10 +1,12 @@
-/* Landing interactions. All displayed forecasts come from the read-only study API. */
+/* Landing interactions. Slider projections use the API state and the same thermal recurrence. */
 (() => {
   "use strict";
   const $ = (id) => document.getElementById(id);
   const motion = matchMedia("(prefers-reduced-motion: reduce)");
   let controller,
-    timer,
+    plotFrame,
+    sourceSnapshot,
+    domain,
     serial = 0;
 
   function plot(snapshot) {
@@ -22,8 +24,22 @@
     const values = [...base, ...alt].map((p) => p.hotspot_c);
     if (!values.every(Number.isFinite) || !Number.isFinite(limit))
       throw Error("Invalid forecast");
-    const min = Math.floor((Math.min(...values, limit) - 8) / 10) * 10;
-    const max = Math.ceil((Math.max(...values, limit) + 8) / 10) * 10;
+    if (!domain) {
+      const coolest = HaloCharts.forecast(
+        snapshot,
+        Number($("load-reduction").max),
+      );
+      const extent = [
+        ...values,
+        ...coolest.alternative.map((p) => p.hotspot_c),
+        limit,
+      ];
+      domain = [
+        Math.floor((Math.min(...extent) - 8) / 10) * 10,
+        Math.ceil((Math.max(...extent) + 8) / 10) * 10,
+      ];
+    }
+    const [min, max] = domain;
     const duration = Math.max(
       ...base.map((p) => p.minute),
       ...alt.map((p) => p.minute),
@@ -44,7 +60,7 @@
     }
     markup += `<line x1="40" x2="636" y1="${y(limit)}" y2="${y(limit)}" stroke="#9b9f91" stroke-dasharray="4 5"/><text x="635" y="${y(limit) - 8}" text-anchor="end" fill="#646a60" font-size="11">Configured limit · ${limit}°C</text>`;
     markup += `<path d="${path(base)}" fill="none" stroke="#3d493a" stroke-width="3"/><path d="${path(alt)}" fill="none" stroke="#a34a2b" stroke-width="3"/>`;
-    $("forecast-chart").innerHTML = markup;
+    HaloCharts.render($("forecast-chart"), markup, 130);
     document.querySelector(".chart-axis").innerHTML =
       `<span>Now</span><span>${duration / 2} min</span><span>${duration} min</span>`;
     const c = snapshot.comparison;
@@ -86,7 +102,11 @@
       });
       if (!response.ok) throw Error("Study unavailable");
       const snapshot = await response.json();
-      if (request === serial) plot(snapshot);
+      if (request === serial) {
+        sourceSnapshot = snapshot;
+        domain = null;
+        plot(HaloCharts.forecast(snapshot, Number($("load-reduction").value)));
+      }
     } catch (error) {
       if (request !== serial) return;
       $("chart-state").textContent =
@@ -102,16 +122,16 @@
   }
   $("load-reduction").addEventListener("input", () => {
     $("load-value").value = $("load-reduction").value + "%";
-    // Invalidate immediately so an older request cannot render against the new input.
-    serial++;
-    controller?.abort();
-    clearTimeout(timer);
-    $("forecast-panel").setAttribute("aria-busy", "true");
-    $("chart-state").hidden = false;
-    $("chart-state").textContent = "Calculating both futures…";
-    $("peak-reduction").textContent = "…";
-    $("forecast-summary").textContent = "Updating the comparison.";
-    timer = setTimeout(compare, 180);
+    cancelAnimationFrame(plotFrame);
+    if (sourceSnapshot)
+      plotFrame = requestAnimationFrame(() => {
+        plot(
+          HaloCharts.forecast(
+            sourceSnapshot,
+            Number($("load-reduction").value),
+          ),
+        );
+      });
   });
   $("retry-forecast").addEventListener("click", compare);
   compare();

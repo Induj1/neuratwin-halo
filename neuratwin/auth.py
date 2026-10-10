@@ -48,7 +48,12 @@ def identity(request,required='viewer'):
     if cached:
         if ROLES[cached['role']] < ROLES[required]: raise HTTPException(403,'This action requires '+required+' access.')
         return cached
-    from .halo_api import LOCAL_TOKEN, local_request
+    from .halo_api import LOCAL_TOKEN, local_request, mobile_demo_identity
+    demo=mobile_demo_identity(request)
+    if demo:
+        if ROLES[demo['role']] < ROLES[required]: raise HTTPException(403,'This action requires '+required+' access.')
+        request.state.halo_identity=demo
+        return demo
     supplied=request.headers.get('authorization','').removeprefix('Bearer ').strip()
     if not supplied and not request.cookies.get(ACCESS):
         supplied=request.cookies.get(LOCAL,'')

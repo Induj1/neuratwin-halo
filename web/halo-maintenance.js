@@ -1,0 +1,82 @@
+/* Asset-bound maintenance. Does not write to display channels or relay controls. */
+(()=>{'use strict';
+ const $=id=>document.getElementById(id);if(!$('mt-workflow'))return;
+ const esc=v=>String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+ const fmt=(v,n=1)=>Number.isFinite(v)?v.toLocaleString(undefined,{maximumFractionDigits:n}):'—';
+ const date=v=>v?new Date(v).toLocaleString():'—';
+ const values=items=>items.map(([label,value])=>`<div><span>${esc(label)}</span><b>${esc(value)}</b></div>`).join('');
+ function chart(series,limit=null){
+  const points=series.flatMap(s=>s.rows).filter(p=>Number.isFinite(p.y)&&Number.isFinite(p.x));if(!points.length)return '<p>Waiting for comparable readings.</p>';
+  const xx=Math.max(1,...points.map(v=>v.x)),ys=points.map(v=>v.y);if(Number.isFinite(limit))ys.push(limit);
+  const lo=Math.min(...ys)-2,hi=Math.max(...ys)+2,x=v=>75+v/xx*440,y=v=>170-(v-lo)/(hi-lo)*135;
+  return `<svg viewBox="0 0 550 220" role="img" aria-label="Temperature over model minutes">${[0,.5,1].map(v=>{const n=lo+(hi-lo)*v;return `<path d="M75 ${y(n)}H515" stroke="#626a64"/><text x="63" y="${y(n)+6}" text-anchor="end">${fmt(n,0)}</text>`;}).join('')}${Number.isFinite(limit)?`<path d="M75 ${y(limit)}H515" stroke="#f8a808" stroke-dasharray="5 5"/>`:''}${series.map(s=>`<path d="${s.rows.filter(v=>Number.isFinite(v.y)).map((v,i)=>(i?'L':'M')+x(v.x)+','+y(v.y)).join(' ')}" fill="none" stroke="${s.color}" stroke-width="2.5"/>`).join('')}<text x="75" y="207">0 min</text><text x="515" y="207" text-anchor="end">${fmt(xx)} min</text></svg>`;
+ }
+ window.HaloMaintenanceCharts={chart,values,fmt};
+ let state=null,asset=null,epoch=0,record=null,result=null,selected=null,proposal=null,loading=false,busy=false,signature='',lastPoll=0;
+ const bridge=document.createElement('section');bridge.className='mt-panel';bridge.id='mt-maintenance-entry';$('view-maintenance').prepend(bridge);
+ const active=()=>$('view-physics').classList.contains('active')||$('view-maintenance').classList.contains('active');
+ const path=()=>'/maintenance/assets/'+encodeURIComponent(asset);
+ function options(){return Object.fromEntries([...new FormData($('mt-options'))].map(([k,v])=>[k,v===''?null:Number(v)]));}
+ function context(){const physical=state?.mode==='prototype';return {revision:physical?null:state?.snapshot?.revision,profile_revision:record?.profile.revision??0,options:options(),...(physical?{display_current:HaloOperations.displaySnapshot(),display_history:HaloOperations.displayHistory()}:{})};}
+ function status(message){$('mt-status').textContent=message;}
+ function renderDecision(){const r=result;
+  $('mt-source').textContent=state?.mode==='prototype'?'Physical prototype':'Industrial simulation';
+  $('mt-action').textContent=r?.available?r.recommendation:r?.holds?.join(' ')||'Waiting for source readings';
+  $('mt-agreement').textContent=r?.uncertainty_action||'';
+  $('mt-channel').textContent=(r?.channel||'Temperature')+' forecast';
+  $('mt-summary').innerHTML=r?.available?values([['Scenario peak',`${fmt(r.thermal_range_c[0])}–${fmt(r.thermal_range_c[1])} °C`],['Configured limit',fmt(r.profile.temperature_limit_c)+' °C'],['Assessed reduction',r.robust_reduction_percent==null?'No safe candidate':fmt(r.robust_reduction_percent,0)+'%']]):'';
+  $('mt-forecast').innerHTML=chart([{rows:r?.forecast?.map(v=>({x:v.minute,y:v.temperature_c}))||[],color:'#e85848'},{rows:r?.robust_reduction_percent!=null?r?.after_forecast?.map(v=>({x:v.minute,y:v.temperature_c}))||[]:[],color:'#c8d8e8'}],r?.profile.temperature_limit_c);
+  $('mt-create-open').disabled=busy||!r?.available||!!state?.replay;
+  $('mt-action-save').disabled=busy||!r?.available||!!state?.replay;
+  $('mt-measurements').innerHTML=(r?.measurements||[]).map(m=>`<div class="mt-measurement"><div><strong>${esc(m.name)}</strong><br><span>${esc(m.assessment)}</span></div><div><span>Entered cost · ₹${fmt(m.total_cost,0)}<br>Benefit upper bound · ₹${fmt(m.maximum_avoidable_cost,0)}</span></div></div>`).join('');
+  $('mt-scenarios').innerHTML=r?.available?`<table><thead><tr><th>Cooling</th><th>Rise factor</th><th>Peak °C</th><th>First crossing · min</th><th>Reduction</th></tr></thead><tbody>${r.scenarios.map(s=>`<tr><td>${fmt(s.cooling,2)}</td><td>${fmt(s.rise_scale,2)}</td><td>${fmt(s.peak_c)}</td><td>${s.first_crossing_min??'No crossing'}</td><td>${s.reduction_percent==null?'No candidate':s.reduction_percent+'%'}</td></tr>`).join('')}</tbody></table>`:'';
+ }
+ function renderAsset(){if(!record)return;const p=record.profile;
+  $('mt-profile-origin').textContent=`Model revision ${p.revision} · ${p.provenance}. ${state.mode==='prototype'?'Surface response; independent of the virtual oil model.':'Forecast uses current simulated ambient.'}`;
+  for(const [k,v] of Object.entries(p.profile))$('mt-profile').elements[k].value=v;
+  $('mt-profile').elements.rated_current_a.readOnly=state.mode==='prototype';
+  $('mt-profile').elements.ambient_c.readOnly=state.mode==='industrial';
+  const history=[...p.history.map(v=>`<div class="mt-history-row">Model revision ${v.revision} · ${esc(v.provenance)}<small>Rise ${fmt(v.profile.rated_rise_c)} °C · time constant ${fmt(v.profile.tau_min)} min</small></div>`),...record.inspections.map(v=>`<div class="mt-history-row">${esc(v.note)}<small>Technician inspection · ${esc(date(v.captured_at))}</small></div>`),...record.previous_work.map(v=>`<div class="mt-history-row">${esc(v.title)}<small>Existing work order · ${esc(v.status)}</small></div>`)];
+  $('mt-history').innerHTML=history.join('')||'<p>No previous model revisions or inspections.</p>';renderJobs();
+ }
+ function renderJobs(){const jobs=record?.jobs||[];$('mt-job-count').textContent=jobs.length?`${jobs.length} recorded`:'';
+  bridge.innerHTML=`<div class="mt-heading"><h2>Asset job cards</h2><button id="mt-open-desk">Open maintenance desk</button></div><p>${state?.mode==='industrial'?'Selected industrial simulation':'Physical prototype'} · ${jobs.length} recorded</p><div class="mt-jobs">${jobs.map(j=>`<button data-mt-linked="${esc(j.id)}">${esc(j.title)}<span>${esc(j.status.replaceAll('_',' '))} · ${esc(j.owner)}</span></button>`).join('')}</div>`;
+  const open=job=>{HaloWorkspace.view('physics');if(job)selectJob(job);requestAnimationFrame(()=>$('mt-workflow').scrollIntoView({behavior:'smooth',block:'start'}));};$('mt-open-desk').onclick=()=>open(null);bridge.querySelectorAll('[data-mt-linked]').forEach(b=>b.onclick=()=>open(jobs.find(j=>j.id===b.dataset.mtLinked)));
+  $('mt-jobs').innerHTML=jobs.map(j=>`<button data-mt-job="${esc(j.id)}" aria-pressed="${selected?.id===j.id}">${esc(j.title)}<span>${esc(j.owner)} · ${esc(j.status.replaceAll('_',' '))}</span></button>`).join('')||'<p>No job cards for this asset.</p>';
+  $('mt-jobs').querySelectorAll('[data-mt-job]').forEach(b=>b.onclick=()=>selectJob(jobs.find(j=>j.id===b.dataset.mtJob)));
+ }
+ function selectJob(job,reset=true){selected=job;$('mt-job').hidden=!job;renderJobs();if(!job)return;
+  $('mt-job-title').textContent=job.title;$('mt-job-status').textContent=job.status.replaceAll('_',' ');
+  const d=job.decision,o=d.origin;
+  $('mt-job-origin').innerHTML=values([['Frozen voltage',fmt(o.voltage_v)+' V'],['Frozen current',fmt(o.current_a,3)+' A'],[d.channel,fmt(o.temperature_c)+' °C'],['Model revision',job.profile_revision],['Acceptance',job.acceptance.stable_minutes+' min']]);
+  $('mt-job-recommendation').textContent=d.recommendation+' · '+o.current_source.replaceAll('_',' ')+' · '+date(o.timestamp);
+  if(reset){$('mt-findings').elements.note.value=job.findings.note||'';$('mt-findings').elements.issue_resolved.checked=!!job.findings.issue_resolved;$('mt-findings').elements.photo.value='';$('mt-record-action').reset();}
+  $('mt-action-recorded').textContent=job.action?`${job.action.note} · ${date(job.action.recorded_at)} · forecast frozen at model revision ${job.action.profile_revision}`:'';
+  $('mt-verify').disabled=!job.action||!!state?.replay;
+  $('mt-photos').innerHTML=(job.findings.photos||[]).map((p,i)=>`<button type="button" data-photo="${esc(p.id)}">View photo ${i+1}</button>`).join('');
+  $('mt-photos').querySelectorAll('[data-photo]').forEach(b=>b.onclick=()=>run(async()=>{const response=await HaloAuth.fetch('/api/halo/attachments/'+encodeURIComponent(b.dataset.photo));if(!response.ok)throw Error('Photo unavailable');download(await response.blob(),'technician-photo');}));
+  const v=job.verification;
+  $('mt-verification').innerHTML=v?`<p class="mt-outcome">${esc(v.outcome.replaceAll('_',' '))}</p><p>${esc(v.reason)}</p><div class="mt-values">${values([['Comparable coverage',fmt(v.coverage_minutes)+' min'],['Forecast MAE',fmt(v.mae_c)+' °C']])}</div><div class="mt-recorder">${chart([{rows:v.points.map(p=>({x:p.minute,y:p.predicted_c})),color:'#c8d8e8'},{rows:v.points.map(p=>({x:p.minute,y:p.observed_c})),color:'#e85848'}],job.acceptance.temperature_limit_c)}<p>Frozen forecast · blue / Observed · coral</p></div><p>${esc(v.scope)}</p>${v.excluded?.length?`<p>${v.excluded.length} excluded readings: ${esc([...new Set(v.excluded.map(r=>r.reason))].join(', '))}</p>`:''}`:job.action?'<p>Collect new readings, then check the follow-up window.</p>':'<p>Record the corrective action to start follow-up.</p>';
+  $('mt-trail').innerHTML=`<p>${job.initial_readings.length} frozen input samples · ${job.previous_maintenance.length} previous jobs · ${job.prior_inspections.length} prior inspections · ${job.prior_work.length} earlier work orders</p><div class="mt-recorder">${chart([{rows:d.forecast.map(v=>({x:v.minute,y:v.temperature_c})),color:'#e85848'}],job.acceptance.temperature_limit_c)}<p>Original frozen forecast</p></div>`+job.previous_maintenance.map(p=>`<div class="mt-history-row"><strong>${esc(p.title)}</strong> · ${esc(p.status.replaceAll('_',' '))}<p>${esc(p.findings.note||'No findings recorded')}</p></div>`).join('')+job.prior_inspections.map(p=>`<div class="mt-history-row">Prior inspection · ${esc(p.note)}</div>`).join('')+job.prior_work.map(p=>`<div class="mt-history-row">Prior work · ${esc(p.title)} · ${esc(p.status)}</div>`).join('')+job.trail.map(t=>`<div class="mt-history-row">${esc(t.event.replaceAll('_',' '))}${t.note?' · '+esc(t.note):''}<small>${esc(date(t.time))}${t.verification?' · '+esc(t.verification.outcome.replaceAll('_',' ')):''}</small></div>`).join('');
+ }
+ function keepJob(j){if(!record)return;record.jobs=[j,...record.jobs.filter(v=>v.id!==j.id)];selectJob(j,false);}
+ async function load(){if(!asset||loading||record)return;const token=epoch;loading=true;try{const r=await HaloWorkspace.api(path());if(token!==epoch)return;record=r;renderAsset();await refresh();}catch(e){if(token===epoch)status(e.message);}finally{loading=false;if(token!==epoch&&active())load();}}
+ async function refresh(){if(!record||!asset||!state?.snapshot||state.replay)return;const token=epoch;const r=await HaloWorkspace.api(path()+'/decision',context());if(token!==epoch)return;result=r;renderDecision();}
+ async function run(fn){if(busy)return;busy=true;const token=epoch;status('');renderDecision();try{await fn(token);}catch(e){if(token===epoch)status(e.message);}finally{busy=false;renderDecision();}}
+ function download(blob,name){const url=URL.createObjectURL(blob),a=document.createElement('a');a.href=url;a.download=name;a.click();setTimeout(()=>URL.revokeObjectURL(url),30000);}
+ function reset(){epoch++;record=null;result=null;selected=null;proposal=null;signature='';$('mt-create').hidden=true;$('mt-job').hidden=true;$('mt-accept-fit').hidden=true;$('mt-calibration').textContent='';$('mt-profile').reset();$('mt-options').reset();status('');renderJobs();renderDecision();}
+ window.addEventListener('halo:operation-state',e=>{state=e.detail;const next=state.snapshot?(state.mode==='prototype'?'BENCH-001':state.snapshot.id):null;if(next!==asset){asset=next;reset();}if(state.replay){result=null;renderDecision();return;}if(!active())return;if(!record){load();return;}const s=JSON.stringify([state.snapshot?.revision,HaloOperations.displaySnapshot()?.sequence,HaloOperations.displaySnapshot()?.live]);if(s!==signature&&Date.now()-lastPoll>4000&&!busy&&!loading){signature=s;lastPoll=Date.now();run(()=>refresh());}});
+ window.addEventListener('halo:view',()=>{if(active()){state=HaloOperations.current();const next=state.snapshot?(state.mode==='prototype'?'BENCH-001':state.snapshot.id):null;if(next!==asset){asset=next;reset();}if(record)run(()=>refresh());else load();}});
+ $('mt-refresh').onclick=()=>run(async token=>{if(!asset)return;const r=await HaloWorkspace.api(path());if(token!==epoch)return;record=r;renderAsset();if(selected)selectJob(r.jobs.find(j=>j.id===selected.id),false);await refresh();});
+ $('mt-options').onsubmit=e=>{e.preventDefault();run(()=>refresh());};
+ $('mt-create-open').onclick=()=>{$('mt-create').hidden=false;$('mt-create').elements.owner.focus();};$('mt-create-cancel').onclick=()=>$('mt-create').hidden=true;
+ $('mt-create').onsubmit=e=>{e.preventDefault();run(async token=>{const f=e.currentTarget||$('mt-create'),body={...context(),request_id:crypto.randomUUID(),title:f.elements.title.value,owner:f.elements.owner.value,stable_minutes:Number(f.elements.stable_minutes.value)};const j=await HaloWorkspace.api(path()+'/jobs',body);if(token!==epoch)return;$('mt-create').hidden=true;keepJob(j);status('Job card saved with frozen readings and forecast.');});};
+ async function update(operation,note='',extra={}){const token=epoch;if(!selected)return;const j=await HaloWorkspace.api(path()+'/jobs/'+encodeURIComponent(selected.id),{...context(),job_revision:selected.revision,operation,note,...extra});if(token===epoch)keepJob(j);}
+ $('mt-findings').onsubmit=e=>{e.preventDefault();run(async token=>{const f=$('mt-findings'),file=f.elements.photo.files[0];let encoded=null;if(file){if(file.size>4000000)throw Error('Choose a photo under 4 MB.');encoded=await new Promise((resolve,reject)=>{const reader=new FileReader();reader.onload=()=>resolve(reader.result.split(',')[1]);reader.onerror=()=>reject(Error('Photo could not be read.'));reader.readAsDataURL(file);});}if(token!==epoch)return;await update('findings',f.elements.note.value,{issue_resolved:f.elements.issue_resolved.checked,photo_base64:encoded});if(token===epoch){f.elements.photo.value='';status('Findings saved. Model parameters are unchanged.');}});};
+ $('mt-record-action').onsubmit=e=>{e.preventDefault();run(()=>update('action',$('mt-record-action').elements.note.value));};
+ $('mt-verify').onclick=()=>run(()=>update('verify'));
+ $('mt-job-pdf').onclick=()=>run(async()=>{const response=await HaloAuth.fetch('/api/halo'+path()+'/jobs/'+encodeURIComponent(selected.id)+'/report.pdf');if(!response.ok)throw Error('Report could not be exported.');download(await response.blob(),'neuratwin-maintenance.pdf');});
+ $('mt-profile').onsubmit=e=>{e.preventDefault();run(async token=>{const f=$('mt-profile'),profile=Object.fromEntries(Object.keys(record.profile.profile).map(k=>[k,Number(f.elements[k].value)]));const p=await HaloWorkspace.api(path()+'/profile',{revision:record.profile.revision,profile,note:f.elements.note.value});if(token!==epoch)return;record.profile=p;renderAsset();await refresh();status('Model revision saved. Existing job forecasts remain frozen.');});};
+ $('mt-calibrate').onclick=()=>run(async token=>{const p=await HaloWorkspace.api(path()+'/calibration',context());if(token!==epoch)return;proposal=p;$('mt-calibration').textContent=p.reason+(p.available?` Held-out RMSE ${fmt(p.held_out_rmse_c,2)} °C; persistence ${fmt(p.persistence_rmse_c,2)} °C.`:'');$('mt-accept-fit').hidden=!p.available;});
+ $('mt-accept-fit').onclick=()=>run(async token=>{const p=await HaloWorkspace.api(path()+'/calibration/accept',{proposal_id:proposal.id,profile_revision:record.profile.revision});if(token!==epoch)return;record.profile=p;proposal=null;$('mt-accept-fit').hidden=true;renderAsset();await refresh();status('Checked fit accepted as a new model revision.');});
+})();

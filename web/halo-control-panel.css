@@ -1,0 +1,263 @@
+/* Instrument cabinet: opaque painted steel, recessed meters and annunciator windows. */
+/* The same Digital twin graph instances sit in this cabinet while it is open. */
+#view-physics .px-live-graphs{margin-top:24px;display:grid;gap:20px;min-width:0}
+#view-physics :is(.halo-scope,.halo-waveform,.px-response-panel){background:#bfc4be;border:3px solid #626a64;border-radius:2px;box-shadow:none;backdrop-filter:none;padding:20px;color:#1d252b;min-width:0}
+#view-physics :is(.hs-heading h3,.hw-heading h3,.px-response-panel h2){font-size:23px;line-height:1.35;margin:0 0 12px}
+#view-physics :is(.hs-eyebrow,.hw-eyebrow){display:none}
+#view-physics :is(.hs-origin,.hw-origin,.hs-disclosure,.hw-disclosure,.hs-note,.hw-model-note,.hw-scale-note){font-size:15px;color:#47544b}
+#view-physics :is(.hs-modes,.hw-groups){background:#adb6ae;border-radius:2px}
+#view-physics :is(.hs-channel,.hw-channel,.hw-value){background:#eaf2ec;border-radius:2px;border-color:#80887e}
+#view-physics :is(.hs-channel strong,.hs-channel span,.hw-channel,.hw-value strong){font-size:16px}
+#view-physics :is(.hs-channel small,.hw-channel small,.hs-scale,.hs-plot-head){font-size:14px}
+#view-physics :is(.hs-screen,.hw-plot,.op-trend-screen){background:#111e1a;border:1px solid #626a64;border-radius:3px;box-shadow:inset 0 0 18px #0005;overflow:hidden}
+#view-physics :is(.hw-plot svg text,.hs-screen svg text,.op-trend-screen text){fill:#b9d2c5;font-family:ui-monospace,monospace;font-size:14px}
+#view-physics :is(.hw-gridline,.op-trend-gridline){stroke:#ffffff20;stroke-width:1;fill:none}
+#view-physics .hw-zero{stroke:#ffffff55}
+#view-physics #op-waveform svg{height:260px}
+#view-physics .hw-empty{background:#111e1a;color:#b9d2c5}
+#view-physics #op-trend{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:20px;min-height:0}
+#view-physics .op-trend-card{min-width:0}
+#view-physics .op-trend-heading{display:flex;justify-content:space-between;align-items:baseline;gap:12px;margin:0 0 8px}
+#view-physics .op-trend-heading h3{font-size:18px;margin:0}
+#view-physics .op-trend-heading span{font-size:16px}
+#view-physics .op-trend-screen svg{display:block;width:100%;height:auto}
+#view-physics .op-trend-line{fill:none;stroke-width:2.2;stroke-linejoin:round;stroke-linecap:round}
+#view-physics #op-trend-note{font-size:15px;margin:14px 0 0;color:#47544b}
+@media(max-width:700px){#view-physics #op-trend{grid-template-columns:1fr}#view-physics :is(.halo-scope,.halo-waveform,.px-response-panel){padding:14px}#view-physics :is(.hs-heading,.hw-heading){display:block}#view-physics :is(.hs-toolbar,.hw-toolbar){flex-wrap:wrap}#view-physics .hs-plots{grid-template-columns:1fr}}
+#view-physics .px-heading{margin:0 0 10px;align-items:center}
+#view-physics .px-heading h1{font-size:27px;letter-spacing:-.7px}
+#view-physics .px-source-line{padding-bottom:14px}
+.px-cabinet{background:#80887e;border:5px solid #626a64;padding:12px;box-shadow:inset 0 1px 0 #bfc4be,0 5px 0 #626a64;position:relative}
+.px-alarm-header{display:flex;justify-content:space-between;gap:10px;color:#eaf2ec;font:10px/1.5 monospace;letter-spacing:1.2px;padding:2px 4px 9px}
+.px-annunciators{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:5px;background:#1d252b;border:5px solid #626a64;outline:1px solid #1d252b;padding:5px;margin-bottom:14px}
+.px-annunciator{background:#9b9b90;border:2px solid #626a64;min-height:53px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:5px;text-align:center;color:#1d252b;box-shadow:inset 0 2px 5px #06050a33}
+.px-annunciator span{font:10px/1.25 monospace;letter-spacing:.7px}.px-annunciator strong{font:700 11px/1.25 monospace;letter-spacing:.5px}
+.px-annunciator[data-state=off]{background:#80887e;color:#1d252b}
+.px-annunciator[data-state=signal]{background:#c8d8e8;border-color:#adb6ae}
+.px-annunciator[data-state=normal]{background:#bfc4be}
+.px-annunciator[data-state=warning]{background:#f8f888;border-color:#b0a15d;box-shadow:inset 0 0 12px #f8a80855}
+.px-annunciator[data-state=trip]{background:#e85848;color:#06050a;border-color:#981818;box-shadow:inset 0 0 12px #98181855}
+.px-wall-grid{display:grid;grid-template-columns:minmax(240px,1fr) minmax(300px,1.4fr) minmax(240px,.9fr);gap:10px;align-items:stretch}
+#view-physics :is(.px-meter-bay,.px-equipment,.px-fluid,.px-control-bay,.px-decision,.px-forecast){background:#adb6ae;border:1px solid #626a64;border-radius:1px;box-shadow:inset 1px 1px 0 #eaf2ec,inset -1px -1px 0 #80887e;position:relative}
+.px-meter-bay{padding:14px 12px}.px-nameplate{display:block;width:fit-content;max-width:100%;margin:0 auto 17px;background:#1d252b;color:#eaf2ec;padding:6px 10px;font:11px/1.4 monospace;letter-spacing:1.1px;text-align:center;border:1px solid #06050a}
+#view-physics .px-instruments{grid-template-columns:repeat(2,minmax(0,1fr));gap:17px 12px;margin:0}
+#view-physics .px-instrument{padding:8px;background:#626a64;border:2px solid #1d252b;outline:1px solid #80887e;border-radius:2px;box-shadow:2px 3px 0 #80887e,inset 1px 1px 0 #bfc4be;color:#f8f888;min-width:0}
+#view-physics .px-meter-label{min-height:28px;align-items:center;justify-content:center;background:#bfc4be;color:#1d252b;padding:3px 2px;border-bottom:1px solid #1d252b;text-align:center;font:10px/1.25 monospace;letter-spacing:0;text-transform:uppercase}
+.px-gauge-face{background:#eaf2ec;border:1px solid #1d252b;border-top:0;padding:2px 0 0}
+.px-gauge-face svg{width:100%;height:auto;display:block;max-height:117px}
+.px-gauge-face text{font:8px monospace;fill:#1d252b;text-anchor:middle}
+.px-gauge-face .px-dial-unit{font:11px monospace;fill:#626a64}
+.px-scale-ticks path{fill:none;stroke:#1d252b;stroke-width:1}
+.px-needle{stroke:#981818;stroke-width:1.8;stroke-linecap:round}
+#view-physics .px-number{background:#06050a;border:1px solid #1d252b;margin:5px 0 0;padding:8px 5px;gap:4px;min-height:0;justify-content:center;box-shadow:inset 0 1px 3px #000}
+#view-physics .px-number svg{height:28px;max-width:86%}
+#view-physics .px-number>span{font:10px monospace;color:#adb6ae}
+#view-physics .px-instrument small{font:8px/1.3 monospace;text-align:center;margin-top:6px;color:#eaf2ec;min-height:10px;overflow-wrap:anywhere}
+#view-physics .px-panel-heading{background:transparent;padding:14px 12px;gap:8px}
+#view-physics .px-panel-heading h2{font:11px/1.4 monospace;letter-spacing:.6px}
+#view-physics .px-equipment>.px-panel-heading{flex-wrap:wrap;justify-content:center}
+#view-physics .px-equipment>.px-panel-heading h2{margin-right:auto}
+#view-physics .px-switch{background:#80887e;border-color:#626a64}
+#view-physics .px-switch button{font:10px monospace!important;min-height:25px!important;padding:5px 7px!important}
+.px-mimic{padding:0 12px 8px;background:#adb6ae;border-bottom:1px solid #626a64}
+.px-mimic svg{display:block;width:100%;height:145px}
+.px-mimic text{font:9px monospace;fill:#1d252b;letter-spacing:.4px}
+.px-mimic>span{display:block;text-align:right;font:8px monospace;color:#626a64;letter-spacing:.5px}
+.px-bus{stroke:#626a64;stroke-width:2.5;fill:none}.px-bus[data-on=true]{stroke:#981818}.px-bus rect{fill:#bfc4be}.px-bus circle{fill:#adb6ae}
+#view-physics .px-scene{height:260px;background:#bfc4be;border:7px solid #626a64;border-top-width:5px;box-shadow:inset 0 0 0 1px #1d252b;margin:12px 12px 0}
+#view-physics .px-scene-caption{left:8px;right:8px;bottom:9px;font-size:8px;color:#1d252b;align-items:end}
+#view-physics .px-scene-caption>span{max-width:65%}
+#view-physics .px-equipment-foot{padding:10px 12px;font-size:8px;border:0}
+#view-physics .px-side{display:block}
+#view-physics .px-fluid{height:100%;padding-bottom:8px}
+#view-physics .px-fluid>.px-panel-heading{flex-direction:column;align-items:center;gap:10px}
+#view-physics .px-fluid select{width:calc(100% - 12px);max-width:none;min-height:33px;text-align:center;font-size:11px}
+#view-physics #px-oil-meters{padding:0 18px;grid-template-columns:1fr;gap:14px}
+#view-physics #px-oil-meters .px-instrument{display:grid;grid-template-columns:1fr 1fr;gap:0 7px;align-items:center}
+#px-oil-meters .px-meter-label{grid-column:1/-1}
+#px-oil-meters .px-gauge-face{grid-row:2/4;border-top:1px solid #1d252b;margin-top:5px}
+#px-oil-meters .px-number{align-self:end}
+#view-physics #px-oil-meters .px-number svg{height:25px}
+#view-physics #px-oil-meters .px-number>span{font-size:8px}
+#px-oil-meters .px-instrument small{align-self:start}
+#view-physics .px-level{padding:22px 18px 12px}
+#view-physics .px-level-track{height:23px;border:4px solid #626a64;outline:1px solid #1d252b;background:#1d252b;border-radius:0}
+#view-physics .px-level-track i{background:#f8f888;border-right:2px solid #eaf2ec}
+.px-desk{display:grid;grid-template-columns:180px minmax(0,1fr) 280px;gap:10px;border-top:8px solid #626a64;margin-top:12px;padding-top:12px;align-items:stretch}
+.px-control-bay{padding:15px 12px}
+#view-physics .px-simulation{display:flex;flex-direction:column;gap:15px;padding:0}
+#view-physics .px-simulation[hidden]{display:none}
+#view-physics .px-simulation label{display:flex;flex-direction:column;gap:15px;width:100%;font:11px monospace;text-align:center}
+#view-physics .px-simulation output{order:-1;background:#06050a;color:#f8f888;border:5px solid #626a64;outline:1px solid #1d252b;padding:12px 8px;font:25px monospace;width:100%;letter-spacing:2px}
+#view-physics .px-simulation input{width:100%;flex:none;appearance:none;-webkit-appearance:none;height:12px;background:#1d252b;border:2px solid #626a64;border-radius:0;cursor:pointer;margin:14px 0}
+#view-physics .px-simulation input::-webkit-slider-thumb{appearance:none;-webkit-appearance:none;width:19px;height:32px;background:#626a64;border:2px solid #1d252b;border-top:2px solid #eaf2ec;border-radius:2px;box-shadow:0 3px 0 #1d252b}
+#view-physics .px-simulation input::-moz-range-thumb{width:16px;height:28px;background:#626a64;border:2px solid #1d252b;border-radius:2px}
+#view-physics button{box-shadow:0 2px 0 #626a64;border-bottom-width:2px;font-family:monospace}
+#view-physics button:active:not(:disabled){transform:translateY(1px);box-shadow:none}
+#view-physics .px-simulation button{background:#bfc4be;width:100%;font-size:11px!important;min-height:44px}
+#px-control-context{font:10px/1.6 monospace;color:#1d252b;text-align:center;margin:18px 0 0}
+#view-physics .px-forecast{margin:0;min-width:0}
+#view-physics .px-forecast>.px-panel-heading{flex-wrap:wrap;padding:14px 12px 10px}
+#view-physics .px-legend{font-size:9px;gap:12px}
+#view-physics .px-charts{grid-template-columns:1fr;gap:8px;padding:0 12px 12px}
+#view-physics .px-chart{padding:9px 10px;border:4px solid #626a64;outline:1px solid #1d252b;background:#1d252b}
+#view-physics .px-chart svg{height:112px;width:100%}
+#view-physics .px-chart>div{font:10px monospace;margin-bottom:3px}
+#view-physics .px-chart p{min-height:100px;margin:0;font-size:10px}
+#view-physics #px-projection-note{font-size:10px;padding:0 12px 12px}
+#view-physics .px-decision{padding:0 15px 16px;border-left-width:1px}
+#view-physics .px-decision h3{font-size:20px}
+#view-physics .px-decision .px-panel-heading{padding:15px 0 10px;flex-wrap:wrap}
+#view-physics .px-decision p{font-size:11px}
+#view-physics .px-action-numbers{margin:13px 0;padding:14px 0;border-color:#80887e}
+#view-physics .px-action-numbers strong{font-size:20px}
+#view-physics #px-apply{background:#626a64!important;border:2px solid #1d252b!important;border-top-color:#eaf2ec!important;box-shadow:0 3px 0 #1d252b;min-height:51px;font-size:12px;color:#eaf2ec!important}
+#view-physics #px-trip{background:#981818;color:#eaf2ec;border:3px solid #626a64;outline:1px solid #1d252b;min-height:40px;margin-top:14px;box-shadow:0 2px 0 #1d252b}
+#view-physics #px-trip[hidden]{display:none}
+#view-physics .px-bottom{gap:12px;margin-top:22px}
+#view-physics .px-tools{background:#adb6ae;border:1px solid #626a64;box-shadow:inset 1px 1px 0 #eaf2ec}
+#view-physics .px-tools summary{font:12px monospace}
+.px-cabinet::before,.px-cabinet::after{content:'';position:absolute;top:-4px;width:6px;height:6px;border-radius:50%;background:#1d252b;border:1px solid #9b9b90;pointer-events:none}.px-cabinet::before{left:-4px}.px-cabinet::after{right:-4px}
+@media(min-width:1650px){#view-physics .px-charts{grid-template-columns:1fr 1fr}#view-physics .px-chart svg{height:175px}.px-desk{grid-template-columns:200px minmax(0,1fr) 300px}}
+@media(max-width:1250px) and (min-width:1001px){.px-wall-grid{grid-template-columns:minmax(230px,1fr) minmax(280px,1.3fr)}#view-physics .px-side{grid-column:1/-1}#view-physics .px-fluid{display:grid;grid-template-columns:170px 1fr 190px;align-items:center;padding-bottom:0}#view-physics #px-oil-meters{grid-template-columns:1fr 1fr;padding:12px}.px-desk{grid-template-columns:150px minmax(0,1fr) 240px}}
+@media(max-width:1000px){.px-wall-grid{grid-template-columns:1fr}.px-meter-bay{padding:14px 16px}#view-physics .px-instruments{grid-template-columns:repeat(4,minmax(0,1fr))}#view-physics #px-oil-meters{grid-template-columns:1fr 1fr}#view-physics .px-fluid>.px-panel-heading{flex-direction:row;justify-content:space-between}#view-physics .px-fluid select{max-width:180px}#view-physics .px-scene{height:290px}#view-physics .px-gauge-face svg{max-height:100px}.px-desk{grid-template-columns:160px minmax(0,1fr)}#view-physics .px-decision{grid-column:1/-1}#view-physics .px-charts{grid-template-columns:1fr 1fr}#view-physics .px-chart svg{height:125px}}
+@media(max-width:700px){.px-cabinet{padding:8px;border-width:3px}.px-annunciators{grid-template-columns:repeat(3,minmax(0,1fr));gap:4px;margin-bottom:10px;border-width:3px}.px-annunciator{min-height:47px}.px-annunciator span{font-size:8px}.px-annunciator strong{font-size:9px}.px-alarm-header{font-size:8px;letter-spacing:.5px}#view-physics .px-instruments{grid-template-columns:1fr 1fr;gap:14px}#view-physics .px-meter-label{font-size:9px}#view-physics .px-gauge-face svg{max-height:115px}.px-meter-bay{padding:14px 12px}.px-desk{grid-template-columns:1fr}.px-control-bay{padding:14px}.px-control-bay .px-nameplate{margin-bottom:12px}#view-physics .px-simulation{display:grid;grid-template-columns:1fr 1fr;gap:14px}#view-physics .px-simulation[hidden]{display:none}#view-physics .px-simulation label{gap:8px}#view-physics .px-simulation output{font-size:22px;padding:6px}#view-physics .px-simulation button{align-self:center}#px-control-context{margin-top:10px}#view-physics .px-charts{grid-template-columns:1fr}#view-physics .px-chart svg{height:auto}#view-physics #px-oil-meters{grid-template-columns:1fr;padding:0 14px}#view-physics #px-oil-meters .px-instrument{grid-template-columns:1fr 1.1fr}#view-physics #px-oil-meters .px-number svg{height:32px}#view-physics .px-bottom{grid-template-columns:1fr}#view-physics .px-heading h1{font-size:23px}.px-mimic{padding:0 8px 8px}.px-mimic svg{height:auto}#view-physics .px-scene{margin:10px 8px 0;height:255px}#view-physics .px-panel-heading h2{font-size:10px}#view-physics .px-fluid select{max-width:170px}}
+
+/* Presentation typography: keep text legible without shrinking the instruments. */
+#view-physics{font-size:16px}
+#view-physics .px-heading{gap:20px;flex-wrap:wrap}
+#view-physics .px-heading h1{font-size:34px}
+#view-physics .px-source-line{font-size:16px;flex-wrap:wrap;gap:8px}
+#view-physics .px-source-line>span:last-child{font-size:14px;letter-spacing:.3px}
+#view-physics .px-alarm-header{font-size:14px;letter-spacing:.5px;flex-wrap:wrap}
+#view-physics .px-annunciator{min-height:75px;padding:8px 4px;gap:8px}
+#view-physics .px-annunciator span{font-size:14px;letter-spacing:0}
+#view-physics .px-annunciator strong{font-size:17px;letter-spacing:0}
+#view-physics .px-nameplate{font-size:16px;letter-spacing:.3px;padding:9px 12px}
+#view-physics .px-meter-label{font-size:15px;line-height:1.35;min-height:48px;padding:5px 3px}
+#view-physics .px-number svg{height:42px}
+#view-physics .px-number>span{font-size:14px}
+#view-physics .px-instrument small{font-size:12px;line-height:1.5;min-height:18px}
+#view-physics .px-gauge-face text{font-size:11px}
+#view-physics .px-gauge-face .px-dial-unit{font-size:14px}
+#view-physics .px-gauge-face svg{max-height:155px}
+#view-physics .px-panel-heading{gap:12px;flex-wrap:wrap;padding:17px 14px}
+#view-physics .px-panel-heading h2{font-size:16px;line-height:1.4;letter-spacing:0}
+#view-physics .px-switch{display:flex;flex-wrap:wrap;gap:3px}
+#view-physics .px-switch button{font-size:15px!important;min-height:40px!important;padding:8px 10px!important}
+#view-physics .px-mimic svg{height:auto;min-height:155px}
+#view-physics .px-mimic text{font:15px Arial,sans-serif;letter-spacing:0}
+#view-physics .px-mimic>span{font-size:13px;color:#1d252b;letter-spacing:0}
+#view-physics .px-scene{height:320px}
+#view-physics .px-scene-caption{font-size:13px;line-height:1.4;flex-wrap:wrap;align-items:start;gap:5px}
+#view-physics .px-equipment-foot{font-size:13px;line-height:1.5;flex-wrap:wrap;gap:6px;color:#1d252b;padding:12px}
+#view-physics .px-fluid select{font-size:16px;min-height:44px}
+#view-physics #px-oil-meters .px-number svg{height:38px}
+#view-physics #px-oil-meters .px-number>span{font-size:13px}
+#view-physics .px-level>div:first-child{font-size:16px;color:#1d252b;line-height:1.5;gap:12px}
+#view-physics .px-desk{grid-template-columns:200px minmax(0,1fr) 300px}
+#view-physics .px-simulation label{font-size:16px;line-height:1.5}
+#view-physics .px-simulation output{font-size:34px}
+#view-physics :is(button,.px-simulation button,.px-faults button,.px-toolbar button){font-size:16px!important;min-height:46px;padding:10px 14px!important;line-height:1.4}
+#view-physics #px-control-context{font:15px/1.5 Arial,sans-serif}
+#view-physics .px-legend{font-size:14px;line-height:1.5;flex-wrap:wrap;color:#1d252b}
+#view-physics .px-charts{grid-template-columns:1fr}
+#view-physics .px-chart svg{height:auto;width:100%;min-height:160px}
+#view-physics .px-chart svg text{font:20px Arial,sans-serif;fill:#c8d8e8}
+#view-physics .px-chart>div{font-size:16px;line-height:1.5;gap:10px}
+#view-physics .px-chart p{font-size:16px;line-height:1.5}
+#view-physics #px-projection-note{font-size:15px;line-height:1.5;color:#1d252b}
+#view-physics .px-decision h3{font-size:27px;line-height:1.25}
+#view-physics .px-decision p{font-size:16px;line-height:1.6;color:#1d252b}
+#view-physics .px-action-numbers{gap:12px}
+#view-physics .px-action-numbers span{font-size:15px;line-height:1.4;color:#1d252b}
+#view-physics .px-action-numbers strong{font-size:28px}
+#view-physics .px-status{font-size:14px;letter-spacing:0}
+#view-physics .px-status::before{width:10px;height:10px}
+#view-physics .px-tools summary{font-size:18px;line-height:1.5}
+#view-physics :is(.px-tools p,.px-tools table,.px-fields label,#px-events,#px-error){font-size:16px;line-height:1.6;color:#1d252b}
+#view-physics .px-fields :is(input,select){font-size:16px!important;min-height:44px}
+#view-physics .px-faults>span{font-size:16px;color:#1d252b}
+#view-physics .px-fem-scale{font-size:14px;color:#1d252b}
+#view-physics :is(.px-meter-label,.px-panel-heading h2,.px-nameplate,.px-annunciator span){font-weight:600}
+#view-physics .px-number>span{flex-shrink:0;white-space:nowrap}
+body.operator-workspace:has(#view-physics.active) :is(.workspace-breadcrumb,.session-bar label,.session-bar a,.top-right button,.top-right #connection,.nav-home){font-size:15px}
+body.operator-workspace:has(#view-physics.active) .tabs button span{font-size:16px}
+body.operator-workspace:has(#view-physics.active) .tabs button{min-height:52px}
+body.operator-workspace:has(#view-physics.active) .session-bar :is(strong,select){font-size:17px}
+body.operator-workspace:has(#view-physics.active) .session-bar label{gap:8px}
+body.operator-workspace:has(#view-physics.active) .session-bar select{min-height:44px;max-width:100%}
+body.operator-workspace:has(#view-physics.active) footer{font-size:13px}
+#view-physics .px-alarm{--alarm:#626a64;display:flex;align-items:center;gap:20px;padding:22px;margin-bottom:20px;border:2px solid var(--alarm);border-left-width:8px;background:#eaf2ec;color:#1d252b;box-shadow:inset 0 0 0 2px #bfc4be}
+#view-physics .px-alarm[data-state=warning]{--alarm:#a76400;background:#fff0c7}
+#view-physics .px-alarm[data-state=critical]{--alarm:#981818;background:#fbe2dc}
+#view-physics .px-alarm[data-state=recovered]{--alarm:#366649;background:#dcebdd}
+#view-physics .px-alarm[data-state=normal]{--alarm:#366649}
+#view-physics .px-alarm-beacon{flex:0 0 46px;height:46px;border:4px solid #1d252b;border-radius:50%;background:#80887e;padding:5px;box-shadow:0 2px 0 #06050a}
+#view-physics .px-alarm-beacon i{display:block;width:100%;height:100%;border-radius:50%;background:var(--alarm);box-shadow:inset 0 2px 3px #ffffff80}
+#view-physics .px-alarm[data-state=critical]:not([data-acknowledged=true]) .px-alarm-beacon i{animation:px-alarm-pulse 1.8s ease-in-out infinite}
+#view-physics .px-alarm[data-state=critical]:not([data-acknowledged=true]){animation:px-alarm-border 1.8s ease-in-out infinite}
+#view-physics .px-alarm-copy{flex:1;min-width:0}
+#view-physics .px-alarm h2{margin:0;font-size:clamp(22px,2vw,30px);line-height:1.2;color:var(--alarm);text-transform:none;letter-spacing:0}
+#view-physics .px-alarm p{margin:8px 0 0;font-size:17px;line-height:1.45;color:#1d252b}
+#view-physics #px-alarm-signals{display:flex;gap:6px 20px;flex-wrap:wrap;margin-top:10px;font-size:15px;line-height:1.5;font-weight:600}
+#view-physics #px-alarm-signals[hidden]{display:none}
+#view-physics .px-alarm-controls{display:flex;gap:10px;flex-wrap:wrap;max-width:310px}
+#view-physics .px-alarm-controls button{min-height:46px;font-size:16px}
+#view-physics [data-alarm=warning]{outline:3px solid #f8a808;outline-offset:-3px}
+#view-physics [data-alarm=critical]{outline:3px solid #e85848;outline-offset:-3px}
+#view-physics .px-instrument[data-alarm=warning] .px-number{background:#49330e}
+#view-physics .px-instrument[data-alarm=critical] .px-number{background:#4c1313}
+@keyframes px-alarm-pulse{50%{background:#e85848;box-shadow:0 0 14px #e85848}}
+@keyframes px-alarm-border{50%{border-color:#e85848}}
+@media(prefers-reduced-motion:reduce){#view-physics .px-alarm,#view-physics .px-alarm-beacon i{animation:none!important}}
+@media(max-width:900px){#view-physics .px-alarm{flex-wrap:wrap;gap:14px;padding:16px}#view-physics .px-alarm-controls{margin-left:60px;max-width:none}}
+@media(max-width:500px){#view-physics .px-alarm-beacon{flex-basis:34px;height:34px;padding:3px}#view-physics .px-alarm-controls{margin-left:0;width:100%}#view-physics .px-alarm-controls button{flex:1}#view-physics .px-alarm p{font-size:16px}}
+@media(max-width:1500px){
+ #view-physics .px-desk{grid-template-columns:minmax(180px,.7fr) minmax(0,1.3fr)}
+ #view-physics .px-forecast{grid-column:1/-1;grid-row:1}
+ #view-physics .px-control-bay{grid-column:1;grid-row:2}
+ #view-physics .px-decision{grid-column:2;grid-row:2}
+ #view-physics .px-charts{grid-template-columns:repeat(2,minmax(0,1fr))}
+}
+@media(max-width:1250px){
+ #view-physics .px-annunciators{grid-template-columns:repeat(3,minmax(0,1fr))}
+ #view-physics .px-fluid{display:block}
+ #view-physics .px-fluid>.px-panel-heading{flex-direction:row}
+ #view-physics .px-fluid select{width:auto;max-width:100%}
+ #view-physics .px-instruments{grid-template-columns:repeat(2,minmax(0,1fr))}
+ #view-physics .px-charts{grid-template-columns:1fr}
+}
+@media(max-width:1000px){
+ #view-physics .px-annunciator span{font-size:13px}
+ #view-physics .px-annunciator strong{font-size:16px}
+ #view-physics .px-toolbar{flex-wrap:wrap}
+}
+@media(max-width:700px){
+ #view-physics .px-heading h1{font-size:30px}
+ #view-physics .px-toolbar{flex-direction:row;width:100%}
+ #view-physics .px-toolbar button{flex:1}
+ #view-physics .px-source-line>span:last-child{white-space:normal}
+ #view-physics .px-annunciator span{font-size:12px}
+ #view-physics .px-annunciator strong{font-size:14px}
+ #view-physics .px-alarm-header{font-size:12px}
+ #view-physics .px-meter-label{font-size:14px;min-height:49px}
+ #view-physics .px-number svg{height:36px}
+ #view-physics .px-instrument small{font-size:12px}
+ #view-physics .px-mimic text{font-size:21px}
+ #view-physics .px-mimic svg{min-height:130px}
+ #view-physics .px-desk{grid-template-columns:1fr}
+ #view-physics :is(.px-control-bay,.px-forecast,.px-decision){grid-column:1;grid-row:auto}
+ #view-physics .px-simulation{grid-template-columns:1fr}
+ #view-physics .px-charts{grid-template-columns:1fr}
+ #view-physics .px-chart svg{min-height:125px}
+ #view-physics .px-chart svg text{font-size:30px}
+ #view-physics .px-fields{grid-template-columns:1fr}
+ #view-physics #px-oil-meters .px-number svg{height:36px}
+ #view-physics .px-fluid>.px-panel-heading{flex-direction:column;align-items:stretch}
+ #view-physics .px-fluid select{width:100%;max-width:none}
+ #view-physics .px-scene-caption>span{max-width:100%}
+ body.operator-workspace:has(#view-physics.active) .top-right #connection{font-size:12px}
+ body.operator-workspace:has(#view-physics.active) .mobile-section-nav select{font-size:16px}
+ body.operator-workspace:has(#view-physics.active) .session-bar label{min-width:0}
+}

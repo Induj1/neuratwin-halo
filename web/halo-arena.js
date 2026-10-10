@@ -24,7 +24,7 @@ function lineChart(id,series,{limit=null,yLabel='°C',xMax=null}={}){
  for(let i=0;i<5;i++){const v=xmax*i/4;out+=`<text x="${x(v)}" y="${B+25}" text-anchor="middle" fill="#60716b" font-size="13">${fmt(v,0)}m</text>`;}
  if(limit!=null)out+=`<path d="M${L} ${y(limit)}H${R}" stroke="#a74628" stroke-dasharray="6 6"/><text x="${R}" y="${y(limit)-7}" text-anchor="end" font-size="12" fill="#9b4025">${limit}${yLabel} limit</text>`;
  for(const s of series){let d='',open=false;for(const p of s.rows){if(p.y==null){open=false;continue;}d+=`${open?'L':'M'}${x(p.x).toFixed(1)} ${y(p.y).toFixed(1)} `;open=true;}out+=`<path d="${d}" fill="none" stroke="${s.color}" stroke-width="3" stroke-linejoin="round"/>`;if(s.rows.length===1&&s.rows[0].y!=null)out+=`<circle cx="${x(s.rows[0].x)}" cy="${y(s.rows[0].y)}" r="4" fill="${s.color}"/>`;}
- svg.innerHTML=out;
+ HaloCharts.render(svg,out);
 }
 function roomButtons(){const r=state.room,frozen=r?.phase!=='investigating';for(const id of ['ar-advance-one','ar-advance','ar-commit'])$(id).disabled=!r||frozen||state.busy||((id==='ar-advance'||id==='ar-advance-one')&&r.cursor===120)||(id==='ar-commit'&&r.cursor===0);$('ar-reveal').disabled=!r||r.phase!=='frozen'||state.busy;$('ar-refresh').disabled=!r||state.busy;$('ar-export').disabled=!r||state.busy;$('ar-origin').disabled=!r||r.observations.at(-1).oil_c==null||state.busy;document.querySelectorAll('[data-ar-check]').forEach(b=>b.disabled=!r||frozen||state.busy);}
 function renderRoom(r){state.room=r;sessionStorage.setItem('halo-arena-room',r.id);$('ar-case-label').textContent=`Case ${r.id.slice(0,8)} · minute ${r.cursor}/120 · ${r.studies.length} attached studies`;$('ar-phase').textContent=r.phase;

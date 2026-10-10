@@ -18,6 +18,7 @@ EVALUATION_SEEDS=range(91001,91025)
 EXPECTED={'overload':'overload','cooling':'thermal_deviation','sensor_bias':'channel_disagreement','dropout':'missing_data','voltage':'voltage_deviation'}
 COMPARATORS=('full_pipeline','without_cusum','threshold_only')
 SOURCE_FILES=('neuratwin/twin_core.py','neuratwin/twin_studies.py','neuratwin/twin_observer.py',
+              'neuratwin/electrical_model.py',
               'neuratwin/thermal_reference.py','neuratwin/thermal_adaptation.py','neuratwin/validation_plant.py','scripts/benchmark_pipeline.py',
               'scripts/evaluation_metrics.py','scripts/prospective_evaluation.py')
 

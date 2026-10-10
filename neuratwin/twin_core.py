@@ -11,6 +11,7 @@ import math
 from typing import Literal
 from pydantic import Field, model_validator
 from .halo_contracts import Contract
+from .electrical_model import terminal_fault, pressure_signal, PRESSURE_MODEL
 
 
 class Telemetry(Contract):
@@ -36,6 +37,9 @@ class Telemetry(Contract):
     oil_level_percent: float | None = Field(None, ge=0, le=100)
     oil_condition: float | None = Field(None, ge=0, le=100)
     gas_indicator: bool | None = None
+    pressure_kpa: float | None = Field(None, ge=0)
+    pressure_rate_kpa_s: float | None = None
+    pressure_quality: Literal['simulated','unavailable'] | None = None
     temperature_kind: Literal['surface', 'modelled_hotspot']
     quality: Literal['qualified', 'unverified', 'stale', 'disconnected'] = 'qualified'
     event: str | None = None
@@ -46,7 +50,7 @@ class Telemetry(Contract):
             raise ValueError('Acquisition time needs a timezone.')
         if self.source == 'prototype' and (self.temperature_kind != 'surface' or any(
                 getattr(self, k) is not None for k in ('oil_temperature', 'hotspot_temperature',
-                                                       'oil_level_percent', 'oil_condition', 'gas_indicator'))):
+                                                       'oil_level_percent', 'oil_condition', 'gas_indicator', 'pressure_kpa', 'pressure_rate_kpa_s', 'pressure_quality'))):
             raise ValueError('Prototype surface telemetry cannot assert oil or winding condition.')
         if self.source == 'prototype' and any(getattr(self, k) is not None for k in PHASE_FIELDS):
             raise ValueError('The single-phase prototype does not measure industrial phase or neutral channels.')
@@ -57,6 +61,18 @@ class Settings(Contract):
     rated_kva: float = Field(630, ge=1, le=100000)
     primary_v: float = Field(11000, ge=100, le=400000)
     secondary_v: float = Field(433, ge=50, le=33000)
+    impedance_percent: float = Field(5, gt=0, le=30)
+    source_impedance_percent: float = Field(0, ge=0, le=100)
+    cable_impedance_percent: float = Field(0, ge=0, le=100)
+    transformer_xr: float = Field(5, ge=0, le=100)
+    source_xr: float = Field(10, ge=0, le=100)
+    cable_xr: float = Field(1, ge=0, le=100)
+    frequency_hz: float = Field(50, ge=45, le=65)
+    pressure_warning_kpa: float = Field(30, gt=0, le=200)
+    pressure_critical_kpa: float = Field(50, gt=0, le=250)
+    pressure_trip_kpa: float = Field(70, gt=0, le=300)
+    pressure_rate_warning: float = Field(3, gt=0, le=100)
+    pressure_hysteresis_kpa: float = Field(5, ge=0, le=20)
     core_loss_w: float = Field(1000, ge=0, le=50000)
     copper_loss_w: float = Field(6500, gt=0, le=1000000)
     rated_oil_rise_c: float = Field(55, ge=10, le=100)
@@ -82,6 +98,8 @@ class Settings(Contract):
 
     @model_validator(mode='after')
     def ordered(self):
+        if not self.pressure_hysteresis_kpa < self.pressure_warning_kpa < self.pressure_critical_kpa < self.pressure_trip_kpa:
+            raise ValueError('Pressure hysteresis and warning/critical/trip limits must increase.')
         if not self.load_warning < self.load_critical < self.load_trip:
             raise ValueError('Load limits must increase from warning to critical to trip.')
         if not self.recovery_temperature < self.temperature_warning < self.temperature_critical < self.temperature_trip:
@@ -113,9 +131,10 @@ SCENARIOS = {
     'storm': {'name': 'Thunderstorm', 'inputs': {}, 'fault': 'storm'},
     'degradation': {'name': 'Historical degradation', 'inputs': {'load_percent': 110, 'oil_condition': 55}, 'history_fixture': True},
     'recovery': {'name': 'Fault → investigation → recovery', 'inputs': {}, 'fault': 'short_circuit'},
+    'pressure': {'name': 'Tank pressure rise', 'inputs': {}, 'fault': 'pressure'},
 }
 FAULTS = {'surge', 'storm', 'short_circuit', 'overcurrent', 'overvoltage', 'undervoltage',
-          'thermal', 'cooling', 'low_oil', 'gas', 'combined', 'sensor'}
+          'thermal', 'cooling', 'low_oil', 'gas', 'combined', 'sensor', 'pressure', 'pressure_sensor'}
 MAINTENANCE = {'inspection', 'fault_investigation', 'cooling_service', 'oil_service',
                'electrical_inspection', 'load_review', 'protection_inspection', 'condition_assessment'}
 PHASE_FIELDS = ('phase_current_a', 'phase_current_b', 'phase_current_c', 'neutral_current',
@@ -171,7 +190,8 @@ def electrical(s):
     # Deterministic disturbances; storm alone is not an unconditional trip.
     if event == 'storm': pu += .03 * level * math.sin(s['elapsed_s'] * .35)
     if event == 'storm' and int(s['elapsed_s']) % 60 < 5: pu += .06 * level
-    if event == 'short_circuit': pu *= .35; load = 4. + level
+    fault_model = terminal_fault(p, pu) if event == 'short_circuit' else None
+    if fault_model: load = fault_model['fault_multiple']
     if event == 'overcurrent': load += .3 * level
     if s['breaker'] == 'OPEN':
         return dict(primary_voltage=0., secondary_voltage=0., primary_current=0., secondary_current=0.,
@@ -179,9 +199,10 @@ def electrical(s):
                     max_phase_load_pu=0., thermal_load_pu=0., **{k:0. for k in PHASE_FIELDS})
     vp = p['primary_v'] * pu
     vs = max(0, p['secondary_v'] * pu * (1 - .035 * load))
+    if fault_model: vs = 0.  # Selected bolted fault at the modelled secondary/cable terminal.
     # Constant-current demand: load is mean per-unit rated secondary current.
     si = load * p['rated_kva'] * 1000 / (math.sqrt(3) * p['secondary_v'])
-    u = i.get('phase_imbalance_percent', 0.) / 100
+    u = 0. if fault_model else i.get('phase_imbalance_percent', 0.) / 100
     phase_currents = (si*(1+u), si, si*(1-u))
     # Mean square of [1+u, 1, 1-u]; default u=0 preserves the balanced plant exactly.
     thermal_load = load * math.sqrt(1 + 2*u*u/3)
@@ -192,6 +213,7 @@ def electrical(s):
     apparent = math.sqrt(3) * vs * si
     # Unity power factor is an explicit industrial model assumption, never a prototype inference.
     pi = (apparent + losses) / (math.sqrt(3) * max(1, vp))
+    if fault_model: pi = si * p['secondary_v'] / p['primary_v']
     return dict(primary_voltage=vp, secondary_voltage=vs, primary_current=pi, secondary_current=si,
                 loading_percent=load*100, losses_w=losses, voltage_pu=pu, event=event, load_pu=load,
                 phase_current_a=phase_currents[0], phase_current_b=phase_currents[1], phase_current_c=phase_currents[2],
@@ -215,7 +237,8 @@ def telemetry(s):
                      transformer_temperature=s['oil_c']+s['winding_rise_c']+(25 if e['event']=='sensor' else 0), temperature_kind='modelled_hotspot',
                      oil_temperature=s['oil_c'], hotspot_temperature=s['oil_c']+s['winding_rise_c'],
                      ambient_temperature=s['inputs']['ambient_c'], oil_level_percent=s['inputs']['oil_level_percent'],
-                     oil_condition=s['inputs']['oil_condition'], gas_indicator=e['event']=='gas', event=e['event']).model_dump(mode='json')
+                     oil_condition=s['inputs']['oil_condition'], gas_indicator=e['event']=='gas', event=e['event'],
+                     **pressure_signal(s)).model_dump(mode='json')
 
 
 def analyse(t, limits, previous=None, history_damage=0., oil_condition=None):
@@ -276,6 +299,21 @@ def analyse(t, limits, previous=None, history_damage=0., oil_condition=None):
             current=t['secondary_current']; old=previous.get('secondary_current')
             if same_load and current is not None and old and abs(current-old)/old>.25:
                 add('current_residual','WARNING','current_step_pu',abs(current-old)/old,.25,'Current changed without a corresponding loading change.',True)
+    if t.get('source') == 'industrial' and 'pressure_quality' in t:
+        pressure, rate = t.get('pressure_kpa'), t.get('pressure_rate_kpa_s')
+        if pressure is None:
+            add('pressure_sensor','WARNING','pressure_kpa',None,None,'Pressure channel unavailable; verify the scenario sensor. Electrical alarms remain active.')
+        else:
+            warning=limits.get('pressure_warning_kpa',30.)
+            previous_pressure=(previous or {}).get('pressure_kpa')
+            pressure_latched=any(a.get('code')=='tank_pressure' for a in ((previous or {}).get('analysis') or {}).get('alerts',[]))
+            if pressure_latched or (previous_pressure is not None and previous_pressure>=warning):
+                warning-=limits.get('pressure_hysteresis_kpa',5.)
+            if pressure>=warning:
+                level='TRIP' if pressure>=limits.get('pressure_trip_kpa',70.) else 'CRITICAL' if pressure>=limits.get('pressure_critical_kpa',50.) else 'WARNING'
+                add('tank_pressure',level,'pressure_kpa',pressure,warning,'Abnormal tank-pressure scenario: review protection and investigate before return to service. Not a rupture prediction.')
+            if rate is not None and rate>=limits.get('pressure_rate_warning',3.):
+                add('pressure_rise','WARNING','pressure_rate_kpa_s',rate,limits.get('pressure_rate_warning',3.),'Rapid pressure rise in the industrial scenario; escalate protection/inspection review.')
     # Imbalance contribution is a declared screening heuristic, not a standard or probability.
     stress={'electrical':min(100,max(deviation*200,imbalance*2)), 'loading':min(100,max(0,(protective_load or 0)-80)),
             'thermal':min(100,max(0,(temp or 0)-(limits.get('temperature_warning') or 110)+20)*2),
@@ -288,6 +326,8 @@ def analyse(t, limits, previous=None, history_damage=0., oil_condition=None):
     severity=max(({'WARNING':1,'CRITICAL':2,'TRIP':3}[a['severity']] for a in alerts),default=0)
     maintenance=[]
     codes={a['code'] for a in alerts}
+    if codes & {'tank_pressure','pressure_rise','pressure_sensor'}:
+        maintenance.append('Inspect pressure instrumentation and the declared tank protection/relief arrangement; record investigation and verify recovery before closure.')
     if codes & {'sensor_residual','current_residual'}:
         maintenance.append('Verify the discrepant channel against an independent reference before relying on its forecast; inspect sensor wiring and calibration.')
     if codes & {'loading_percent','max_phase_loading_percent'}: maintenance.append('Review loading and compare a load-reduction study against the current thermal trajectory.')
@@ -333,7 +373,7 @@ def evaluate(s, dt):
     if s['breaker']=='OPEN':
         a['maintenance'].insert(0,'Investigate the latched trip and satisfy recovery checks before manual reconnection.'
                                   if not s['investigated'] else 'Review recovery holds before manually reconnecting the simulated transformer.')
-    s['analysis']=a;s['telemetry']=t;s['previous_telemetry']=t
+    s['analysis']=a;s['telemetry']=t;s['previous_telemetry']={**t,'analysis':a}
     add_forward_risk(s)
     if any(x['code']=='forecast_thermal' for x in a['alerts']):
         if 'forecast_thermal' not in codes and 'forecast_thermal' not in s.get('previous_advisories',[]):
@@ -459,7 +499,7 @@ def advance(s, seconds):
 
 def inject(s, kind, severity=2, duration_s=120):
     if kind not in FAULTS:raise ValueError('Unknown fault.')
-    s['fault']={'kind':kind,'severity':severity,'until_s':s['elapsed_s']+duration_s}
+    s['fault']={'kind':kind,'severity':severity,'started_s':s['elapsed_s'],'until_s':s['elapsed_s']+duration_s}
     s['fault_count']+=1
     if kind=='low_oil':s['inputs']['oil_level_percent']=30
     s['historical_damage']=min(100,s['historical_damage']+.5*severity)
@@ -511,6 +551,7 @@ def summary(s):
             'health_band':band,'recovery_holds':recovery_holds(s),
             'profile':deepcopy(s.get('profile',{'name':'Illustrative distribution transformer','basis':'illustrative','reference':'No manufacturer test sheet supplied','reviewer':'Unreviewed'})),
             'prediction':forecast(s),'phase_model':deepcopy(PHASE_MODEL),
+            'electrical_model':terminal_fault(p),'pressure_model':deepcopy(PRESSURE_MODEL),
             'condition':{'equivalent_age_hours':s['equivalent_age_hours'],'overload_hours':s['overload_hours'],
                          'insulation_consumed_percent':100*s['equivalent_age_hours']/p['reference_life_hours'],
                          'ageing_acceleration':acceleration,'conditional_life_years':remaining/max(1e-9,acceleration)/8760,

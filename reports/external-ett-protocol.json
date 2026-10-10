@@ -1,10 +1,10 @@
 {
   "version": "ett-causal-forecast-1",
-  "created_at": "2026-10-09T03:45:37.748472+00:00",
+  "created_at": "2026-10-10T09:57:32.673838+00:00",
   "source_sha256": {
     "neuratwin/external_forecast.py": "dc4bb412e8b252398bb502ea31fe87720d8cd010abcd0c29fd24914ad8d8a09d",
     "scripts/evaluate_external_forecast.py": "51503cc288e885e484f5d85a2280d63e2478845c05f60c9694c8d206fa320cd6",
-    "requirements.txt": "89aea10e9223927fe40548334ff5730d813440a7a50921e52701a7c360c2f2e7"
+    "requirements.txt": "c0ed7276e35ee31caba3e56c3bc1f29b86a1c843de1a45f5706eccc20103473b"
   },
   "dataset_sha256": "f18de3ad269cef59bb07b5438d79bb3042d3be49bdeecf01c1cd6d29695ee066",
   "provenance": {
@@ -151,9 +151,9 @@
   "no_fault_claim": true,
   "omitted_tail": "Rows at index14400 and later are excluded, not alternative validation or optimization data.",
   "dependencies": {
-    "python": "3.14.3",
+    "python": "3.12.4",
     "numpy": "2.4.4",
     "scikit_learn": "1.8.0"
   },
-  "sha256": "18d863834ad5cc9f08adfb6ee373b629ff7fec3b5945a26ca771d334761b3cc4"
+  "sha256": "4d43f4faf29bc99adb8d21210aec8f3a2c4aaf86981fd1e2c212061bd8180f2b"
 }
