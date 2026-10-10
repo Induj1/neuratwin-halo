@@ -1,5 +1,5 @@
 #op-workspace > .case-actions{margin-bottom:22px}
-body[data-twin-source=industrial] .source-bar{display:none!important}
+body:not([data-twin-source=reference]) .source-bar{display:none!important}
 body[data-twin-source=industrial] :is(#view-actions,#view-evidence,#view-maintenance,#view-passport,#view-demo,#view-integrations,#view-twin,#view-arena)>:not(.industrial-panel){display:none!important}
 body:not([data-twin-source=industrial]) .industrial-panel{display:none!important}
 body:not([data-twin-source=prototype]) #prototype-mobile-inspections{display:none!important}

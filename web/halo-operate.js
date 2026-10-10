@@ -130,13 +130,21 @@
     if(current)paintGuide();
     if(mode==='prototype')loadsPanel?.setBusy(busy);
   }
-  async function act(action,extra={}){
-    if(replaySource)throw Error('Exit replay before changing the simulation.');
-    if(mode!=='industrial'||!run)throw Error('Create or select an industrial run first.');
-    const latest=window.HaloSession?.run();if(latest?.id===run.id&&latest.revision>run.revision)run=latest;
-    if(action==='inputs')extra={...extra,inputs:{...run.inputs,...extra.inputs}};
-    const r=await workspace.api(`/twin/runs/${encodeURIComponent(run.id)}/actions`,{action,revision:run.revision,request_id:crypto.randomUUID(),...extra});
-    run=r;render(r);return r;
+  let actionQueue=Promise.resolve();
+  function act(action,extra={}){
+    const target=mode==='industrial'&&!replaySource?run?.id:null;
+    const pending=actionQueue.then(async()=>{
+      if(replaySource)throw Error('Exit replay before changing the simulation.');
+      if(!target||mode!=='industrial'||run?.id!==target)throw Error('The selected run changed. Review the current source before retrying.');
+      const latest=window.HaloSession?.run();if(latest?.id===run.id&&latest.revision>run.revision)run=latest;
+      if(action==='inputs')extra={...extra,inputs:{...run.inputs,...extra.inputs}};
+      const r=await workspace.api(`/twin/runs/${encodeURIComponent(target)}/actions`,{action,revision:run.revision,request_id:crypto.randomUUID(),...extra});
+      if(mode==='industrial'&&run?.id===target&&!replaySource){run=r;render(r);}
+      return r;
+    });
+    // Multiple panels share this run. Serialize commands without rebasing a failed
+    // server revision check or carrying queued actions into another asset.
+    actionQueue=pending.catch(()=>{});return pending;
   }
   async function guarded(fn){
     if(busy)return;busy=true;buttons();error('');

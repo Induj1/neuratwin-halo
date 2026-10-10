@@ -22,11 +22,11 @@
   };
   if(!available){return {...s,status:'unavailable',alerts:[],title:input.replay?'Replay · alarms paused':physical?(s.liveSeen?'Connection lost':'Waiting for ESP32'):'Waiting for simulation',detail:input.replay?'Return to current readings to resume alarms.':'Current conditions cannot be confirmed.',thermal:'unavailable'};}
   s.liveSeen=true;
-  let sensorMissing=false;
+  let sensorMissing=false,limitsMissing=false;
   if(physical){
    const value=d?.channels?.surface_temperature?.value,limits=input.snapshot?.settings||{};
-   sensorMissing=![value,limits.temperature_warning,limits.temperature_critical].every(Number.isFinite);
-   if(!sensorMissing)add('surface','Surface temperature',value,limits.temperature_warning,limits.temperature_critical,'°C','Measured');
+   sensorMissing=!Number.isFinite(value);limitsMissing=![limits.temperature_warning,limits.temperature_critical].every(Number.isFinite);
+   if(!sensorMissing&&!limitsMissing)add('surface','Surface temperature',value,limits.temperature_warning,limits.temperature_critical,'°C','Measured');
   }
   const modelReady=!!r?.available&&!!r.live;
   if(modelReady){
@@ -46,15 +46,15 @@
    }else{s.levels.trip='normal';delete s.ack.trip;}
   }
   alerts.sort((a,b)=>rank[b.level]-rank[a.level]);
-  const missing=sensorMissing||!modelReady||incomplete;
+  const missing=sensorMissing||limitsMissing||!modelReady||incomplete;
   if(alerts.length){s.hadAlarm=true;s.recovered=false;}
   else if(s.hadAlarm&&!missing){s.recovered=true;s.hadAlarm=false;}
   const top=alerts[0],status=top?.level||(missing?'unavailable':s.recovered?'recovered':'normal');
-  return {...s,alerts,status,thermal:sensorMissing?'unavailable':s.levels[physical?'surface':'oil']||'unavailable',
-   title:top?`${top.level==='critical'?'Critical':'Warning'} · ${top.label}`:sensorMissing?'Surface temperature unavailable':!modelReady||incomplete?'Model unavailable':s.recovered?'Conditions recovered':'Within configured limits',
+  return {...s,alerts,status,thermal:sensorMissing||limitsMissing?'unavailable':s.levels[physical?'surface':'oil']||'unavailable',
+   title:top?`${top.level==='critical'?'Critical':'Warning'} · ${top.label}`:sensorMissing?'Surface temperature unavailable':limitsMissing?'Surface limits not configured':!modelReady||incomplete?'Model unavailable':s.recovered?'Conditions recovered':'Within configured limits',
    detail:top?(top.id.startsWith('scenario-')?(!physical&&!input.snapshot?.running?'Advance source 1 min to progress the fault.':'Fault progressing. Critical limits trigger the siren.'):top.id==='trip'?'Review the cause before resetting the model trip.':top.id==='surface'?'Reduce load and inspect cooling.':top.id==='level'||top.id==='gas'?'Inspect the simulated fault; load reduction does not repair it.':'Review the recommended action below.'):
-    sensorMissing?'Check the surface probe and configured limits.':!modelReady||incomplete?'Waiting for current model output.':s.recovered?'Readings are below the alarm recovery thresholds.':'Monitoring temperature and virtual oil protection.',
-   missing:missing&&!!top?(sensorMissing?'Surface temperature unavailable.':'Model output unavailable.'):'',
+    sensorMissing?'Check the surface probe.':limitsMissing?'Record the reviewed surface-temperature limit in Physical bench commissioning.':!modelReady||incomplete?'Waiting for current model output.':s.recovered?'Readings are below the alarm recovery thresholds.':'Monitoring temperature and virtual oil protection.',
+   missing:missing&&!!top?(sensorMissing?'Surface temperature unavailable.':limitsMissing?'Surface limits not configured.':'Model output unavailable.'):'',
   };
  }
  function acknowledge(state){const ack={...state.ack};for(const a of state.alerts||[])ack[a.id]=true;return {...state,ack,alerts:(state.alerts||[]).map(a=>({...a,acknowledged:true}))};}

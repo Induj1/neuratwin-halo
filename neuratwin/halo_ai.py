@@ -134,6 +134,8 @@ def answer(question,snap,decision):
     q=question.lower(); current=snap.get('current') or {}; tool=None
     if any(x in q for x in ('switch','turn on','activate','energize','relay on')):
         text='I cannot energize equipment through conversation. Use the commissioned load controls; K4 remains locked.'
+    elif snap.get('connection') in ('stale','disconnected'):
+        text='Live readings are unavailable. Cached readings do not describe the current condition. Check the ESP32 connection and wait for a fresh acquisition.'
     elif any(x in q for x in ('future','forecast','reduce','compare')):
         text='Action Lab compares the same initial state under two stated operating assumptions. It sends no physical commands.'
         tool={'name':'open_view','value':'actions'}

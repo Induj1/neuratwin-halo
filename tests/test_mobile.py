@@ -97,6 +97,32 @@ def test_assistant_reads_selected_evidence_without_mutation(client):
     assert physical['evidence']['asset_id']=='BENCH-001'
 
 
+def test_assistant_respects_explicit_ai_disable(client,monkeypatch):
+    monkeypatch.setenv('OPENAI_API_KEY','test-key-not-a-credential')
+    monkeypatch.setenv('HALO_AI_ENABLED','0')
+    def unexpected_provider(*args,**kwargs):
+        pytest.fail('Explicitly disabled AI must not call an external provider')
+    monkeypatch.setattr(mobile_api.httpx,'post',unexpected_provider)
+    s=run(client)
+    response=client.post('/api/halo/mobile/assistant',headers=OP,json={'source':'industrial','run_id':s['id'],'question':'What is the temperature?'})
+    assert response.status_code==200
+    assert response.json()['provider']=='evidence'
+    assert client.get('/api/halo/mobile/capabilities').json()['assistant']=='evidence'
+
+
+def test_assistant_never_describes_cached_prototype_temperature_as_live(client,monkeypatch):
+    snap=mobile_api.prototype_view()
+    snap['connection']='stale'
+    snap['telemetry']['transformer_temperature']=71.3
+    monkeypatch.setattr(mobile_api,'selected',lambda payload:snap)
+    monkeypatch.setenv('OPENAI_API_KEY','test-key-not-a-credential')
+    monkeypatch.setenv('HALO_AI_ENABLED','1')
+    monkeypatch.setattr(mobile_api.httpx,'post',lambda *a,**k:pytest.fail('Stale readings must not be sent as current AI evidence'))
+    response=client.post('/api/halo/mobile/assistant',headers=OP,json={'source':'prototype','question':'What is the temperature?'}).json()
+    assert 'unavailable' in response['text'] and '71.3' not in response['text']
+    assert response['provider']=='evidence'
+
+
 def test_clock_has_one_tick_for_two_clients_and_pause(client):
     s=run(client);state=store.get('twin_run',s['id']);state['running']=True;store.put('twin_run',s['id'],state)
     mobile_runtime.clock_tick(1000);first=store.get('twin_run',s['id'])

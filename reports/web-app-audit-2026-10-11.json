@@ -1,0 +1,252 @@
+{
+  "audited_at": "2026-10-10T21:35:06.565053+00:00",
+  "base_commit": "d8ce98f",
+  "changes": "Audit fixes and regression coverage included with this report.",
+  "backend_tests": {
+    "passed": 488,
+    "failed": 0,
+    "command": "python -m pytest -q",
+    "warning": "Starlette uses a deprecated AnyIO alias; no test failures"
+  },
+  "frontend_tests": {
+    "passed": 92,
+    "failed": 0,
+    "command": "node --test tests/*.mjs"
+  },
+  "navigation": {
+    "source_view_combinations": 22,
+    "sources": [
+      "prototype",
+      "industrial"
+    ],
+    "sections": [
+      "Control centre",
+      "Action Lab",
+      "Maintenance",
+      "Evidence",
+      "Bench lab",
+      "Rehearsal",
+      "Inspector",
+      "Passport",
+      "Physical bench commissioning",
+      "Assistant",
+      "Grid Rescue"
+    ],
+    "desktop_width": 1440,
+    "mobile_width": 390,
+    "javascript_errors": 0,
+    "horizontal_overflows": 0
+  },
+  "browser_workflows": [
+    {
+      "name": "Physical assistant and messaging preview",
+      "pass": true
+    },
+    {
+      "name": "Bench experiment freeze, observe, load, marker and export",
+      "pass": true
+    },
+    {
+      "name": "Independent reference remains synthetic",
+      "pass": true
+    },
+    {
+      "name": "Rehearsal readiness and offline kit",
+      "pass": true
+    },
+    {
+      "name": "Rehearsal source identity",
+      "pass": true
+    },
+    {
+      "name": "Grid Rescue judge challenge freeze and reveal",
+      "pass": true
+    },
+    {
+      "name": "Grid Rescue futures, capacity and network studies",
+      "pass": true
+    },
+    {
+      "name": "Industrial operating inputs and time advancement",
+      "pass": true
+    },
+    {
+      "name": "Action Lab plan and conditional intervention",
+      "pass": true
+    },
+    {
+      "name": "Industrial provenance saved",
+      "pass": true
+    },
+    {
+      "name": "Synthetic thermal reference import and fit",
+      "pass": true
+    },
+    {
+      "name": "Blind electrical and thermal assessment/reveal/export",
+      "pass": true
+    },
+    {
+      "name": "Maintenance job, findings, action, verification and PDF",
+      "pass": true
+    },
+    {
+      "name": "Physics assumptions, FEM numerical checks and export",
+      "pass": true
+    },
+    {
+      "name": "Industrial assistant uses selected run and stays visible",
+      "pass": true
+    },
+    {
+      "name": "Whole asset PDF export",
+      "pass": true
+    },
+    {
+      "name": "Offline app reload retains functioning navigation",
+      "pass": true
+    },
+    {
+      "name": "Model settings, lifetime scenarios and reset",
+      "pass": true
+    },
+    {
+      "name": "Oil leak, gas, pressure, acknowledge and reset alarms",
+      "pass": true
+    },
+    {
+      "name": "Electrical study, cold/hot comparison and sensor placement",
+      "pass": true
+    },
+    {
+      "name": "Latched trip blocks reconnect until investigation and recovery",
+      "pass": true
+    },
+    {
+      "name": "Public dataset forecast and reveal",
+      "pass": true
+    },
+    {
+      "name": "Invalid CSV reports error and retains file for correction",
+      "pass": true
+    },
+    {
+      "name": "Observation CSV import, assessment, reveal and provenance",
+      "pass": true
+    },
+    {
+      "name": "Commissioning saves a reference without enabling control",
+      "pass": true
+    },
+    {
+      "name": "Bench passport QR, unavailable NFC feedback and template link",
+      "pass": true
+    },
+    {
+      "name": "Separate judge channel can schedule a hidden disturbance",
+      "pass": true
+    },
+    {
+      "name": "Legacy blind judge workflow loads correct reference view",
+      "pass": true
+    },
+    {
+      "name": "Landing, app, guides and public entry links resolve",
+      "pass": true
+    },
+    {
+      "name": "Concurrent panel commands serialize on one simulation revision",
+      "pass": true
+    },
+    {
+      "name": "Replay isolates historical state, pauses alarms and blocks mutation",
+      "pass": true
+    },
+    {
+      "name": "Reset during pending lifetime computation schedules current assumptions",
+      "pass": true
+    },
+    {
+      "name": "Background case refresh preserves edited provenance",
+      "pass": true
+    },
+    {
+      "name": "Late assistant reply cannot appear on another asset",
+      "pass": true
+    },
+    {
+      "name": "Physical source hides legacy selector and clears switching status",
+      "pass": true
+    },
+    {
+      "name": "Physical evidence acceptance record saves with explicit synthetic provenance",
+      "pass": true
+    },
+    {
+      "name": "Lab report records explicit supplied evidence rather than inferred gas data",
+      "pass": true
+    },
+    {
+      "name": "M2 maps only to its board load",
+      "pass": true
+    },
+    {
+      "name": "Failed command preserves reported state and displays failure",
+      "pass": true
+    },
+    {
+      "name": "M4 cutoff sends all-off; restore does not energise loads",
+      "pass": true
+    },
+    {
+      "name": "Critical surface alarm repeats Web Audio siren; acknowledgement stops new tones",
+      "pass": true
+    },
+    {
+      "name": "Board loss withholds current readings, sound and load controls",
+      "pass": true
+    }
+  ],
+  "local_pages_and_resources_checked": 78,
+  "rendering": [
+    "Prototype WebGL assembly",
+    "Industrial WebGL assembly",
+    "Thermal FEM cross-section",
+    "Desktop and mobile layouts"
+  ],
+  "measurement_regressions": [
+    "Measured zero remains zero",
+    "Estimated currents remain separate",
+    "Disagreement holds screening",
+    "Invalid and missing readings withheld",
+    "Stale readings withheld",
+    "Measured/estimated provenance retained in PDF"
+  ],
+  "fixes": [
+    "Cache all required control-centre and ESP32 instrument assets for offline reload",
+    "Keep assistant replies visible and provide explicit navigation links",
+    "Restore chat for the selected industrial run",
+    "Discard late assistant replies and reset chat when source or asset changes",
+    "Retain edited forms, selected files, CSV input mode and expanded sections across refresh/errors",
+    "Serialize simulation commands across panels and reject queued actions targeting a changed asset",
+    "Recalculate newest lifetime assumptions after an in-flight request completes",
+    "Record immediate ambient references using server time while retaining strict checks for submitted observation times",
+    "Distinguish unconfigured surface alarm limits from a missing temperature sensor",
+    "Honour explicit AI disable in the shared assistant endpoint",
+    "Do not describe cached prototype readings as live in either assistant",
+    "Hide the legacy source selector outside reference studies and clear stale switching status",
+    "Label physical commissioning scope explicitly"
+  ],
+  "actual_environment": {
+    "app": "http://127.0.0.1:8765/app",
+    "supabase": "reachable; durable ingestion readiness passed",
+    "esp32": "unreachable at audit time; stale state correctly shown",
+    "real_relay_commands_sent_by_audit": 0
+  },
+  "external_features_not_verified_end_to_end": [
+    "Physical relay movement and live ESP32 acquisition while disconnected",
+    "Live OpenAI/Laya provider response quality; evidence fallback verified",
+    "Delivery to Telegram or other external recipients; preview only tested",
+    "Speech-recognition service, speaker audibility and NFC tag hardware; browser audio generation and unsupported NFC feedback tested"
+  ]
+}

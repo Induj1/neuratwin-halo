@@ -26,6 +26,26 @@ def client(tmp_path,monkeypatch):
 OP={'Authorization':'Bearer '+LOCAL_TOKEN}; DEVICE={'Authorization':'Bearer test-device-only'}
 def post(c,path,data):return c.post('/api/halo'+path,json=data,headers=OP)
 def ctx(scenario='normal',**more):return dict(mode='replay',scenario=scenario,cursor=180,**more)
+
+def test_ambient_record_now_uses_server_time_and_rejects_explicit_future(client):
+    payload={'value_c':25,'reference':'Audit thermometer fixture','reviewer':'Tester'}
+    start=datetime.now(timezone.utc)
+    response=post(client,'/ambient',payload)
+    assert response.status_code==200
+    observed=datetime.fromisoformat(response.json()['observed_at'])
+    assert start<=observed<=datetime.now(timezone.utc)
+    response=post(client,'/ambient',{**payload,'observed_at':(start+timedelta(minutes=1)).isoformat()})
+    assert response.status_code==422
+
+def test_assistant_does_not_present_cached_readings_as_current():
+    snap={'source':'measured','connection':'stale','current':{'surface_c':71.3,'current_a':.42}}
+    decision={'id':'audit-assessment','evidence_ids':[]}
+    for question in ('What is the temperature?','What is the current?'):
+        result=ai.answer(question,snap,decision)
+        assert 'Live readings are unavailable' in result['text']
+        assert '71.3' not in result['text'] and '0.420' not in result['text']
+        assert result['tool'] is None
+
 def frame(**changes):
     t=datetime.now(timezone.utc)-timedelta(seconds=1)
     row={'device_id':'HALO-ESP32','boot_id':'boot-test','sequence':1,'uptime_ms':1000,'timestamp':t.isoformat(),

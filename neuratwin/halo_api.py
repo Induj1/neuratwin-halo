@@ -181,16 +181,19 @@ def device_link(payload:DeviceLink,actor=Depends(device)):
 
 class Ambient(Contract):
     value_c:float=Field(ge=-30,le=80)
-    observed_at:datetime
+    observed_at:datetime|None=None
     reference:str=Field(min_length=5,max_length=200)
     reviewer:str=Field(min_length=2,max_length=100)
 
 
 @router.post('/ambient')
 def ambient_reference(payload:Ambient,actor=Depends(operator)):
-    if payload.observed_at.utcoffset() is None or not 0<=(datetime.now(timezone.utc)-payload.observed_at).total_seconds()<=600:
+    # "Record now" uses the server clock; explicit historical observations retain
+    # their submitted time and strict age check. Browser clocks may run ahead.
+    observed_at=payload.observed_at or datetime.now(timezone.utc)
+    if observed_at.utcoffset() is None or not 0<=(datetime.now(timezone.utc)-observed_at).total_seconds()<=600:
         raise HTTPException(422,'Record an actual ambient observation from the last 10 minutes, including its timezone.')
-    row=payload.model_dump(mode='json');row['recorded_at']=now();row['actor']=actor
+    row=payload.model_dump(mode='json');row['observed_at']=observed_at.isoformat();row['recorded_at']=now();row['actor']=actor
     store.put('ambient','bench',row);store.event('BENCH-001','manual_ambient',row)
     return {**row,'valid_for_seconds':600,'note':'Manual reference, not an installed sensor. Expires 10 minutes after observation.'}
 

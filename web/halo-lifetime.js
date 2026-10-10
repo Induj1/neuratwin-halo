@@ -10,7 +10,7 @@
  <details id="life-assumptions"><summary>Model assumptions</summary><p>Lifetime and risk use an assumed thermal-ageing model. They are not measured lifespan or calibrated failure probabilities. Future loading is held constant without protective interruption.</p><form id="life-form"><div id="life-fields" class="lifetime-fields"></div><div class="case-actions"><button type="submit">Update model</button><button type="button" id="life-reset">Reset assumptions</button></div></form><p id="life-basis"></p><div id="life-components"></div></details>`;
  anchor.after(panel);
  const fields=[['reference_life_years','Reference life scale (years)',1,100],['initial_equivalent_age_years','Assumed equivalent age (years)',0,200],['risk_horizon_days','Risk horizon (days)',1,3650],['weibull_shape','Lifetime distribution shape',1.01,8],['reference_temperature_c','Reference ageing temperature (°C)',20,150],['temperature_offset_c','Temperature offset (°C)',0,80],['doubling_c','Ageing doubles every (°C)',3,30],['ambient_c','Assumed ambient (°C)',-20,60],['rated_rise_c','Rise at rated current (°C)',.1,150],['thermal_tau_min','Thermal time constant (min)',1,1440],['limit_temperature_c','Temperature limit (°C)',0,200]];
- let state=null,key=null,parameters=null,result=null,inflight=false,version=0,lastSignature=null,timer=null;
+ let state=null,key=null,parameters=null,result=null,inflight=false,queued=false,version=0,lastSignature=null,timer=null;
  function fill(){if(!parameters)return;$('life-fields').innerHTML=fields.map(([name,label,min,max])=>`<label>${label}<input name="${name}" type="number" value="${parameters[name]}" min="${min}" max="${max}" step="${name==='risk_horizon_days'?'1':'any'}" required></label>`).join('');}
  function persist(){try{if(parameters)localStorage.setItem('halo-life:'+key,JSON.stringify(parameters));else localStorage.removeItem('halo-life:'+key);}catch{}}
  function clear(){result=null;for(const id of ['life-condition','life-limit','life-remaining','life-risk'])$(id).textContent='—';$('life-charts').replaceChildren();$('life-basis').textContent='';$('life-components').replaceChildren();$('life-status').textContent='Preparing scenario…';}
@@ -41,7 +41,8 @@
    $('life-components').innerHTML=Object.entries(r.condition_components).map(([k,v])=>`<div><span>${esc(k)} · ${num(v.weight*100,0)}% weight</span><strong>${num(v.stress,0)} / 100 stress</strong></div>`).join('');
  }
  async function update(force=false){
-   if(!state?.snapshot||state.replay||inflight)return;
+   if(!state?.snapshot||state.replay)return;
+   if(inflight){queued=true;return;}
    const physical=state.mode==='prototype',s=state.snapshot;
    const body={revision:physical?null:s.revision,assumptions:parameters};
    if(physical){body.display_current=HaloOperations.displaySnapshot();body.display_history=HaloOperations.displayHistory();}
@@ -54,7 +55,7 @@
      lastSignature=signature;if(!parameters){parameters=r.assumptions;fill();}
      paint(r);
    }catch(error){if(request===version){clear();$('life-status').textContent=error.message;}}
-   finally{inflight=false;}
+   finally{inflight=false;if(queued){queued=false;update(true);}}
  }
  window.addEventListener('halo:operation-state',e=>{
    state=e.detail;panel.hidden=!state.snapshot||state.replay;if(panel.hidden)return;

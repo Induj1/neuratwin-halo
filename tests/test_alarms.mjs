@@ -3,6 +3,13 @@ import assert from 'node:assert/strict';
 import {createRequire} from 'node:module';
 const A=createRequire(import.meta.url)('../web/halo-alarms.js');
 const input=(temperature=40)=>({key:'prototype:bench',mode:'prototype',snapshot:{settings:{temperature_warning:50,temperature_critical:60}},display:{live:true,channels:{surface_temperature:{value:temperature}}},result:{available:true,live:true,oil_c:40,pressure_kpa:10,level_percent:100,stage:'normal'},settings:{tank:'sealed',oil_limit_c:95,pressure_limit_kpa:50}});
+
+test('missing limits do not mislabel a valid temperature as sensor loss or recovery',()=>{
+ const i=input(85);i.snapshot.settings={temperature_warning:null,temperature_critical:null};
+ const s=A.evaluate(A.createState(),i);
+ assert.equal(s.status,'unavailable');assert.equal(s.title,'Surface limits not configured');
+ assert.equal(s.alerts.length,0);assert.match(s.detail,/commissioning/);
+});
 test('surface thresholds retain warning and critical until 2 C recovery margin',()=>{
  let s=A.createState();for(const [temperature,status] of [[40,'normal'],[50,'warning'],[49,'warning'],[60,'critical'],[59,'critical'],[58,'warning'],[48,'recovered']]){
   s=A.evaluate(s,input(temperature));assert.equal(s.status,status);assert.equal(s.thermal,status==='recovered'?'normal':status);

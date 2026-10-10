@@ -78,7 +78,7 @@ def selected(context):
 def capabilities():
     return {'server_clock':os.getenv('HALO_SERVER_CLOCK')=='1',
             'push_enabled':os.getenv('HALO_PUSH_ENABLED')=='1',
-            'assistant':'openai' if os.getenv('OPENAI_API_KEY') else 'evidence',
+            'assistant':'openai' if os.getenv('OPENAI_API_KEY') and os.getenv('HALO_AI_ENABLED','1')!='0' else 'evidence',
             'poll_ms':1500}
 
 
@@ -160,7 +160,10 @@ def assistant(payload: Question,actor=Depends(operator)):
               'protection_state':snap['protection_state'],'recovery_holds':snap.get('recovery_holds',snap.get('holds',[])),
               'events':snap['events'][-8:], 'prediction':snap.get('prediction')}
     q=payload.question.lower()
-    if any(word in q for word in ('recover','reconnect','reset')):
+    stale_prototype=snap['source']=='prototype' and snap.get('connection')!='live'
+    if stale_prototype:
+        text='Live prototype readings are unavailable. Cached readings do not describe the current condition. Check the ESP32 connection and wait for a fresh acquisition.'
+    elif any(word in q for word in ('recover','reconnect','reset')):
         text='Recovery checks: '+(' '.join(evidence['recovery_holds']) or 'Review the latest measurements and record the investigation before requesting reconnection.')
     elif any(word in q for word in ('trip','why','happen')) and snap.get('trip'):
         text=snap['trip']['reason']+' '+snap['analysis']['maintenance'][0]
@@ -171,7 +174,7 @@ def assistant(payload: Question,actor=Depends(operator)):
         text=f"{snap['analysis']['status'].title()}. "+' '.join(snap['analysis']['maintenance'][:2])
     provider='evidence';fallback=None
     key=os.getenv('OPENAI_API_KEY')
-    if key:
+    if key and os.getenv('HALO_AI_ENABLED','1')!='0' and not stale_prototype:
         try:
             result=httpx.post('https://api.openai.com/v1/responses',timeout=25,
                 headers={'Authorization':'Bearer '+key},json={'model':os.getenv('HALO_MOBILE_AI_MODEL','gpt-4.1-mini'),
