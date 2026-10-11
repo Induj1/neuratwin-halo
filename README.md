@@ -1,170 +1,357 @@
-# NeuraTwin Halo — Neura Rangers / CPRI Track 2
+﻿<div align="center">
 
-A distribution-transformer maintenance prototype combining available measurements, an asset-specific conditional model and recorded maintenance history:
-**observe → freeze a forecast → reveal later data → compare interventions → verify follow-up → export evidence.**
+# NeuraTwin Halo
 
-Start with [the submission dossier](web/submission-guide.html), [the current hardware handoff](web/hardware-guide.html) and [the model specification](docs/DUAL_MODE_TWIN.md).
+### Physics-informed digital twins for distribution-transformer maintenance
 
-**Fleet decisions** at `/app#portfolio` adds a persistent 25-asset simulation/CSV workspace, explainable priorities, chronological per-asset qualification, empirical forecast bands, constrained tie-transfer studies, laboratory gas trends, deployment economics and frozen triage cases shared with Maintenance. See [fleet methods and limits](docs/FLEET_EVIDENCE.md). The physical bench stays separate; forecasts with insufficient evidence are withheld.
+**From physical measurements to a verified maintenance outcome.**
 
-The [synchronized operations workspace](docs/SYNCHRONIZED_OPERATIONS.md) adds a condition dial, illustrative phase waveforms, continuous simulation controls, an inline intervention comparison and recorded-state replay at `/app#operate`. Hardware remains single-phase and RMS-only; unavailable measurements stay unavailable.
+Neura Rangers · PowerNext AI · Digital Twin Track
 
-See the [briefing features](docs/BRIEFING_FEATURES.md) for impedance-based fault current, blind electrical diagnosis, industrial pressure scenarios, cold/hot comparisons and direct PDF exports in both modes. Prototype voltage/current behaviour is preserved, with separate raw and displayed-value provenance in reports. The [v6 model and evidence release record](docs/MODEL_AND_EVIDENCE_UPGRADE_V6.md) remains a historical record of that release.
+[Project presentation](NeuraTwin_Halo_Pitch.pptx) · [Platform](#the-platform) · [Physics](#physics-behind-the-twin) · [Architecture](#system-architecture) · [Run locally](#run-locally)
 
-## Fleet operations
+</div>
 
-Open **Fleet map** at `/app#fleet`. Twelve explicitly synthetic assets (six urban and six rural) share one reproducible clock. The map is a bundled geographic schematic, not a verified utility GIS inventory. The physical ESP32 remains a separate working source.
+---
 
-- Select a marker or table row, then use **Digital twin**, **Action Lab**, **Maintenance**, **Evidence**, or **Costs**. Asset links preserve the run and selection. Component annotations expose measured-simulation channels, model assumptions and unavailable capabilities.
-- **Action Lab:** freeze a continue/reduce-load comparison, advance time and score later observations. T3 synthetic oil-reference assets support target-matched scoring; model-only oil cannot validate itself. Changed inputs and missing truth remain excluded, and persistence results are retained.
-- **Rural recovery:** disconnect the uplink, advance beyond the configured validity horizon, then download and import the synthetic buffer from Evidence. Imports preserve acquisition time, deduplicate and reject changed content; they cannot make historical data live.
-- **Maintenance:** an administrator reviews and assigns a job to an active operator. The assigned technician accepts it, records a visit/photo and an action. The reviewer compares later observations with frozen criteria. Outcomes distinguish mitigation, no improvement and inconclusive evidence; no physical repair is inferred. Urgent jobs have a bounded due window.
-- **Offline visits:** Save visit writes an actor-bound IndexedDB outbox that survives tab closure. Sync rechecks identity, permissions and revisions. Conflicts retain the draft for explicit review/resubmission. Logout clears device records. Browser storage clearing also removes unsynchronized drafts; automatic physical commands and automatic job closure are absent.
-- **Evidence:** historical sample replay, registered asset QR/link and optional browser NFC writing, PDF summary and complete JSON/CSV/checksum ZIP. These identify an asset; they do not transfer hardware logs or grant access.
-- **Costs:** record meter-only, selected-sensing and reference-sensing options with explicit population, period and cost sources. Unknown entries remain unknown; annualisation does not imply measured savings.
+NeuraTwin Halo helps maintenance teams manage difficult-to-access distribution transformers by combining available measurements, an asset-specific predictive model and maintenance history to prioritise inspections and verify corrective actions.
 
-The rehearsal covers software behavior, not utility data integration, field radio/battery performance, qualified physical thermal accuracy or a prospective maintenance pilot. Fleet Telegram notifications and pilot-results collection are not part of this increment. Existing physical readings, calibration and relay-control paths remain separate.
+The platform connects an **ESP32 physical prototype**, an **interactive 3D twin**, **thermal and electrical studies**, **urban/rural fleet operations**, and **traceable maintenance records**. Every assessment stays attached to its asset, source readings, model assumptions and observation time.
 
-## Current model and evidence upgrades
+The central question is practical: **which transformer needs attention, what action is justified, and did that action improve its condition?**
 
-- **Maintenance desk** connects readings, uncertainty-aware thermal actions, frozen job cards, technician findings/photos, post-action verification and versioned asset models. Entered-cost comparisons identify when better information could change an action. Job PDFs retain forecasts, readings and evidence; numerical transient FEM checks and an extruded temperature-field view are available in Physics & protection. See [workflow and methods](docs/MAINTENANCE_WORKFLOW.md).
+<p align="center">
+<img src="docs/images/asset-digital-twin.png" alt="Asset-specific 3D transformer with component annotations, electrical and thermal instruments, and open findings" width="860">
+</p>
+<p align="center"><em>Interactive asset inspection with component evidence and source-labelled instruments. Screenshot shows a synthetic fleet asset.</em></p>
 
-- **Physics & protection** adds seven-segment instruments, virtual oil/pressure forecasts, a load-reduction study, injected faults, a solved finite-element thermal field and synthetic sensor-placement comparison. It shares the selected source and exports assumptions and results to PDF. See [methods and demonstration](docs/PHYSICS_AND_PROTECTION.md).
+## The problem
 
-- **Life & risk** adds inspectable condition screening, conditional time to a temperature limit, modelled remaining life and simulated thermal-ageing risk in both modes. Editable assumptions and PDF exports retain their calculation basis. These are scenario estimates; see [methods and limits](docs/LIFETIME_SCENARIOS.md).
+A high temperature reading is only the beginning of a maintenance decision. An operator must understand the loading, assess the available evidence, decide whether to inspect or reduce load, and verify what happened after the intervention. Rural installations add intermittent connectivity and difficult physical access. Extensive instrumentation adds hardware, installation and service costs.
 
-- **Assess readings** in Control centre ? Analysis runs the observation-only assessor on the selected run and revision. Scenario names, declared cooling, fault labels and future readings are excluded. A changed revision invalidates the review.
-- **Reviewed winding forecast reference** identifies rise and time constant from a healthy oil + reported hot-spot prefix, validates against two baselines, and applies only to qualified projections. Diagnostic holds are unchanged. Oil-only and surface-probe records cannot enable it. See [qualification and development results](docs/REVIEWED_WINDING_REFERENCE.md).
-- **External public-data forecasting** in Evidence executes frozen numeric models on the original ETTh1 recording. Validation selected gradient boosting, which was about 1% worse than persistence on the later test segment. All candidates, losses, provenance and a forecast/reveal demonstration remain visible. Results use source units, not verified degrees Celsius. See [the complete public-data experiment](docs/EXTERNAL_ETT_FORECAST.md).
-- The earlier v5 release and its evaluation remain historical; current source matching is checked separately. This release does not establish fivefold superiority, field accuracy or a guaranteed competition result.
+Halo brings these concerns into one workflow:
 
-## Run the project
+```mermaid
+flowchart LR
+    A[Measurements] --> B[Updated asset twin]
+    B --> C[Conditional forecast]
+    C --> D[Recommended action]
+    D --> E[Assigned job card]
+    E --> F[Technician findings]
+    F --> G[Follow-up verification]
+    G --> H[Asset history and model review]
+    H --> B
+```
 
-Python 3.12+:
+An inspection retains the condition that justified it. A prediction remains available for comparison with later observations. A maintenance outcome records its supporting evidence, including an inconclusive result when improvement cannot be established.
+
+## The platform
+
+| Workspace | What it provides | Why it matters |
+| --- | --- | --- |
+| **Fleet map** | Urban/rural assets, condition markers, sensing coverage, data freshness and inspection priority | Locate assets that need attention and distinguish equipment concerns from missing information |
+| **Fleet decisions** | Recording-based triage, qualified thermal models, report cards and constrained load-transfer studies | Compare asset needs using inspectable evidence |
+| **Control centre** | Large instruments, live trends, configurable temperature alarms and source-specific 3D models | Understand the selected transformer's operating condition |
+| **Action Lab** | Frozen forecasts, load-reduction comparisons and later scoring | Examine possible interventions before acting |
+| **Physics and protection** | Thermal response, oil inventory, pressure, electrical stress and finite-element studies | Explain how operating conditions affect the modelled transformer |
+| **Maintenance** | Assigned jobs, technician findings, photos, action records and reviewed follow-up | Carry an issue through to a documented outcome |
+| **Evidence and reports** | Recorded history, forecast comparisons, PDF reports and structured exports | Preserve the basis of an assessment and decision |
+| **Mobile companion** | Expo app with twin, alerts, inspections and an evidence-aware assistant | Bring asset information and field observations to a phone |
+
+### Fleet map: urban and rural operations
+
+<p align="center">
+<img src="docs/images/fleet-map.png" alt="Urban and rural transformer fleet map with condition markers, sensing coverage, freshness and inspection priority" width="1000">
+</p>
+
+The interactive map connects **six urban and six rural synthetic transformers** through one reproducible simulation clock. Selecting a marker or row carries the asset into its digital twin, forecasts, maintenance jobs, evidence and costs.
+
+Assets differ in rating, sensing coverage and communication pattern. **Condition, evidence coverage, freshness and inspection priority** remain separate: an asset with no usable observations is unknown, while a communication outage does not erase an unresolved finding.
+
+Rural scenarios include intermittent, scheduled and visit-only communication. When the uplink disappears, observations age and forecasts expire at a configured validity boundary. Recovered records retain their original acquisition time; importing an old buffer adds historical evidence without making the asset appear live.
+
+The current map is a bundled geographic schematic with illustrative locations. It works without external map tiles and does not represent a connected utility GIS inventory.
+
+### Fleet decisions: a model report card for every recording
+
+The separate Fleet decisions workspace supports a **25-asset synthetic portfolio** and imported oil-temperature recordings. Its attention queue combines observed limits, missing or stale evidence, model disagreement and asset criticality. The reasons contributing to priority remain visible.
+
+Each asset's thermal model is fitted and evaluated using chronological **60% fit / 20% calibration / 20% test** partitions. Report cards expose error against persistence, error tails, empirical forecast-band coverage and qualification holds. A model is withheld when it fails the declared screening policy or current inputs leave its fitted operating range.
+
+A load-transfer study checks declared ties, simultaneous observations, qualified thermal evidence, voltage, loading limits and equal-kVA balance. It supports planning; it does not establish network load-flow feasibility or authorise switching.
+
+Laboratory gas reports can be recorded separately, with combustible totals and per-day trends. These remain entered laboratory evidence, never ESP32 gas measurements. Portfolio cases retain the triage reasons and model report for review in Maintenance.
+
+The 25-asset recording portfolio and the 12-asset map are distinct workspaces; their recordings are not silently substituted for live equipment. [Read the fleet methods](docs/FLEET_EVIDENCE.md).
+
+### Control centre and interactive digital twin
+
+The control centre combines seven-segment-style readings, high-contrast trend plots, visual annunciators, audible alarms and an interactive 3D transformer. Prototype and industrial sources use appropriate models.
+
+Operators can inspect primary/secondary voltage, available current channels, loading, surface temperature and clearly identified estimates. Configurable surface-temperature thresholds connect actual probe readings to the alert system. Browser audio starts after the interaction required by the browser's playback policy.
+
+Floating component annotations connect the visual model to electrical, surface and oil evidence. Thermal colour overlays make the modelled state spatially visible. Electrical scopes reconstruct illustrative waveforms from RMS values; they are not oscilloscope captures. The physical bench is single-phase, while industrial scenarios also support three-phase studies.
+
+### Action Lab: forecast, intervene, compare
+
+Halo compares continued operation with candidate load reductions under declared thermal and loading assumptions. The study retains the predicted response, constraints and proposed action so the operator can inspect the reasoning.
+
+Forecasts are **frozen before later observations are scored**. They retain the input cutoff, source and model version. Changed loading, missing references and incompatible configurations remain visible as exclusions. Persistence—the last observed value—is retained as a baseline.
+
+In the fleet map, assets with a separate synthetic oil-reference channel support target-matched scoring. A model-only oil estimate cannot validate itself.
+
+### Maintenance with recorded follow-up
+
+Job cards connect a concern to readings, forecasts, acceptance criteria and the selected asset. They support assignment, acceptance, inspection notes, photographs, recorded actions and reviewer decisions.
+
+Follow-up compares later compatible observations with the recorded criteria. Depending on the workflow, outcomes distinguish improvement or mitigation, temporary stabilization, unresolved conditions and insufficient evidence. Completing a review or acknowledging an alarm does not certify that equipment has recovered.
+
+For fleet field work, assigned jobs and visit drafts can be retained in an IndexedDB outbox that survives tab closure. Synchronization rechecks identity, assignment and record revisions. Conflicts retain the draft for explicit review. Unsynchronized drafts are local to that browser and are removed by clearing browser storage or signing out.
+
+### Reports and asset identity
+
+PDF reports bring readings, charts, assumptions, events and maintenance evidence into a readable asset record. JSON and CSV exports support further analysis; checksum manifests allow content to be checked against retained records.
+
+Asset passports provide registered links and QR identification, with NFC writing on supported browsers. They identify the asset; permissions remain enforced independently.
+
+## Physics behind the twin
+
+Halo combines loading-guide-style thermal models, electrical screening and numerical thermal-field studies. Equations, assumptions and source provenance remain inspectable.
+
+### Loading and temperature response
+
+For observed current $I$ and rated current $I_r$:
+
+$$K = \frac{I}{I_r}$$
+
+The virtual top-oil study approaches a load-dependent target:
+
+$$\theta_{\mathrm{target}} = \theta_a + \frac{\Delta\theta_r}{c}\left(\frac{1+RK^2}{1+R}\right)^{0.8}$$
+
+$$\theta_{t+\Delta t} = \theta_{\mathrm{target}} + (\theta_t-\theta_{\mathrm{target}})e^{-\Delta t/\tau}$$
+
+Here $\theta_a$ is ambient temperature, $\Delta\theta_r$ is rated rise, $R$ is the load-loss/no-load-loss ratio, $c$ is the cooling factor and $\tau$ is the thermal time constant. Electrical response is immediate; heating and cooling evolve over time.
+
+The DS18B20 measures **surface temperature**. It can initialise a virtual oil scenario, but the oil result remains a model output. Accelerated model time is explicit. The implementation is loading-guide-inspired, not a complete IEC compliance calculation or an experimentally identified industrial model.
+
+### Oil inventory and thermal expansion
+
+Material inventory and temperature-dependent expansion are represented separately:
+
+$$V_{\mathrm{inventory}} = V_0 - V_{\mathrm{lost}} + V_{\mathrm{refilled}}$$
+
+$$\Delta V_{\mathrm{expansion}} = \beta V_0(\theta_{\mathrm{bulk}}-\theta_0)$$
+
+The inventory study supports **200 L initial oil**, slow or rapid loss, simulated refill, warning/critical thresholds and time to a configured limit. A decline to 170 L represents 30 L lost and 85% remaining. Expansion does not replenish that lost material.
+
+Declared oil density and specific heat connect the remaining quantity to thermal capacity. Leakage and gas accumulation are injected scenarios rather than measurements from the physical bench.
+
+### Sealed-tank pressure
+
+A rigid sealed-tank scenario combines oil expansion with a fixed gas cushion:
+
+$$P_{\mathrm{abs}} = P_0\frac{T}{T_0}\frac{V_{g0}}{V_{g0}-\Delta V_{\mathrm{expansion}}+V_{\mathrm{lost}}}$$
+
+Temperatures are absolute, and gauge pressure is reported relative to the assumed atmospheric reference. A vented conservator uses a different model and does not inherit this sealed-tank output.
+
+This exposes pressure sensitivity without adding a pressure transducer to the bench. **Actual internal pressure cannot be identified from voltage and current alone.** The calculation depends on declared fill, gas volume and tank behaviour; it is a conditional study rather than a replacement for a pressure sensor or protective relay.
+
+### Electrical stress and protection studies
+
+Electrical screening combines per-unit current, duration, voltage dip and a startup guard. Current-time exposure is retained as:
+
+$$I^2t = \int I(t)^2\,dt$$
+
+For the idealised transformer-only impedance case, prospective symmetrical RMS fault current follows:
+
+$$I_{\mathrm{sc}} \approx I_r\frac{100}{Z_{\%}}$$
+
+Industrial studies also support declared source/cable impedance on a common base. Entered winding resistance enables an explicit $I^2R$ loss calculation.
+
+Exceeding the prototype's 1 A rating indicates overload relative to that reference; it does not alone prove a short circuit. Inrush and internal/external fault discrimination require suitable independent waveform evidence. The separate synthetic electrical challenge exercises those distinctions without presenting generated waveforms as physical acquisitions.
+
+### Finite-element thermal modelling
+
+The thermal-field study solves conduction with internal generation and convective boundaries:
+
+$$\rho c_p\frac{\partial T}{\partial t}-\nabla\cdot(k\nabla T)=q$$
+
+Steady and transient studies use **648 triangular elements and 361 nodes** on a declared cross-section. The transient solver uses backward Euler integration and sparse solves. Mesh refinement, time-step refinement and heat-balance checks expose numerical consistency.
+
+The visual field extrudes the solved two-dimensional temperatures through a declared depth. It is not a full 3D CFD solution. Geometry, material properties and losses remain study assumptions.
+
+A sensor-placement experiment compares one, two and three accessible measurement locations on held-out synthetic loss cases. It connects spatial physics to the practical question of where additional sensing could provide useful information.
+
+### Health, limits and lifetime scenarios
+
+| Output | Meaning |
+| --- | --- |
+| **Condition index** | Inspectable screening score with contributing stress factors and data-quality holds |
+| **Time to configured limit** | Conditional temperature projection under stated future loading and ambient assumptions |
+| **Modelled remaining life** | Scenario output based on assumed prior exposure, thermal ageing and survival parameters |
+| **Simulated failure risk** | Thermal-ageing scenario probability, not calibrated all-cause field failure probability |
+
+Lifetime scenarios explore sensitivity to temperature, loading and assumed age. Current evidence does not establish an individual transformer's actual remaining useful life.
+
+Methods: [thermal and pressure models](docs/PHYSICS_AND_PROTECTION.md) · [transient FEM and maintenance verification](docs/MAINTENANCE_WORKFLOW.md) · [life and risk](docs/LIFETIME_SCENARIOS.md).
+
+## Lower-cost sensing and reliability
+
+Halo's sensing strategy is to use available measurements productively and identify where another measurement could change a decision. The synthetic map represents four instrumentation tiers:
+
+| Tier | Available channels | Supported evidence |
+| --- | --- | --- |
+| **T0 — registered asset** | No current telemetry | Asset identity/history and an explicit need to collect evidence |
+| **T1 — electrical** | Voltage and current | Loading and electrical context |
+| **T2 — electrical + surface** | Voltage, current and surface temperature | Surface condition alongside conditional thermal studies |
+| **T3 — reference sensing** | Electrical, surface and separate oil reference | Target-matched oil-forecast scoring within the synthetic experiment |
+
+Cost workspaces compare instrumentation options using entered hardware, installation, commissioning, service and connectivity costs over a declared population and period. Unknown costs remain unknown. Maintenance studies also examine how resolving a model uncertainty could change an intervention.
+
+The intended reliability benefit comes from earlier attention, better-targeted inspections and verified follow-up. Deployed savings and reduced field failure rates remain outcomes for prospective validation, rather than claimed results of simulation.
+
+## Physical prototype and source integrity
+
+The physical demonstrator uses a **12-0-12 V, 1 A centre-tapped transformer**, **ESP32**, voltage/current sensing, a **DS18B20 surface probe**, and resistor loads controlled through a four-channel relay module. The current Wi-Fi mapping exposes three active branches; the fourth UI command requests all three off.
+
+The backend polls authenticated acquisitions over Wi-Fi. Automatic reconnection checks the configured address, mDNS and bounded local-network discovery after a restart or address change. Device identity, acquisition time and freshness remain attached to readings.
+
+| Source | Interpretation |
+| --- | --- |
+| **Physical prototype** | Received electrical/surface acquisitions, quality information and separately labelled calculations |
+| **Industrial simulation** | Persistent modelled transformer with its own clock, conditions and events |
+| **Synthetic fleet** | Reproducible assets with different sensing and connectivity profiles |
+| **Portfolio/reference recordings** | Separately identified historical data and experiments with their own provenance |
+
+Measured current and load-bank estimates remain separate. Firmware-calculated primary current is not promoted to a direct measurement. A valid measured zero stays zero; missing or stale measurements do not become fresh observations. The bench does not directly measure oil temperature, winding hot-spot or tank pressure.
+
+Physical switching remains an explicit authorised operation. Fault scenarios and the language assistant do not send equipment commands. The small prototype demonstrates acquisition and workflow; its thermal parameters do not automatically transfer to a distribution transformer.
+
+[ESP32 integration](docs/ESP32_INTEGRATION.md) · [Measured versus estimated readings](docs/MEASURED_AND_ESTIMATED_READINGS.md)
+
+## System architecture
+
+```mermaid
+flowchart TB
+    subgraph Sources
+        ESP[ESP32 acquisitions]
+        SIM[Industrial and fleet simulations]
+        REF[Reference recordings]
+    end
+    subgraph Backend[Python / FastAPI]
+        ING[Acquisition and quality checks]
+        PHY[Physics and numerical models]
+        DEC[Assessment and intervention studies]
+        JOB[Maintenance and evidence services]
+        DB[(Supabase or SQLite)]
+        AI[Optional evidence assistant]
+    end
+    subgraph Clients
+        WEB[Web control centre and fleet workspaces]
+        MOB[Expo mobile companion]
+        REP[PDF / JSON / CSV reports]
+    end
+    ESP --> ING
+    SIM --> ING
+    REF --> ING
+    ING --> PHY
+    PHY --> DEC
+    DEC --> JOB
+    ING --> DB
+    JOB <--> DB
+    JOB --> AI
+    DEC --> WEB
+    JOB <--> WEB
+    JOB <--> MOB
+    AI --> WEB
+    AI --> MOB
+    JOB --> REP
+```
+
+| Layer | Implementation |
+| --- | --- |
+| Web | HTML, CSS, JavaScript, Three.js and SVG/canvas instruments |
+| Numerical backend | Python, FastAPI, NumPy, SciPy, pandas and scikit-learn |
+| Storage and access | Supabase with team authentication, or explicitly selected local SQLite |
+| Field continuity | Service-worker shell and IndexedDB fleet visit outbox |
+| Hardware | Authenticated ESP32 Wi-Fi API, mDNS rediscovery and a separate USB bridge option |
+| Mobile | Expo / React Native with twin, alerts, inspections and assistant views |
+| Reporting | ReportLab PDFs, structured exports and SHA-256 manifests |
+
+The numerical application works independently of the optional language assistant. The assistant explains available evidence and cannot operate equipment. Credentials remain on the backend.
+
+The mobile companion opens its interface even when the ESP32 or backend is unavailable, marks cached/unavailable readings, and retains inspection drafts for reconnection. Native notifications require a configured device build and delivery credentials. [Mobile project](mobile/README.md).
+
+## Evaluation and evidence
+
+Halo distinguishes **software correctness**, **numerical consistency**, **synthetic performance** and **physical validation**.
+
+| Area | Verification focus |
+| --- | --- |
+| Source integrity | Measured/estimated separation, freshness, configuration changes and board restarts |
+| Thermal calculations | Load response, cooling, equilibrium, heat balance and refinement sensitivity |
+| Forecasting | Frozen inputs, chronological scoring, target matching, baseline comparisons and exclusions |
+| Fleet operations | Shared clocks, revision checks, expired data and historical import deduplication |
+| Maintenance | Assignment permissions, retained drafts, later observations and inconclusive outcomes |
+| Interface and reporting | Navigation, narrow layouts, source switching, exports and unintended-command prevention |
+
+The latest merged verification record reports **566 backend tests and 101 JavaScript tests passing**, alongside browser checks for fleet records, maintenance, transfer studies, costs and PDF export. These are recorded software checks, not a claim of physical validation. See [verification details](docs/FLEET_EVIDENCE.md#verification).
+
+A separate chronological experiment uses the public **ETTh1** dataset. Validation selected gradient boosting, but its later test performance did not outperform persistence. All candidate comparisons are retained. Results use the dataset's source units rather than claiming verified degrees Celsius.
+
+Synthetic cases support reproducible behaviour, and numerical checks establish properties of the implemented solver. Industrial prediction accuracy, calibrated failure probabilities and maintenance outcomes require independent field evidence.
+
+[Public-data forecasting](docs/EXTERNAL_ETT_FORECAST.md) · [Evaluation protocol](docs/EVALUATION_PROTOCOL_AND_EXTERNAL_RECORDINGS.md) · [Hardware provenance](docs/HARDWARE_PROVENANCE_AND_RECOVERY.md) · [Tests](tests/)
+
+## Run locally
+
+Use Python 3.12 or later. From the repository root:
 
 ```powershell
+python -m venv .venv
+.\.venv\Scripts\Activate.ps1
 python -m pip install -r requirements.txt
 python scripts/run_local_demo.py
 ```
 
-Open `http://127.0.0.1:8765/app#demo`. The standalone launcher uses its own SQLite database, binds only to loopback, disables physical control and Laya, and does not read `.env`, open a serial port or start Telegram. It is an explicit local rehearsal; it does not copy or synchronize cloud data. Stop an existing server on this port before launching another.
+Open [Fleet map](http://127.0.0.1:8765/app#fleet), [Fleet decisions](http://127.0.0.1:8765/app#portfolio), or [Control centre](http://127.0.0.1:8765/app#control). The standalone launcher uses SQLite and disables physical control and the optional AI service. An ESP32 is not required to explore simulated assets.
 
-For the existing configured private backend:
+For a configured backend with private environment settings:
 
 ```powershell
 python -m uvicorn neuratwin.app:app --host 127.0.0.1 --port 8765 --env-file .env
 ```
 
-See [backend operations](docs/BACKEND.md) for migrations, team roles and hosting. Keep server secrets in private environment variables. The supplied `.env.example` contains no keys. A static hardware-guide deployment does not run the full application.
+[`.env.example`](.env.example) documents configuration. [Backend operations](docs/BACKEND.md) covers Supabase, team roles and hosting. The full platform needs the Python backend; static hosting alone does not run its models or persistence services.
 
-## One explicit source across the workspace
-
-| Source | What it means |
-| --- | --- |
-| Industrial simulation | Persistent illustrative distribution-transformer run. Digital twin, Action Lab, Evidence, Maintenance and Asset passport follow the same run, revision and clock. |
-| Physical prototype | Actual ESP32 measurements. Missing, disconnected, stale and uncalibrated channels stay unavailable. Surface temperature is never renamed oil temperature. |
-| Reference datasets / studies | Independent bench/distribution replays, supplied acceptance examples, lab records and Grid Rescue. These are explicitly separate studies. |
-
-The main navigation focuses on Digital twin, Action Lab, Maintenance, Evidence and Rehearsal. More tools exposes Asset passport, Commissioning, Inspector, Assistant and the independent Arena. Source selection is always visible.
-
-## Five-minute demonstration
-
-Keep **one selected industrial run** throughout this main story. Its source, run ID and clock stay visible. Independent recordings are a separately introduced experiment, never substituted for this asset.
-
-1. **0:00–0:40 — Rehearsal → Prepare a new rehearsal run.** Identify the labelled simulation, warning, modelled hot-spot and critical reference. Open **Review this run** in Control centre ? Analysis.
-2. **0:40–1:30 — Inspect signals and recorded response.** Distinguish immediate electrical response from delayed heating. Select **Assess readings** beside the warning and show its observation-only assessment, including any forecast hold. The review is invalidated when the run changes.
-3. **1:30–2:30 — Digital twin → Review scenario study.** Explain that this conditional action study uses declared cooling. Inspect a proposed reduction, peak and curtailed energy; apply it only when a nonzero proposal exists. Advance the same simulation five minutes. A 240-minute sensitivity study is not independently validated four-hour forecasting.
-4. **2:30–4:00 — Open run maintenance.** Record an owner, inspection, action and numerical acceptance rules. Demonstrate a hold or temporary stabilization while cooling is impaired. Only demonstrate closure after the configured stable recovery window and all checks pass. No invented repair or prefilled technician observations.
-5. **4:00–5:00 — Export this run and open Evidence's evaluation results.** Identify the dataset-level comparison separately from the selected run. Show additional warning lead time, false alarms, error tails and coverage together. The frozen fresh synthetic experiment and known-corpus regression remain distinct. Show the external ETTh1 experiment separately, including its loss against persistence.
-
-Optional technical follow-up: import an independently supplied recording using Evidence's source-bound workflow, freeze its assessment before revealing later rows, and export the review. A recording known to its uploader is a retrospective holdout. Show Physical prototype only when demonstrating actual commissioned acquisitions; otherwise its unavailable channels are the correct result.
-
-The dossier uses this same sequence. The offline walkthrough is a labelled synthetic fallback, not a replacement for recorded evidence.
-
-## What is new in the submission workflow
-
-- Warning/critical state takes precedence over a Healthy condition badge. The weighted index remains labelled as a screening heuristic, not a failure probability.
-- Sensor disagreement asks for an independent check and withholds the affected forecast.
-- Forecasts copy settings, inputs, origin and provenance before future observations. Scoring preserves failures, changed-input samples and missing evidence. Hashes detect changes relative to a retained record; they are not signatures.
-- Intervention studies enumerate demand reductions and delays, enforce declared thermal/load constraints and retain rejected candidates. Stale recommendations cannot be applied. Application only changes the selected simulation.
-- Maintenance closure enforces a recorded stable duration, maximum load/temperature, qualified uninterrupted observations, restored cooling and a forward thermal corner check. Temporary stabilization is distinct from resolution. Legacy orders without structured rules retain their historical status and visibly fail current verification.
-- A committed blind experiment withholds seed, scenario and future observations until the observation-only assessment is frozen. Extra hidden-state fields cannot enter the assessor. Evidence displays fault-specific errors, misses, nuisance alarms and withheld forecast counts.
-- Reviewed oil-reference CSV fitting uses a bounded first-order model and chronological 70/30 validation. A surface-temperature file is rejected. Fitted oil parameters can initialize a new run; winding/rating/absolute-loss assumptions stay illustrative.
-- Run exports include all retained history, event trail, frozen predictions/scores, intervention studies and maintenance records in JSON, CSV and readable HTML with a SHA-256 manifest.
-
-## Reproducible evaluation
+Automated checks:
 
 ```powershell
-python scripts/benchmark_submission.py
-python scripts/benchmark_pipeline.py
-python scripts/rehearse_submission.py
 python -m pip install -r requirements-dev.txt
-python -m pytest tests -q --junitxml=reports/halo-submission-tests.xml
-python scripts/package_submission.py
+python -m pytest tests -q
+node --test tests/*.mjs
 ```
 
-This machine has a legacy `pyreadline` conflict with Python 3.14; the process-local test workaround is:
+## Repository guide
 
-```powershell
-python -c "import sys; sys.modules['readline']=None; import pytest; raise SystemExit(pytest.main(['tests','-q','--junitxml=reports/halo-submission-tests.xml']))"
-```
+| Path | Contents |
+| --- | --- |
+| [`neuratwin/`](neuratwin/) | APIs, acquisition, physics, forecasting, fleet and maintenance services |
+| [`web/`](web/) | Web application, 3D models, instruments, plots and offline shell |
+| [`mobile/`](mobile/) | Expo mobile companion |
+| [`firmware/esp32_integration/`](firmware/esp32_integration/) | ESP32 acquisition and load-control integration |
+| [`supabase/migrations/`](supabase/migrations/) | Storage and access migrations |
+| [`tests/`](tests/) | Python and JavaScript verification |
+| [`reports/`](reports/) | Retained evaluation outputs |
+| [`docs/`](docs/) | Model methods, evidence rules and operations |
+| [`NeuraTwin_Halo_Pitch.pptx`](NeuraTwin_Halo_Pitch.pptx) | Project presentation |
 
-The current **observation-pipeline-5** has two separately identified evaluations:
+---
 
-- **Known-corpus regression:** `reports/pipeline-benchmark.json`, with paired lead-time, diagnostic coverage, nuisance-alarm burden and scored/unscored forecasts. Historical v4 outputs remain in `reports/pipeline-v4-before-v5-*`.
-- **Fresh frozen synthetic evaluation:** `reports/pipeline-v5-fresh-protocol.json` binds the source, unused randomly selected seeds, scenarios, horizons and metrics before generation. Its single consumed run and report are in `reports/pipeline-v5-fresh-protocol-run/`. These are internally generated synthetic cases, not external recordings or field validation; they become known after this run.
+<div align="center">
 
-Evidence displays both results with source hashes and retained protocol/report integrity. Point forecasts have no calibrated safety interval. Independent forecast scoring stops at 30 minutes; the 240-minute scenario planner establishes model sensitivity and execution consistency only. False alarms, missed warnings, signed error tails, target availability and withheld predictions remain in the reports.
+**NeuraTwin Halo · Neura Rangers**
 
-The [v5 method](docs/OBSERVATION_PROTOCOL_V5.md) describes voltage-aware oil fitting and complete RMS current observations. The [evaluation protocol and external recording guide](docs/EVALUATION_PROTOCOL_AND_EXTERNAL_RECORDINGS.md) explains reproduction and importing data without relabelling it as prospective or physical evidence. The [release record](docs/RELEASE_READINESS_2026-10-09.md) identifies final verification and remaining evidence boundaries.
+Measured evidence. Conditional predictions. Human decisions.
 
-The supplied CPRI spreadsheet provides acceptance examples, not longitudinal labelled fault-training data. The saved Laya evaluation abstained in five demonstration cases; optional language interpretation is not established transformer diagnosis. Actual remaining life and calibrated failure probability are unavailable. The official brief permits simulated data and later sensor extension.
-
-## Current hardware — must match the software
-
-Use only [HW–002, current handoff](web/hardware-guide.html), not archived guides.
-
-- EXP-PRO 12-0-12 / 1 A package. Asymmetric resistance readings leave primary/secondary/tap identity unresolved. No mains connection is assigned in this software.
-- Four 39 Ω / 10 W resistor branches on a four-channel relay board. Board-specific reported contact order: left NO, middle COM, right NC. Physical K4 is locked; overload is simulated.
-- Reported relay GPIOs 12/14/27/26. “ESP32 Dev Module” and CP2102 do not establish chip identity. Earlier ADC GPIO4/5 assumptions conflict with classic ESP32; firmware ADC and DS18B20 pins remain unassigned until reviewed.
-- Two ZMPT101B modules, one series ACS712, one DS18B20 surface probe. Verify module terminals, isolation, conditioning and reference calibration. Secondary return is not automatically logic ground. USB powers the controller; verify the 5 V module supply budget.
-- No installed ambient probe. A documented independent ambient observation can be recorded and expires after 10 minutes. An assumed forecast ambient does not create training evidence.
-- Fuse type/rating, enclosure, strain relief, protection, bonding and transformer identity need qualified physical review. No software test establishes electrical safety.
-
-After hardware review, use the commissioning workflow and `firmware/halo_esp32/halo_config.h`. Verification and physical-control flags default false. Compile with the actual board family and ArduinoJson, OneWire and DallasTemperature. Both default locked firmware targets have compile reports in `reports/firmware-esp32*.txt`; compilation is not hardware testing.
-
-For the Wi-Fi board, flash `firmware/esp32_integration/esp32_integration.ino` and set `HALO_ESP32_URL` plus a shared `HALO_DEVICE_TOKEN`; see [docs/ESP32_INTEGRATION.md](docs/ESP32_INTEGRATION.md). Install `python -m pip install -r requirements-esp32.txt` in the backend environment for automatic rediscovery after an IP change or reboot. Start `python scripts/usb_bridge.py --port COM6` only after the board is reviewed and a private `HALO_DEVICE_TOKEN` is configured. Opening a port may reset the board. No serial bridge is started by the web server. Physical ON requests require all separate permissions, commissioning, calibration, freshness and command gates. A software OFF acknowledgment is not proof of open contacts or an emergency stop.
-
-## Optional and advanced experiences
-
-Reference studies retain the existing 3D inspector, acceptance measurements, reviewed DGA/lab entries, conservative thermal capacity, blind judge challenges and constrained synthetic grid-restoration studies. Their assumptions are documented in `docs/DUAL_MODE_TWIN.md` and `web/halo-arena-guide.html`. They do not silently replace the primary case.
-
-QR/NFC are identity conveniences, not authentication; device/browser support and a reachable full-app URL are required. Telegram requires a separately configured token, allowlisted chats and an explicitly started worker; no live delivery is claimed. Local Laya can be installed with `requirements-laya.txt` and started via `start-halo.ps1`; the core numeric application works without it.
-
-## What remains to establish physically
-
-Qualified electrical review; controller and winding identification; reference calibration; actual acquisition and contact verification; measured acceptance evidence; independent field-fault evaluation. These cannot be replaced by fabricated software records. Live Telegram, NFC and actual device timing require their own tests.
-
-The submission archive intentionally excludes `.env`, runtime databases, private recordings, model weights and compiler toolchains. No submission, public deployment or Git push is performed by building it.
-
-## Submission verification · 9 October 2026
-
-Current test counts and browser results are recorded in `reports/halo-release-tests.xml`, `reports/halo-release-js-tests.txt`, `reports/halo-release-browser.json` and the [release record](docs/RELEASE_READINESS_2026-10-09.md). The earlier hardening reports remain historical evidence.
-
-Imported oil recordings now have their own immutable source/assessment → inspection → action → comparable follow-up → reference-review closure → export workflow. Its [rehearsal](reports/observation-workflow-rehearsal.json) uses labelled synthetic fixtures, never physical repair claims. Physical maintenance rejects calibration/configuration changes and inconsistent raw evidence. Frames retain their acquisition configuration; durable pending analysis drains continuously with leased claims, oldest-due-first scheduling, retry backoff and command-free recovery. See [hardware provenance](docs/HARDWARE_PROVENANCE_AND_RECOVERY.md).
-
-Run `python scripts/smoke_submission.py` after packaging to extract the allowlisted archive and validate its actual contents; `reports/submission-package-smoke-current.json` identifies the tested ZIP by SHA-256 and remains alongside the archive to avoid a self-referencing manifest. Physical commissioning and independent field evaluation remain outstanding.
-
-## Bench lab: capture → compare → replay
-
-Open `/app#lab`. The software emulator is isolated from physical acquisition, calibration activation and relay commands. Start an emulator experiment, freeze a three-minute surface forecast, advance 60 seconds three times, then inspect model error against persistence. Change the virtual load and freeze a second forecast to inspect recovery. Changed-input samples remain separate. Stop the experiment and export JSON, CSV, an interactive offline HTML replay and a SHA-256 manifest.
-
-For actual hardware, select Physical ESP32 only after fresh acquisition is available. Inspect chip/configuration agreement, sequence gaps, boot changes, raw RMS/bias/range values, channel flags and calibrated readings. Reference checks attach to an exact acquisition and retain entered tolerance, instrument and reviewer; scale proposals do not automatically activate a calibration. Use a physical proposal in the existing calibration draft and verify additional operating points before saving. Missing model/calibration/ambient or stale data blocks forecasting. Event annotations do not certify a repair. This workflow never issues physical load commands.
-
-```powershell
-python scripts/rehearse_bench_lab.py
-python scripts/rehearse_recovery.py
-python scripts/device_emulator.py --output reports/emulated-device.ndjson
-```
-
-The first script exercises the entire emulator workflow in disposable SQLite and writes `reports/bench-experiment-rehearsal.zip`. The recovery script terminates and restarts a separate loopback API process and reopens its durable bridge queue after a deliberately lost acknowledgement. Original acquisition time, exact-once storage, stale status and zero physical commands are checked. Unit regressions additionally cover stale configuration, USB silence, mismatched device/boot/chip, queued-command revocation and late acknowledgements. These are software checks; actual electrical contact state and physical watchdog timing remain unmeasured.
+</div>
