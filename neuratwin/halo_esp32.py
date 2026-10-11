@@ -381,14 +381,28 @@ def operator_dependency(request: Request):
     return operator(request)
 
 
+def require_commissioned_unlatched():
+    """Apply the existing bench holds while the caller owns WRITE_LOCK."""
+    from . import halo_engine as engine
+    if store.get('twin_prototype', 'BENCH-001', {}).get('latched'):
+        raise HTTPException(423, 'Protection decision is latched. Investigate and reset the latch before switching loads or calibrating.')
+    if engine.holds(engine.config()):
+        raise HTTPException(423, 'Physical control is locked pending commissioning and explicit local enablement.')
+
+
 @router.post('/loads')
 def set_loads(payload: LoadRequest, actor=Depends(operator_dependency)):
+    from .halo_api import WRITE_LOCK
     if os.getenv('HALO_ALLOW_CONTROL') != '1':
         raise HTTPException(423, 'Physical load switching is locked. Set HALO_ALLOW_CONTROL=1 on this server to enable it.')
     body = payload.body()
-    result = board_call(lambda b: b.set_loads(body))
-    store.event('BENCH-001', 'esp32_load_set', {'actor': actor, 'request': body, 'loads': result.get('loads'), 'at': now(),
-                                                'meaning': 'Board acknowledged a relay drive state; not contact feedback.'})
+    enabling = body.get('state') is True or any(body.get(k) is True for k in ('load1', 'load2', 'load4'))
+    with WRITE_LOCK:
+        if enabling:
+            require_commissioned_unlatched()
+        result = board_call(lambda b: b.set_loads(body))
+        store.event('BENCH-001', 'esp32_load_set', {'actor': actor, 'request': body, 'loads': result.get('loads'), 'at': now(),
+                                                    'meaning': 'Board acknowledged a relay drive state; not contact feedback.'})
     return result
 
 
@@ -410,17 +424,23 @@ class CalibrationRequest(Contract):
 
 @router.post('/calibration')
 def calibrate(payload: CalibrationRequest, actor=Depends(operator_dependency)):
+    from .halo_api import WRITE_LOCK
+    # Calibration can drive relays directly or enable automatic calibration on the next reading.
+    if os.getenv('HALO_ALLOW_CONTROL') != '1':
+        raise HTTPException(423, 'Physical calibration is locked. Set HALO_ALLOW_CONTROL=1 on this server to enable it.')
     body = {'action': payload.action}
     if payload.value is not None:
         body['value'] = payload.value
-    try:
-        result = board_call(lambda b: b.calibrate(body))
-    except HTTPException as error:
-        store.event('BENCH-001', 'esp32_calibration', {'actor': actor, 'request': body, 'ok': False, 'detail': error.detail, 'at': now()})
-        raise
-    store.event('BENCH-001', 'esp32_calibration', {'actor': actor, 'request': body, 'ok': bool(result.get('ok')), 'log': result.get('log'),
-                                                   'calibration': result.get('calibration'), 'at': now(),
-                                                   'meaning': 'On-board scaling stored in device flash; not a reviewed backend calibration record.'})
+    with WRITE_LOCK:
+        require_commissioned_unlatched()
+        try:
+            result = board_call(lambda b: b.calibrate(body))
+        except HTTPException as error:
+            store.event('BENCH-001', 'esp32_calibration', {'actor': actor, 'request': body, 'ok': False, 'detail': error.detail, 'at': now()})
+            raise
+        store.event('BENCH-001', 'esp32_calibration', {'actor': actor, 'request': body, 'ok': bool(result.get('ok')), 'log': result.get('log'),
+                                                       'calibration': result.get('calibration'), 'at': now(),
+                                                       'meaning': 'On-board scaling stored in device flash; not a reviewed backend calibration record.'})
     if not result.get('ok'):
         raise HTTPException(422, result.get('log') or 'Board rejected the calibration action.')
     return result

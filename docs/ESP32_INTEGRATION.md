@@ -125,10 +125,12 @@ stored evidence ID or enabling controls.
 | `GET /api/halo/esp32/healthz` | none | Live pass-through of the board's `/healthz`. |
 | `GET /api/halo/esp32/readings` | none | Live board reading. When the board is unreachable, returns the poller's last reading with `stale: true`. |
 | `GET /api/halo/esp32/loads` | none | Load 1/2/4 drive states as the board reports them. |
-| `POST /api/halo/esp32/loads` | operator + `HALO_ALLOW_CONTROL=1` | `{"load":4,"state":true}` or `{"load1":false,"load2":true}`. Load 3 is not wired. Records an `esp32_load_set` event. |
+| `POST /api/halo/esp32/loads` | operator + `HALO_ALLOW_CONTROL=1`; ON also requires commissioning and a clear trip latch | `{"load":4,"state":true}` or `{"load1":false,"load2":true}`. Load 3 is not wired. Records an `esp32_load_set` event. |
 | `GET /api/halo/esp32/calibration` | none | Board factors, sensitivity, method and status. |
-| `POST /api/halo/esp32/calibration` | operator | `{"action":"mains_voltage","value":228}`; actions `mains_voltage`, `secondary_voltage`, `current_meter`, `sensor_model` (66/100/185), `auto`, `zero`, `reset`, `step_test`. Returns the board's log; a board-side failure is `422` with that log. Records an `esp32_calibration` event. |
+| `POST /api/halo/esp32/calibration` | operator + `HALO_ALLOW_CONTROL=1`, commissioning, and a clear trip latch | `{"action":"mains_voltage","value":228}`; actions `mains_voltage`, `secondary_voltage`, `current_meter`, `sensor_model` (66/100/185), `auto`, `zero`, `reset`, `step_test`. Returns the board's log; a board-side failure is `422` with that log. Records an `esp32_calibration` event. |
 | `POST /api/halo/esp32/poll` | operator | Force one poll now and return the poller state. |
+
+Calibration writes require explicit hardware enablement, completed commissioning, and a clear trip latch because several firmware calibration routines switch relays. Read-only calibration inspection remains available while control is disabled. Load-ON requests are rejected while commissioning holds or the prototype trip latch remain active; with hardware control enabled, all-OFF remains available.
 
 Operator auth is the usual local session token or Supabase operator identity.
 The device token is only ever sent from the backend to the board.

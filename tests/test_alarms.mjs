@@ -28,7 +28,7 @@ test('missing reviewed limits use explicit demo thresholds without changing conf
 
 test('independent oil demo can alarm offline without claiming measured surface overheating',()=>{
  const i=input();i.display.live=false;i.result.live=false;i.result.simulated_inputs=true;
- let s=A.evaluate(A.createState(),i);assert.equal(s.title,'Oil simulation running');assert.equal(s.thermal,'unavailable');
+ let s=A.evaluate(A.createState(),i);assert.equal(s.title,'Condition unknown · source offline');assert.equal(s.status,'unavailable');assert.equal(s.thermal,'unavailable');
  i.result.level_percent=89;s=A.evaluate(s,i);assert.equal(s.status,'critical');assert.equal(s.alerts[0].id,'level');assert.equal(s.thermal,'unavailable');
  i.replay=true;s=A.evaluate(s,i);assert.equal(s.status,'unavailable');assert.equal(s.alerts.length,0);
 });

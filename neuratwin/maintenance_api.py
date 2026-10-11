@@ -97,10 +97,26 @@ def history(asset):
     return [r for r in store.records('maintenance_job') if r['asset_id']==asset]
 
 
+def model_card(record):
+    evidence=record.get('evidence') or {}
+    physical=record['asset_id']=='BENCH-001'
+    qualified=bool(physical and evidence.get('available'))
+    return {'target':'Measured surface temperature' if physical else 'Simulated top-oil temperature',
+        'status':'accepted held-out surface fit' if qualified else 'assumed parameters' if physical else 'simulation study',
+        'profile_revision':record['revision'],'provenance':record['provenance'],
+        'held_out_rmse_c':evidence.get('held_out_rmse_c'),'persistence_rmse_c':evidence.get('persistence_rmse_c'),
+        'train_samples':evidence.get('train_samples'),'held_out_samples':evidence.get('held_out_samples'),
+        'input_sha256':evidence.get('input_sha256'),
+        'scope':'Calibration evidence applies to its retained acquisition interval; live drift and new operating conditions require renewed checks. Oil, pressure, FEM and lifetime studies are separate models.',
+        'accepted_interval_fit_available':qualified,
+        'field_validated':False}
+
+
 @router.get('/assets/{asset}')
 def asset_record(asset:str,actor=Depends(operator)):
     if asset!='BENCH-001':run_or_404(asset)
-    return {'profile':profile_for(asset),'jobs':history(asset),
+    profile=profile_for(asset)
+    return {'profile':profile,'model_card':model_card(profile),'jobs':history(asset),
         'inspections':[r for r in store.records('mobile_inspection') if r.get('asset_id')==asset],
         'previous_work':[r for r in store.records('twin_work') if r.get('run_id')==asset]}
 

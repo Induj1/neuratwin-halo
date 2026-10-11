@@ -7,6 +7,7 @@ from fastapi.testclient import TestClient
 from neuratwin import halo_esp32 as esp32
 from neuratwin.app import app
 from neuratwin.halo_api import LOCAL_TOKEN
+from test_halo import configure
 
 OP = {'Authorization': 'Bearer ' + LOCAL_TOKEN}
 
@@ -138,6 +139,7 @@ def test_loads_are_proxied_only_when_control_is_enabled(client, board, monkeypat
     r = client.post('/api/halo/esp32/loads', json={'load': 4, 'state': True}, headers=OP)
     assert r.status_code == 423 and board.loads['load4'] is False
     monkeypatch.setenv('HALO_ALLOW_CONTROL', '1')
+    configure(client)
     assert client.post('/api/halo/esp32/loads', json={'load': 4, 'state': True}).status_code == 401
     r = client.post('/api/halo/esp32/loads', json={'load': 4, 'state': True}, headers=OP)
     assert r.status_code == 200 and r.json()['loads']['load4'] is True and board.loads['load4'] is True
@@ -150,7 +152,61 @@ def test_loads_are_proxied_only_when_control_is_enabled(client, board, monkeypat
     assert sum(e['kind'] == 'esp32_load_set' for e in events) == 2
 
 
-def test_calibration_proxy_returns_board_log_and_records_event(client, board):
+@pytest.mark.parametrize('hold', ['uncommissioned', 'latched'])
+@pytest.mark.parametrize('body', [{'load': 4, 'state': True}, {'load1': False, 'load2': True, 'load4': True}])
+def test_load_on_respects_commissioning_and_trip_latch_but_all_off_remains_available(client, board, monkeypatch, hold, body):
+    monkeypatch.setenv('HALO_ALLOW_CONTROL', '1')
+    if hold == 'latched':
+        configure(client)
+        esp32.store.put('twin_prototype', 'BENCH-001', {'latched': True})
+    before = dict(board.loads)
+    r = client.post('/api/halo/esp32/loads', json=body, headers=OP)
+    assert r.status_code == 423
+    assert ('commissioning' if hold == 'uncommissioned' else 'latched') in r.json()['detail']
+    assert board.loads == before
+    assert not any(method == 'POST' and path == '/api/loads' for method, path, _ in board.requests)
+    off = client.post('/api/halo/esp32/loads', json={'load1': False, 'load2': False, 'load4': False}, headers=OP)
+    assert off.status_code == 200 and not any(board.loads.values())
+
+
+@pytest.mark.parametrize('enabled', [None, '0'])
+@pytest.mark.parametrize('action', ['mains_voltage', 'secondary_voltage', 'current_meter', 'sensor_model',
+                                  'auto', 'zero', 'reset', 'step_test'])
+def test_calibration_cannot_reach_board_when_control_is_disabled(client, board, monkeypatch, enabled, action):
+    if enabled is None:
+        monkeypatch.delenv('HALO_ALLOW_CONTROL', raising=False)
+    else:
+        monkeypatch.setenv('HALO_ALLOW_CONTROL', enabled)
+    body = {'action': action}
+    if action in ('mains_voltage', 'secondary_voltage', 'current_meter', 'sensor_model'):
+        body['value'] = 100
+    r = client.post('/api/halo/esp32/calibration', json=body, headers=OP)
+    assert r.status_code == 423 and 'HALO_ALLOW_CONTROL=1' in r.json()['detail']
+    assert not any(method == 'POST' and path == '/api/calibration' for method, path, _ in board.requests)
+    assert client.get('/api/halo/esp32/calibration').status_code == 200
+
+
+@pytest.mark.parametrize('hold', ['uncommissioned', 'latched'])
+@pytest.mark.parametrize('action', ['mains_voltage', 'secondary_voltage', 'current_meter', 'sensor_model',
+                                  'auto', 'zero', 'reset', 'step_test'])
+def test_calibration_respects_commissioning_and_trip_latch(client, board, monkeypatch, hold, action):
+    monkeypatch.setenv('HALO_ALLOW_CONTROL', '1')
+    if hold == 'latched':
+        configure(client)
+        esp32.store.put('twin_prototype', 'BENCH-001', {'latched': True})
+    body = {'action': action}
+    if action in ('mains_voltage', 'secondary_voltage', 'current_meter', 'sensor_model'):
+        body['value'] = 100
+    r = client.post('/api/halo/esp32/calibration', json=body, headers=OP)
+    assert r.status_code == 423
+    assert ('commissioning' if hold == 'uncommissioned' else 'latched') in r.json()['detail']
+    assert not any(method == 'POST' and path == '/api/calibration' for method, path, _ in board.requests)
+    assert client.get('/api/halo/esp32/calibration').status_code == 200
+
+
+def test_calibration_proxy_returns_board_log_and_records_event(client, board, monkeypatch):
+    monkeypatch.setenv('HALO_ALLOW_CONTROL', '1')
+    configure(client)
     r = client.post('/api/halo/esp32/calibration', json={'action': 'mains_voltage', 'value': 228.5}, headers=OP)
     assert r.status_code == 200 and r.json()['ok'] and 'Mains calibrated to 228.50 V' in r.json()['log']
     r = client.post('/api/halo/esp32/calibration', json={'action': 'auto'}, headers=OP)

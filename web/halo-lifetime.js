@@ -4,7 +4,7 @@
  const num=(v,n=1)=>Number.isFinite(v)?v.toLocaleString(undefined,{maximumFractionDigits:n}):'—';
  const anchor=$('op-readings');if(!anchor)return;
  const panel=document.createElement('section');panel.id='op-lifetime';panel.className='panel lifetime-panel';panel.hidden=true;
- panel.innerHTML=`<div class="lifetime-heading"><h2>Life & risk</h2><span id="life-source">Scenario estimates</span></div>
+ panel.innerHTML=`<div class="lifetime-heading"><h2>Ageing sensitivity study</h2><span id="life-source">Scenario estimates</span></div><p>Assumption-driven exploration, not a measured remaining lifespan or validated probability of failure. Use the maintenance model for operational follow-up.</p>
  <div class="lifetime-metrics"><div><span>Condition score</span><strong id="life-condition">—</strong><small>Inspectable screening</small></div><div><span>Time to temperature limit</span><strong id="life-limit">—</strong><small id="life-limit-note">Conditional forecast</small></div><div><span>Modelled remaining life</span><strong id="life-remaining">—</strong><small>Conditional median</small></div><div><span>Simulated failure risk</span><strong id="life-risk">—</strong><small id="life-risk-note">Next 365 days</small></div></div>
  <p id="life-status" role="status"></p><div id="life-charts" class="lifetime-charts"></div>
  <details id="life-assumptions"><summary>Model assumptions</summary><p>Lifetime and risk use an assumed thermal-ageing model. They are not measured lifespan or calibrated failure probabilities. Future loading is held constant without protective interruption.</p><form id="life-form"><div id="life-fields" class="lifetime-fields"></div><div class="case-actions"><button type="submit">Update model</button><button type="button" id="life-reset">Reset assumptions</button></div></form><p id="life-basis"></p><div id="life-components"></div></details>`;
@@ -27,6 +27,7 @@
  function paint(r){
    result=r;
    $('life-source').textContent=(r.source_status==='cached'?'Last readings':r.mode==='prototype'?'Prototype inputs':'Industrial inputs')+' · scenario estimates';
+   $('life-assumptions').querySelector('summary').textContent=r.assumption_origin?.startsWith('Explicit')?'Independent scenario overrides':'Model assumptions · inherited thermal defaults';
    $('life-condition').textContent=r.condition_score==null?'—':num(r.condition_score,0)+'/100';
    $('life-limit').textContent=r.limit_state==='already_reached'?'Reached':r.limit_state==='crossing'?num(r.minutes_to_limit)+' min':r.limit_state==='no_crossing'?'No crossing':r.limit_state==='beyond_horizon'?'>4 h':'—';
    $('life-limit-note').textContent=num(r.assumptions.limit_temperature_c)+' °C · 4-hour horizon';

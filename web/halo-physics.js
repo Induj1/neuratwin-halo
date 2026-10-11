@@ -34,7 +34,7 @@
    ['OIL LEVEL',ready?(r.level_percent<(settings.tank==='sealed'?95:25)?'LOW':'NORMAL'):'NO DATA',!ready?'off':r.level_percent<(settings.tank==='sealed'?95:25)?'warning':'normal'],
    ['SCENARIO',options.fault==='none'?'NONE':options.fault.toUpperCase(),options.fault==='none'?'off':'warning'],
    ['MODEL TRIP',ready?(r.stage==='trip'?'LATCHED':'CLEAR'):'NO DATA',!ready?'off':r.stage==='trip'?'trip':'normal']];
-  $('px-annunciators').innerHTML=cells.map(([name,value,status])=>`<div class="px-annunciator" data-state="${status}"><span>${name}</span><strong>${value}</strong></div>`).join('');
+  $('px-annunciators').innerHTML=cells.map(([name,value,status],index)=>{const study=physical&&[1,2,3,5].includes(index);return `<div class="px-annunciator" data-state="${study&&!display?.live?'off':status}"><span>${study?'STUDY · ':''}${name}</span><strong>${study&&!display?.live?'SIMULATED':value}</strong></div>`;}).join('');
  }
  function mimic(physical,display,t){
   const voltage=physical?display?.channels.secondary_voltage?.value:t?.secondary_voltage,live=physical?display?.live:!!t;

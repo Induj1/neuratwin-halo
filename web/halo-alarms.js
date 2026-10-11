@@ -65,12 +65,13 @@
   const missing=sensorMissing||!modelReady||incomplete;
   if(alerts.length){s.hadAlarm=true;s.recovered=false;}
   else if(s.hadAlarm&&!missing){s.recovered=true;s.hadAlarm=false;}
-  const top=alerts[0],status=top?.level||(missing?'unavailable':s.recovered?'recovered':'normal');
+  const offlinePhysical=physical&&!d?.live;
+  const top=alerts[0],status=top?.level||(missing||offlinePhysical?'unavailable':s.recovered?'recovered':'normal');
   return {...s,alerts,status,thermal:sensorMissing||physical&&!d?.live?'unavailable':s.levels[physical?'surface':'oil']||'unavailable',
-   title:top?`${top.level==='critical'?'Critical':'Warning'} · ${top.label}`:sensorMissing?'Surface temperature unavailable':!modelReady||incomplete?'Model unavailable':s.recovered?'Conditions recovered':demo?'Oil simulation running':'Within configured limits',
+   title:offlinePhysical?(top?`Simulation ${top.level} · physical source offline`:'Condition unknown · source offline'):top?`${top.level==='critical'?'Critical':'Warning'} · ${top.label}`:sensorMissing?'Surface temperature unavailable':!modelReady||incomplete?'Model unavailable':s.recovered?'Conditions recovered':demo?'Oil simulation running':'Within configured limits',
    detail:top?(top.id.startsWith('scenario-')?(!physical&&!input.snapshot?.running?'Advance source 1 min to progress the fault.':'Fault progressing. Critical limits trigger the siren.'):top.id==='trip'?'Review the cause before resetting the model trip.':top.id==='surface'?'Reduce load and inspect cooling.':top.id==='level'||top.id==='gas'?'Inspect the simulated fault; load reduction does not repair it.':'Review the recommended action below.'):
     sensorMissing?'Check the surface probe.':!modelReady||incomplete?'Waiting for current model output.':s.recovered?'Readings are below the alarm recovery thresholds.':'Monitoring temperature and virtual oil protection.',
-   missing:demo?'Simulated oil system.':missing&&!!top?(sensorMissing?'Surface temperature unavailable.':'Model output unavailable.'):'',
+   missing:offlinePhysical?'Independent simulated study only. Physical equipment condition cannot be confirmed.':demo?'Simulated oil system.':missing&&!!top?(sensorMissing?'Surface temperature unavailable.':'Model output unavailable.'):'',
   };
  }
  function acknowledge(state){const ack={...state.ack};for(const a of state.alerts||[])ack[a.id]=true;return {...state,ack,alerts:(state.alerts||[]).map(a=>({...a,acknowledged:true}))};}

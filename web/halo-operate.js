@@ -248,7 +248,9 @@
     const t=s.telemetry,a=s.analysis;
     if($('view-operate').classList.contains('active')){$('connection').textContent=physical?title(s.connection)+' · ESP32':'Industrial · simulated';$('connection').className='pill';}
     $('op-industrial-controls').hidden=physical;$('op-prototype-controls').hidden=!physical;
-    $('op-waveform').hidden=physical&&!!esp;$('op-scope').hidden=!(physical&&esp);
+    const wifiHardware=physical&&esp?.status()?.configured===true;
+    $('op-waveform').hidden=wifiHardware;$('op-scope').hidden=!wifiHardware;
+    document.querySelector('.op-hw-grid').hidden=!wifiHardware;
     $('op-maintenance').hidden=physical;$('op-maintenance-physical').hidden=!physical;
     $('op-source').textContent=physical?'PHYSICAL PROTOTYPE · ESP32':'INDUSTRIAL SIMULATION';
     $('op-clock').textContent=physical?(s.connection==='disconnected'?'No acquisition received':new Date(t.timestamp).toLocaleString()):`${clock(s.elapsed_s)} simulated · ${s.running?'running':'paused'}`;
@@ -305,9 +307,9 @@
       $('op-life').textContent=`${fmt(s.condition.insulation_consumed_percent,3)}% of illustrative thermal-ageing budget used. Actual remaining life unavailable.`;
     }else{
       $('op-prototype-note').textContent=hardwareNote(s);
-      if(esp){paintHardware(s);$('op-relays').hidden=true;}
+      if(wifiHardware){paintHardware(s);$('op-relays').hidden=true;}
       else{
-        // USB-bridge fallback: the older relay command queue when the Wi-Fi module is absent.
+        // USB-bridge fallback: the older relay command queue when Wi-Fi integration is not configured.
         $('op-relays').hidden=false;
         $('op-relays').innerHTML=[0,1,2,3].map(i=>`<div><strong>K${i+1}${i===3?' · locked':''}</strong><span>39 Ω / 10 W</span><p>${s.relay_states?(s.relay_states[i]?'GPIO reports ON':'GPIO reports OFF'):'State unavailable'}</p><button data-op-relay="${i}" ${i===3||!s.load_control_available||busy?'disabled':''}>${s.relay_states?.[i]?'Request OFF':'Request ON'}</button></div>`).join('');
         $('op-relays').querySelectorAll('button').forEach(b=>b.onclick=()=>guarded(async()=>{const states=[...current.relay_states];states[Number(b.dataset.opRelay)]=!states[Number(b.dataset.opRelay)];await physicalRelays(states);}));

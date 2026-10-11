@@ -372,7 +372,20 @@ def lifetime_result(asset, assumptions, display_current=None, display_history=No
         state=state or deepcopy(run_or_404(asset));settings=state['settings']
         rows=[lifetime.from_industrial(v) for v in state['history']]
         rows.append(lifetime.from_industrial(state['telemetry']));status='industrial simulation'
+    basis='Explicit independent scenario assumptions' if assumptions else 'Default industrial ageing assumptions'
+    if not physical and assumptions == lifetime.defaults(mode,settings):
+        basis='Default industrial ageing assumptions'
+    if physical:
+        from .maintenance_model import Profile
+        record=store.get('maintenance_profile',asset)
+        p=Profile(**record['profile']) if record else Profile()
+        thermal={'ambient_c':p.ambient_c,'rated_rise_c':p.rated_rise_c,
+            'thermal_tau_min':p.tau_min,'limit_temperature_c':p.temperature_limit_c}
+        if assumptions is None or all(getattr(assumptions,k)==v for k,v in thermal.items()):
+            assumptions=assumptions or lifetime.defaults(mode,settings).model_copy(update=thermal)
+            basis='Thermal defaults inherited from maintenance profile revision '+str(record['revision'] if record else 0)+'; ageing and lifetime parameters remain assumptions'
     result=lifetime.assess(rows,assumptions or lifetime.defaults(mode,settings),mode=mode,source_status=status)
+    result['assumption_origin']=basis
     result['asset_id']=asset;result['revision']=None if physical else state['revision']
     result['input_sha256']=studies.digest({'observations':rows,'assumptions':result['assumptions'],'version':result['version']})
     return result

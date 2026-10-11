@@ -1,15 +1,67 @@
-/* Additional evidence components; the original glass shell owns the theme. */
-/* Evidence workflow: readable stages and explicit decision states. */
-.case-proof-steps{display:flex;list-style:none;margin:24px 0;padding:0;gap:12px;flex-wrap:wrap}
-.case-proof-steps li{flex:1;display:flex;align-items:center;gap:12px;padding:16px;border:1px solid #cbd5e1;min-width:155px;color:#475569}
-.case-proof-steps b{font-size:16px;font-variant-numeric:tabular-nums}
-.case-proof-steps li[data-done=true]{background:#edf3ff;border-color:#a5bdea;color:#1c4388}
-.case-blind>.case-actions{align-items:flex-end}.case-blind select{display:block;min-height:44px;font-size:16px;margin-top:8px;padding:8px;max-width:100%}
-.case-import{margin:24px 0}.case-import summary,.case-advanced>summary{cursor:pointer;min-height:44px;padding:12px 0;font-size:18px;font-weight:600}
-.case-verdict{padding:24px;border-left:4px solid #245daf;background:#f1f5fb;margin:24px 0}
-.case-verdict[data-held=true]{border-color:#b65920;background:#fff6eb}
-.case-verdict code,.case-blind code{overflow-wrap:anywhere;font-size:14px}
-.case-blind .case-chart{max-height:320px}.case-advanced>.case-grid{margin-top:20px}
-@media(max-width:600px){.case-proof-steps{gap:8px}.case-proof-steps li{min-width:0;flex-basis:100%;padding:12px}.case-verdict{padding:16px}.case-blind>.case-actions{align-items:stretch}.case-blind>.case-actions>label{width:100%}.case-blind select{width:100%}}
-
-.operator-workspace .case-blind button{min-height:44px}
+/* Extensions to Teju's 8cc1f29 glass theme.
+   The shell palette, typography, navigation and backdrop belong to halo-glass.css.
+   Keep new evidence and operations components on that same visual foundation. */
+.operator-workspace :is(.session-bar,.case-panel,.op-controls) {
+  background: var(--glass-fill);
+  border: 1px solid var(--glass-edge);
+  border-radius: 22px;
+  box-shadow: var(--glass-shadow);
+  -webkit-backdrop-filter: blur(20px) saturate(135%);
+  backdrop-filter: blur(20px) saturate(135%);
+}
+.operator-workspace .session-bar { gap: 18px; padding: 12px 20px; }
+.operator-workspace .session-bar select { min-width: 190px; }
+.operator-workspace .session-bar :is(label,small) { color: var(--muted); font-size: 13px; }
+.operator-workspace .session-bar strong { color: var(--ink); font-size: 13px; }
+.operator-workspace .case-panel { padding: 26px; }
+.operator-workspace .case-record code,
+.operator-workspace .case-blind code { overflow-wrap: anywhere; }
+.operator-workspace .case-panel details>summary { cursor: pointer; padding: 12px 0; font-weight: 600; }
+.operator-workspace .case-blind button { min-height: 44px; }
+#view-operate { --op-blue: var(--glass-accent); --op-red: #ae3a27; --op-border: var(--line); color: var(--ink); }
+#view-operate .op-modes { display: none; }
+#view-operate .op-heading .eyebrow { display: none; }
+#view-operate .op-heading h1 { letter-spacing: -.8px; }
+#view-operate .op-heading p { color: var(--muted); }
+#view-operate .op-reading { font-variant-numeric: tabular-nums; }
+#view-operate :is(.op-control-grid p,.op-scenario-bar,.op-settings,.op-signal,.op-event,#op-holds) { font-size: 14px; color: var(--muted); }
+#view-operate label { font-size: 14px; color: var(--ink); }
+#view-operate .op-signal strong { font-size: 16px; color: var(--ink); }
+#view-operate :is(.op-signal small,.op-event time,.op-insulation small) { font-size: 13px; color: var(--muted); }
+#view-operate input[type=range] { accent-color: var(--accent); }
+#view-operate :focus-visible,
+.operator-workspace .case-blind :focus-visible { outline: 2px solid var(--accent); outline-offset: 4px; }
+@media(min-width:1001px) {
+  .operator-workspace .session-bar label { display: flex; align-items: center; gap: 10px; }
+}
+@media(max-width:650px) {
+  .operator-workspace .case-panel { padding: 20px; }
+  .operator-workspace .session-bar { padding: 14px 16px; gap: 10px; }
+  .operator-workspace .session-bar select { min-width: 0; width: 100%; }
+  .operator-workspace .session-bar strong { flex: 0 0 100%; }
+  #view-operate .op-toolbar select { max-width: 100%; min-width: 0; }
+}
+/* The evidence workflow retains its readable stages without a second theme. */
+.case-proof-steps { display: flex; list-style: none; margin: 24px 0; padding: 0; gap: 12px; flex-wrap: wrap; }
+.case-proof-steps li { flex: 1; display: flex; align-items: center; gap: 12px; padding: 16px; border: 1px solid var(--glass-edge); border-radius: 16px; min-width: 155px; color: var(--muted); background: #ffffff66; }
+.case-proof-steps b { font-size: 16px; font-variant-numeric: tabular-nums; }
+.case-proof-steps li[data-done=true] { background: #e7f2e9cc; border-color: #a9c5b7; color: var(--accent); }
+.case-blind>.case-actions { align-items: flex-end; }
+.case-blind select { display: block; min-height: 44px; font-size: 16px; margin-top: 8px; padding: 8px; max-width: 100%; }
+.case-import { margin: 24px 0; }
+.case-import summary,.case-advanced>summary { cursor: pointer; min-height: 44px; padding: 12px 0; font-size: 17px; font-weight: 600; }
+.case-verdict { padding: 24px; border: 1px solid var(--glass-edge); border-left: 3px solid var(--accent); border-radius: 18px; background: #f0f8f2c9; margin: 24px 0; }
+.case-verdict[data-held=true] { border-left-color: #b65920; background: #fff6eb; }
+.case-verdict code,.case-blind code { overflow-wrap: anywhere; font-size: 14px; }
+.case-blind .case-chart { max-height: 320px; }
+.case-advanced>.case-grid { margin-top: 20px; }
+@media(max-width:600px) {
+  .case-proof-steps { gap: 8px; }
+  .case-proof-steps li { min-width: 0; flex-basis: 100%; padding: 12px; }
+  .case-verdict { padding: 16px; }
+  .case-blind>.case-actions { align-items: stretch; }
+  .case-blind>.case-actions>label,.case-blind select { width: 100%; }
+}
+@media(prefers-reduced-motion:reduce) {
+  .operator-workspace * { scroll-behavior: auto!important; transition: none!important; animation: none!important; }
+}

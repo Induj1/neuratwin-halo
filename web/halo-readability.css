@@ -521,6 +521,9 @@
   }
 }
 
+/* Horizontal navigation covers every screen size; do not duplicate its section picker. */
+.operator-workspace .mobile-section-nav { display: none; }
+
 /* Keep workspace navigation available at tablet widths. The previous
    breakpoint hid the only view switcher before a replacement was rendered. */
 @media (max-width: 1000px) {
