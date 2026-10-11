@@ -1,0 +1,4 @@
+# Optional LAN discovery for the physical prototype backend.
+# Separate from the frozen numerical/evaluation dependency manifest.
+zeroconf==0.151.5
+ifaddr==0.2.0

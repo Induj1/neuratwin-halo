@@ -36,9 +36,56 @@ current is derived from secondary power unless the firmware is built with
    HALO_ALLOW_CONTROL=1                        # required for load switching
    ```
 
-   If `halo-esp32.local` does not resolve on your network, use the IP.
-4. Start the backend. `GET /api/halo/esp32/status` shows whether the poller can
+   Keep the hostname even when DHCP changes the board's IP. Automatic discovery
+   is enabled by default for `.local` names and private IPv4 board URLs.
+4. Install the local-network discovery dependencies in the backend environment:
+   `python -m pip install -r requirements-esp32.txt`.
+5. Start the backend. `GET /api/halo/esp32/status` shows whether the poller can
    reach the board.
+
+## Automatic reconnection
+
+If polling fails, the backend rechecks the last verified address, directly queries
+the board's `_http._tcp.local.` mDNS service, then tries local ARP neighbours and
+a bounded local IPv4 scan. This bypasses Windows hostname-resolution failures.
+Searches retry at most once every 15 seconds while the board is absent; ordinary
+polling resumes once it is found. Wi-Fi adapters are re-enumerated on each search.
+The discovery dependencies are separate from the numerical evaluation manifest;
+simulation-only servers can use the core requirements alone. Missing discovery
+dependencies appear explicitly in the status endpoint while ordinary URL-based
+polling continues.
+
+Discovery only reads `/healthz` and `/api/readings`. It checks the firmware,
+configured device ID and boot ID, and verifies an authenticated acquisition before
+adopting an address. Unrelated HTTP servers do not receive the device token.
+Reconnect never replays load/calibration commands or changes measured values.
+Cached readings remain stale while the board is missing.
+
+The selected address is shared by readings and explicit operator commands.
+`/api/halo/esp32/status` exposes `configured_url`, the current `url`, and discovery
+progress inside `poller.discovery`. A local `esp32-discovery.json` alongside the
+SQLite database retains the last address without credentials; it is revalidated
+after a server restart, not blindly trusted.
+
+Optional settings (the defaults require no additional setup):
+
+```
+HALO_ESP32_DISCOVERY=1
+HALO_ESP32_DEVICE_ID=HALO-ESP32
+HALO_ESP32_HOSTNAME=halo-esp32.local
+```
+
+Set discovery to `0` to use only the configured URL. Unsetting `HALO_ESP32_URL`
+still disables the integration entirely. The laptop and ESP32 must be on a
+mutually reachable network. Discovery cannot bypass Wi-Fi client isolation or
+firewalls. The fallback is capped at 512 hosts and /24-sized local ranges; a
+campus /16 is not swept. On wider LANs, mDNS or an ARP neighbour must expose an
+address outside those ranges.
+
+No firmware reflash is needed for this backend change when using the existing
+`esp32_integration` sketch, which already advertises the HTTP service. The mDNS
+client uses [python-zeroconf](https://python-zeroconf.readthedocs.io/en/stable/api.html)
+with the [ESP32 mDNS service](https://docs.espressif.com/projects/esp-protocols/mdns/docs/latest/en/index.html).
 
 ## Backend routes
 
@@ -83,5 +130,7 @@ verification remain outstanding as described in the hardware guide.
 
 ## Tests
 
-`tests/test_esp32.py` runs the integration against an in-process fake board
-(`httpx.MockTransport`); no network, port or hardware is touched.
+`tests/test_esp32.py` and `tests/test_esp32_discovery.py` cover integration,
+DHCP changes, reboot recovery, stale readings, identity/authentication rejection,
+last-address revalidation, retry throttling and bounded interface discovery.
+They use mocked transports; no network, port or hardware is touched.

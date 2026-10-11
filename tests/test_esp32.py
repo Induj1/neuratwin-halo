@@ -39,7 +39,7 @@ class FakeBoard:
             return httpx.Response(401, json={'ok': False, 'error': 'Invalid token.'})
         path, method = request.url.path, request.method
         if path == '/healthz':
-            return httpx.Response(200, json={'ok': True, 'device_id': 'HALO-ESP32', 'boot_id': 'abc123', 'uptime_ms': 5000,
+            return httpx.Response(200, json={'ok': True, 'firmware': 'esp32_integration', 'device_id': 'HALO-ESP32', 'boot_id': 'abc123', 'uptime_ms': 5000,
                                              'wifi': {'connected': True, 'rssi_dbm': -58}})
         if path == '/api/readings':
             return httpx.Response(200, json=self.reading())
@@ -116,7 +116,7 @@ def test_poll_forwards_reading_into_telemetry_once_per_sequence(client, board):
     board.sequence += 1
     s = client.post('/api/halo/esp32/poll', headers=OP).json()
     assert s['forwarded'] == 2 and s['last_sequence'] == 8
-    assert all(auth == 'Bearer test-device-only' for _, _, auth in board.requests)
+    assert all(auth == (None if path == '/healthz' else 'Bearer test-device-only') for _, path, auth in board.requests)
 
 
 def test_status_and_readings_degrade_when_board_disappears(client, board):

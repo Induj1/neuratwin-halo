@@ -7,7 +7,7 @@ import zipfile
 
 ROOT=Path(__file__).resolve().parents[1]
 TARGET=ROOT/'submission'/'Neura-Rangers-NeuraTwin-Halo-Submission.zip'
-FIXED=('README.md','.env.example','requirements.txt','requirements-dev.txt','requirements-laya.txt','start-halo.ps1')
+FIXED=('README.md','.env.example','requirements.txt','requirements-dev.txt','requirements-laya.txt','requirements-esp32.txt','start-halo.ps1')
 TREES={'neuratwin':{'.py'},'tests':{'.py','.mjs'},'scripts':{'.py','.ps1'},'firmware':{'.ino','.h'},
        'supabase/migrations':{'.sql'},'web':{'.html','.js','.css','.svg','.png','.jpg','.webp','.mp4','.webmanifest','.txt','.csv'},
        'docs':{'.md'}}

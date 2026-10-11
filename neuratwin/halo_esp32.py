@@ -19,6 +19,7 @@ from pydantic import Field, ValidationError, model_validator
 from .halo_contracts import Contract, Frame
 from . import halo_store as store
 from .storage import now
+from .esp32_discovery import Discovery, identity_matches, tcp_reachable
 
 router = APIRouter(prefix='/api/halo/esp32')
 ACTOR = 'esp32 poller'
@@ -26,6 +27,7 @@ READ_TIMEOUT = 3.0
 LOAD_TIMEOUT = 5.0
 CALIBRATION_TIMEOUT = 45.0  # relays click for up to ~15 s during auto/step actions
 TRANSPORT = None  # tests inject an httpx.MockTransport here
+DISCOVERY = Discovery()
 
 
 class Esp32Unreachable(Exception):
@@ -57,13 +59,15 @@ def poll_seconds():
 class Esp32Client:
     """Thin HTTP client; raises Esp32Unreachable / Esp32Rejected instead of httpx errors."""
 
-    def __init__(self, url=None, token=None):
-        self.url = url or base_url()
+    def __init__(self, url=None, token=None, read_timeout=READ_TIMEOUT):
+        self.url = url or DISCOVERY.address(base_url())
         if not self.url:
             raise Esp32Unreachable('HALO_ESP32_URL is not configured.')
         token = token if token is not None else os.getenv('HALO_DEVICE_TOKEN', '')
-        headers = {'Authorization': 'Bearer ' + token} if token else {}
-        self.http = httpx.Client(base_url=self.url, headers=headers, transport=TRANSPORT)
+        self.headers = {'Authorization': 'Bearer ' + token} if token else {}
+        self.read_timeout = read_timeout
+        self.verified_health = None
+        self.http = httpx.Client(base_url=self.url, transport=TRANSPORT, trust_env=False)
 
     def close(self):
         self.http.close()
@@ -74,9 +78,12 @@ class Esp32Client:
     def __exit__(self, *_):
         self.close()
 
-    def call(self, method, path, body=None, timeout=READ_TIMEOUT):
+    def call(self, method, path, body=None, timeout=None):
+        if path != '/healthz' and self.verified_health is None:
+            self.healthz()  # Never send the device token to an unidentified LAN host.
         try:
-            r = self.http.request(method, path, json=body, timeout=timeout)
+            r = self.http.request(method, path, json=body, timeout=timeout or self.read_timeout,
+                                  headers={} if path == '/healthz' else self.headers)
         except httpx.HTTPError as error:
             raise Esp32Unreachable(f'ESP32 unreachable at {self.url}: {type(error).__name__}') from error
         try:
@@ -89,8 +96,19 @@ class Esp32Client:
             raise Esp32Rejected(r.status_code, detail or f'ESP32 error {r.status_code}')
         return data
 
-    def healthz(self): return self.call('GET', '/healthz')
-    def readings(self): return self.call('GET', '/api/readings')
+    def healthz(self):
+        data = self.call('GET', '/healthz')
+        if not identity_matches(data):
+            raise Esp32Rejected(409, 'The host is not the configured Halo ESP32.')
+        self.verified_health = data
+        return data
+
+    def readings(self):
+        data = self.call('GET', '/api/readings')
+        if (not isinstance(data, dict) or data.get('device_id') != self.verified_health['device_id']
+                or data.get('boot_id') != self.verified_health['boot_id']):
+            raise Esp32Rejected(409, 'ESP32 identity or boot changed; waiting for a fresh acquisition.')
+        return data
     def loads(self): return self.call('GET', '/api/loads')
     def set_loads(self, body): return self.call('POST', '/api/loads', body, LOAD_TIMEOUT)
     def calibration(self): return self.call('GET', '/api/calibration')
@@ -163,7 +181,20 @@ class Esp32Poller:
 
     def snapshot(self):
         with self.lock:
-            return deepcopy(self.state)
+            state = deepcopy(self.state)
+        state['discovery'] = DISCOVERY.snapshot(base_url())
+        return state
+
+    @staticmethod
+    def discovery_probe(url):
+        if not tcp_reachable(url):
+            return None
+        with Esp32Client(url=url, read_timeout=0.7) as board:
+            health = board.healthz()
+            reading = board.readings()
+            # A JSON lookalike with the right name is not an acquisition.
+            to_frame(reading)
+            return health, reading
 
     def poll_once(self):
         """One health + readings round trip, then forward any new acquisition."""
@@ -172,7 +203,8 @@ class Esp32Poller:
 
     def _poll(self):
         with self.lock:
-            self.state.update(configured=configured(), url=base_url() or None, polls=self.state['polls'] + 1, last_poll_at=now())
+            self.state.update(configured=configured(), url=DISCOVERY.address(base_url()) or None,
+                              polls=self.state['polls'] + 1, last_poll_at=now())
         if not configured():
             with self.lock:
                 self.state.update(status='not_configured', reachable=False)
@@ -181,14 +213,19 @@ class Esp32Poller:
             with Esp32Client() as board:
                 health = board.healthz()
                 reading = board.readings()
+                connected_url = board.url
         except (Esp32Unreachable, Esp32Rejected) as error:
             with self.lock:
                 self.state.update(status='unreachable', reachable=False, last_error=str(error),
                                   consecutive_failures=self.state['consecutive_failures'] + 1)
-            return self.snapshot()
+            found = DISCOVERY.discover(base_url(), self.discovery_probe, self.stop_event)
+            if not found:
+                return self.snapshot()
+            connected_url, health, reading = found
+        DISCOVERY.remember(base_url(), connected_url)
         stamp = now()
         with self.lock:
-            self.state.update(status='connected', reachable=True, last_error=None, consecutive_failures=0,
+            self.state.update(status='connected', url=connected_url, reachable=True, last_error=None, consecutive_failures=0,
                               last_seen_at=stamp, healthz=health, readings=reading, readings_at=stamp)
             unchanged = (self.state['last_boot_id'], self.state['last_sequence']) == (reading.get('boot_id'), reading.get('sequence'))
         if unchanged:
@@ -265,7 +302,8 @@ def status(request: Request):
     worker = poller(request)
     state = worker.snapshot() if worker else {'status': 'not_started'}
     state.pop('readings', None)
-    return {'configured': configured(), 'url': base_url() or None, 'poll_seconds': poll_seconds(),
+    return {'configured': configured(), 'url': DISCOVERY.address(base_url()) or None,
+            'configured_url': base_url() or None, 'poll_seconds': poll_seconds(),
             'control_enabled': os.getenv('HALO_ALLOW_CONTROL') == '1', 'token_configured': bool(os.getenv('HALO_DEVICE_TOKEN')),
             'poller': state, 'meaning': 'Backend-side reachability of the Wi-Fi board. Not contact feedback, calibration review or electrical verification.'}
 
