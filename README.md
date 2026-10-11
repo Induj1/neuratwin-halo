@@ -9,6 +9,20 @@ The [synchronized operations workspace](docs/SYNCHRONIZED_OPERATIONS.md) adds a 
 
 See the [briefing features](docs/BRIEFING_FEATURES.md) for impedance-based fault current, blind electrical diagnosis, industrial pressure scenarios, cold/hot comparisons and direct PDF exports in both modes. Prototype voltage/current behaviour is preserved, with separate raw and displayed-value provenance in reports. The [v6 model and evidence release record](docs/MODEL_AND_EVIDENCE_UPGRADE_V6.md) remains a historical record of that release.
 
+## Fleet operations
+
+Open **Fleet map** at `/app#fleet`. Twelve explicitly synthetic assets (six urban and six rural) share one reproducible clock. The map is a bundled geographic schematic, not a verified utility GIS inventory. The physical ESP32 remains a separate working source.
+
+- Select a marker or table row, then use **Digital twin**, **Action Lab**, **Maintenance**, **Evidence**, or **Costs**. Asset links preserve the run and selection. Component annotations expose measured-simulation channels, model assumptions and unavailable capabilities.
+- **Action Lab:** freeze a continue/reduce-load comparison, advance time and score later observations. T3 synthetic oil-reference assets support target-matched scoring; model-only oil cannot validate itself. Changed inputs and missing truth remain excluded, and persistence results are retained.
+- **Rural recovery:** disconnect the uplink, advance beyond the configured validity horizon, then download and import the synthetic buffer from Evidence. Imports preserve acquisition time, deduplicate and reject changed content; they cannot make historical data live.
+- **Maintenance:** an administrator reviews and assigns a job to an active operator. The assigned technician accepts it, records a visit/photo and an action. The reviewer compares later observations with frozen criteria. Outcomes distinguish mitigation, no improvement and inconclusive evidence; no physical repair is inferred. Urgent jobs have a bounded due window.
+- **Offline visits:** Save visit writes an actor-bound IndexedDB outbox that survives tab closure. Sync rechecks identity, permissions and revisions. Conflicts retain the draft for explicit review/resubmission. Logout clears device records. Browser storage clearing also removes unsynchronized drafts; automatic physical commands and automatic job closure are absent.
+- **Evidence:** historical sample replay, registered asset QR/link and optional browser NFC writing, PDF summary and complete JSON/CSV/checksum ZIP. These identify an asset; they do not transfer hardware logs or grant access.
+- **Costs:** record meter-only, selected-sensing and reference-sensing options with explicit population, period and cost sources. Unknown entries remain unknown; annualisation does not imply measured savings.
+
+The rehearsal covers software behavior, not utility data integration, field radio/battery performance, qualified physical thermal accuracy or a prospective maintenance pilot. Fleet Telegram notifications and pilot-results collection are not part of this increment. Existing physical readings, calibration and relay-control paths remain separate.
+
 ## Current model and evidence upgrades
 
 - **Maintenance desk** connects readings, uncertainty-aware thermal actions, frozen job cards, technician findings/photos, post-action verification and versioned asset models. Entered-cost comparisons identify when better information could change an action. Job PDFs retain forecasts, readings and evidence; numerical transient FEM checks and an extruded temperature-field view are available in Physics & protection. See [workflow and methods](docs/MAINTENANCE_WORKFLOW.md).
