@@ -69,6 +69,8 @@ from .briefing_api import router as briefing_router
 app.include_router(briefing_router)
 from .maintenance_api import router as maintenance_router
 app.include_router(maintenance_router)
+from .fleet_api import router as fleet_router
+app.include_router(fleet_router)
 from .portfolio_api import router as portfolio_router
 app.include_router(portfolio_router)
 from .evidence_workflow import router as observation_workflow_router

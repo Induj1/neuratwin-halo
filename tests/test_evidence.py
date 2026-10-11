@@ -74,6 +74,10 @@ def test_unverified_ambient_cannot_qualify_a_model(client):
     row=engine.demonstration('normal',1)[-1]
     row.update(timestamp=datetime.now(timezone.utc).isoformat(),calibration_id='C1')
     snap=engine.snapshot([row]);snap['model']={'beats_persistence':True,'calibration_id':'C1'}
+    # Isolate the ambient prerequisite from the independently enforced configuration gate.
+    snap['configuration_binding']={'state':'bound'}
+    snap['current']['config_id']='ambient-test-config'
+    snap['model']['config_id']='ambient-test-config'
     assert snap['quality']['calibration']=='reference recorded'
     assert 'ambient' in evidence.model_ready(snap)
     assert not engine.futures(snap)['available']

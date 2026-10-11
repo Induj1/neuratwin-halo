@@ -38,6 +38,10 @@ def model_ready(snap):
             return 'Verify each required voltage, current and surface channel first.'
         if model.get('calibration_id') != (snap.get('current') or {}).get('calibration_id'):
             return 'Calibration changed since the reference fit. Review a new model.'
+        if (snap.get('configuration_binding', {}).get('state') != 'bound'
+                or not model.get('config_id')
+                or model['config_id'] != (snap.get('current') or {}).get('config_id')):
+            return 'Acquisition configuration must match the immutable model-training configuration. Review a new qualified fit.'
     if (snap.get('current') or {}).get('quality_flags'):
         return 'Resolve acquisition quality flags before modelling.'
     if not bench.ambient_qualified(snap):
@@ -216,7 +220,8 @@ def predict(snap,horizon):
         temp=bench.surface_step(temp,row['ambient_c'],row['current_a'],5,model['coefficients'])
     return {'target':'surface_c','origin':row['timestamp'],'initial_c':row['surface_c'],'points':points,
             'inputs':{k:row[k] for k in ('current_a','ambient_c')},'model':model,'model_id':model['id'],
-            'calibration_id':row.get('calibration_id'),'cadence_seconds':cadence,'interval':'No calibrated probability interval.',
+            'calibration_id':row.get('calibration_id'),'config_id':row.get('config_id'),
+            'requires_config_binding':snap['source']!='simulated','cadence_seconds':cadence,'interval':'No calibrated probability interval.',
             'horizon_exceeds_validation':horizon*60>model['validation_span_s']}
 
 
@@ -232,6 +237,8 @@ def score_prediction(proof,rows):
         if row.get(proof['target']) is None or row.get('quality_flags') or (proof['target']=='oil_c' and (row.get('flags') or row.get('confidence')=='Low')):
             missing+=1;continue
         if proof['target']=='surface_c' and row.get('calibration_id')!=proof.get('calibration_id'):
+            missing+=1;continue
+        if proof['target']=='surface_c' and proof.get('requires_config_binding', False) and (not proof.get('config_id') or row.get('config_id')!=proof['config_id']):
             missing+=1;continue
         minute=(t-start).total_seconds()/60
         predicted=float(np.interp(minute,[p['minute'] for p in points],[p['predicted_c'] for p in points]))

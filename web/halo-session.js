@@ -10,6 +10,7 @@
     if(select){const option=new Option('Blind challenge','reference');option.disabled=true;select.add(option);}
   }
   function paint(){
+    if(window.HaloFleet?.active()){HaloFleet.paintContext();return;}
     document.body.dataset.twinSource=source;
     if(document.getElementById('view-portfolio')?.classList.contains('active')){
       const status=document.getElementById('connection');if(status)status.textContent='Fleet · frozen recordings';return;

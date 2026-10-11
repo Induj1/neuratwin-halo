@@ -789,9 +789,15 @@ def attach(key:str,payload:Attachment,actor=Depends(operator)):
 
 
 @router.get('/attachments/{key}')
-def attachment(key:str,actor=Depends(operator)):
+def attachment(key:str,request:Request,actor=Depends(operator)):
     row=store.get('attachment',key)
     if not row: raise HTTPException(404)
+    fleet_job=store.get('fleet_job',row.get('incident_id',''))
+    if fleet_job:
+        from .fleet_api import identity
+        user=identity(request)
+        if user['role']!='admin' and user['user_id']!=fleet_job['assignee']:
+            raise HTTPException(403,'This attachment belongs to another technician assignment.')
     return Response(cloud.download(row['object_path']) if row.get('object_path') else base64.b64decode(row['data']),media_type=row['mime'],headers={'Cache-Control':'no-store','X-Content-Type-Options':'nosniff'})
 
 

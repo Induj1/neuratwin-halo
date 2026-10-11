@@ -1,6 +1,6 @@
 # Fleet decisions and model evidence
 
-Open `/app#portfolio`. This extension uses Halo's existing glass theme and authenticated API/record store. It does not change GPIOs, relay handlers, physical acquisition or commissioning gates.
+Open **Fleet decisions** at `/app#portfolio`. **Fleet map** at `/app#fleet` is the separate asset-scoped simulation and field-work rehearsal; both are retained. Their API paths and page identifiers are isolated, and recordings are not silently treated as live fleet assets. This extension uses Halo's existing glass theme and authenticated API/record store. It does not change GPIOs, relay handlers, physical acquisition or commissioning gates.
 
 ## Operator workflow
 
@@ -51,4 +51,4 @@ The implementation is original. Public competitor work informed capability selec
 
 ## Verification
 
-The complete backend suite passed (555 tests), and the complete JavaScript suite passed (101 tests). Fleet-specific tests were rerun after final export/storage changes. Browser checks covered saved recordings after reload, asset filtering, case creation and review in Maintenance, a constrained transfer, deployment costs, laboratory entry and PDF download. The phone layout was checked at 390 px with no page overflow; evidence PDFs were rendered and inspected. QA used an isolated SQLite database with hardware commands and external integrations disabled. None of these checks establishes physical or field accuracy.
+The complete merged backend suite passed (566 tests), and the complete JavaScript suite passed (101 tests). Fleet-specific tests were rerun after final export/storage changes. Browser checks covered saved recordings after reload, asset filtering, case creation and review in Maintenance, a constrained transfer, deployment costs, laboratory entry and PDF download. The phone layout was checked at 390 px with no page overflow; evidence PDFs were rendered and inspected. QA used an isolated SQLite database with hardware commands and external integrations disabled. None of these checks establishes physical or field accuracy.
