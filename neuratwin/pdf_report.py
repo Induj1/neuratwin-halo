@@ -61,9 +61,18 @@ def render(snapshot):
         for key,item in value.items():
             if not isinstance(item,(dict,list)):continue
             output.append(para(label(key),'Heading3'))
-            if key=='physics_and_protection' and isinstance(item,dict):
-                output.extend(fields({k:v for k,v in item.items() if k not in ('curves','mitigated','history','matrix','matrix_columns')}))
+            if isinstance(item,dict) and (key=='physics_and_protection' or str(item.get('version','')).startswith('physics-')):
+                output.extend(fields({k:v for k,v in item.items() if k not in ('curves','mitigated','history','matrix','matrix_columns','electrical')}))
+                electrical=item.get('electrical')
+                if electrical:
+                    output.append(para('Electrical event study','Heading3'))
+                    output.extend(fields({k:v for k,v in electrical.items() if k!='trace'}))
+                    trace=electrical.get('trace',[])
+                    output.append(LongTable([[chart(trace,'current_a','Event current','A'),chart(trace,'voltage_v','Event voltage','V')]],colWidths=[365,365]))
+                    output.append(chart(trace,'i2t_a2s','Sampled current-squared exposure','A^2 s'))
+                    output.append(table(['Event seconds','Current A','Voltage V','Exposure A^2 s','Qualified'],[[v.get(k) for k in ('seconds','current_a','voltage_v','i2t_a2s','valid')] for v in trace],[110,150,150,175,150]))
                 if item.get('available'):
+                    output.append(LongTable([[chart(item['curves'],'inventory_l','Oil inventory forecast','L at 25 C'),chart(item['curves'],'oil_c','Top-oil forecast','C')]],colWidths=[365,365]))
                     output.append(para('Virtual model forecasts - model minutes, constant future loading','Heading3'))
                     after={v['minute']:v for v in item['mitigated']}
                     output.append(table(['Model min','Oil C - continue','Oil C - reduced','kPa gauge - continue','kPa gauge - reduced'],
@@ -73,6 +82,12 @@ def render(snapshot):
                     output.append(table([label(k) for k in keys],[[v.get(k) for k in keys] for v in item['history']],[150,80,80,85,85,85,85,85]))
                     output.append(para('Source matrix - current provenance retained','Heading3'))
                     output.append(table(item['matrix_columns'],item['matrix'],[200,110,110,315]))
+            elif key=='calculations' and isinstance(item,list):
+                for calculation in item:
+                    output.append(para(calculation['title'],'Heading3'))
+                    output.append(para(calculation['equation']))
+                    output.append(para(calculation['substitution']))
+                    output.append(para(calculation['basis']))
             elif isinstance(item,dict):output.extend(fields(item))
             elif not item:output.append(para('None recorded.'))
             elif all(isinstance(v,dict) for v in item):

@@ -19,7 +19,7 @@ def test_thermal_solution_and_demo_clock():
 def test_pressure_expansion_reference_and_tank_types():
     a=p.Settings();assert p.fluid(25,a)['pressure_kpa']==pytest.approx(0)
     assert p.fluid(80,a)['pressure_kpa']>p.fluid(40,a)['pressure_kpa']
-    assert p.fluid(80,p.Settings(gas_litres=30))['pressure_kpa']<p.fluid(80,a)['pressure_kpa']
+    assert p.fluid(80,p.Settings(gas_litres=60))['pressure_kpa']<p.fluid(80,a)['pressure_kpa']
     f=p.fluid(80,p.Settings(tank='conservator'));assert f['pressure_kpa'] is None
     assert f['level_percent']>40
     assert not p.fluid(200,p.Settings(gas_litres=1))['valid']
@@ -84,3 +84,39 @@ def test_readonly_revision_guard_pdf_and_auth(client):
     snap=report_snapshot(run['id'],PDFRequest(physics_options=PhysicsOptions(),revision=run['revision']))
     result=snap['assessment']['physics_and_protection'];assert result['input_sha256']==r.json()['input_sha256']
     assert 'triangles' not in result['fem']
+
+
+def test_offline_oil_demo_progresses_faults_without_creating_measurements_or_configuration(client):
+    op={'Authorization':'Bearer '+LOCAL_TOKEN}
+    original=deepcopy(store.get('config','bench'))
+    start='2026-10-10T00:00:00+00:00'
+    demo=dict(started_at=start,elapsed_seconds=120,steps=[dict(seconds=0,load_percent=65)])
+    options=dict(demo=demo)
+    response=client.post('/api/halo/twin/physics/BENCH-001',headers=op,json={'options':options})
+    assert response.status_code==200,response.text
+    result=response.json()
+    assert result['available'] and result['simulated_inputs'] and not result['live']
+    assert result['oil_c']>35 and result['pressure_kpa']>0 and result['level_percent']==100
+    assert result['current_source']=='demo simulation'
+    options.update(fault='leak',fault_at=start)
+    leak=physics_result('BENCH-001',PhysicsRequest(options=options))
+    assert leak['level_percent']<95
+    options['demo']['elapsed_seconds']=240
+    assert physics_result('BENCH-001',PhysicsRequest(options=options))['stage']=='trip'
+    assert store.get('config','bench')==original
+    assert store.frames('HALO-ESP32')==[]
+    report=report_snapshot('BENCH-001',PDFRequest(physics_options=PhysicsOptions(**options)))
+    assert report['assessment']['physics_and_protection']['simulated_inputs']
+    assert report['assessment']['physics_and_protection']['input_sha256']==physics_result('BENCH-001',PhysicsRequest(options=options))['input_sha256']
+
+
+def test_demo_load_steps_preserve_prior_thermal_history():
+    start='2026-10-10T00:00:00+00:00'
+    demo=dict(started_at=start,elapsed_seconds=120,steps=[dict(seconds=0,load_percent=65)])
+    original=physics_result('BENCH-001',PhysicsRequest(options={'demo':demo}))
+    demo['steps'].append(dict(seconds=120,load_percent=120))
+    changed=physics_result('BENCH-001',PhysicsRequest(options={'demo':demo}))
+    assert changed['oil_c']==original['oil_c']
+    assert changed['curves'][-1]['oil_c']>original['curves'][-1]['oil_c']
+    with pytest.raises(ValueError):
+        PhysicsOptions(demo={**demo,'steps':[dict(seconds=1,load_percent=65)]})

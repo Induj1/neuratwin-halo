@@ -161,7 +161,7 @@ def separated_sample(current=0):
     return sample
 
 
-def test_separated_zero_survives_export_and_disagreement_holds_forecasts(client):
+def test_separated_zero_survives_export_and_oil_study_uses_estimate_while_lifetime_stays_held(client):
     sample=separated_sample()
     row=life.from_display(sample)
     assert row['observed_current_a']==0 and row['estimated_current_a']>0
@@ -169,7 +169,15 @@ def test_separated_zero_survives_export_and_disagreement_holds_forecasts(client)
     for kind in ['lifetime','physics']:
         response=client.post('/api/halo/twin/'+kind+'/BENCH-001',headers=OP,json={'display_current':sample})
         assert response.status_code==200,response.text
-        assert not response.json()['available']
+        result=response.json()
+        if kind=='lifetime':
+            assert not result['available']
+        else:
+            assert result['available'] and result['live'] and not result['simulated_inputs']
+            assert result['input_current_a']==sample['estimates']['secondary_current']['value']
+            assert result['surface_c']==40 and result['current_source']=='frontend_estimated'
+            assert result['measurement_disagreement'] and result['current_basis']=='Displayed load-bank estimate'
+            assert sample['channels']['secondary_current']['value']==0
     pdf=client.post('/api/halo/twin/reports/BENCH-001/pdf',headers=OP,json={'display_current':sample,'display_history':[sample]})
     assert pdf.status_code==200,pdf.text[:200]
     text='\n'.join(p.extract_text() for p in PdfReader(BytesIO(pdf.content)).pages)

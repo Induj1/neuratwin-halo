@@ -4,11 +4,42 @@ import {createRequire} from 'node:module';
 const A=createRequire(import.meta.url)('../web/halo-alarms.js');
 const input=(temperature=40)=>({key:'prototype:bench',mode:'prototype',snapshot:{settings:{temperature_warning:50,temperature_critical:60}},display:{live:true,channels:{surface_temperature:{value:temperature}}},result:{available:true,live:true,oil_c:40,pressure_kpa:10,level_percent:100,stage:'normal'},settings:{tank:'sealed',oil_limit_c:95,pressure_limit_kpa:50}});
 
-test('missing limits do not mislabel a valid temperature as sensor loss or recovery',()=>{
+test('electrical exercise alarms offline, acknowledgement holds, replay suppresses',()=>{
+ const i=input();i.display.live=false;i.result.available=false;
+ i.result.electrical={available:true,simulated:true,severity:'critical',label:'Simulated isolation',source:'Simulated fault exercise'};
+ let s=A.evaluate(A.createState(),i);assert.equal(s.status,'critical');assert.equal(s.alerts[0].id,'electrical');assert.equal(s.thermal,'unavailable');
+ s=A.evaluate(A.acknowledge(s),i);assert(s.alerts[0].acknowledged);
+ i.replay=true;s=A.evaluate(s,i);assert.equal(s.alerts.length,0);
+});
+
+test('oil inventory and conservator fill have separate limits',()=>{
+ const i=input();i.settings.tank='conservator';i.result.level_percent=40;i.result.inventory_percent=100;i.result.gas_ml=0;
+ let s=A.evaluate(A.createState(),i);assert.equal(s.alerts.length,0);
+ i.result.inventory_percent=85;s=A.evaluate(s,i);assert.equal(s.alerts[0].id,'level');assert.equal(s.status,'critical');
+});
+
+test('missing reviewed limits use explicit demo thresholds without changing configuration',()=>{
  const i=input(85);i.snapshot.settings={temperature_warning:null,temperature_critical:null};
  const s=A.evaluate(A.createState(),i);
- assert.equal(s.status,'unavailable');assert.equal(s.title,'Surface limits not configured');
- assert.equal(s.alerts.length,0);assert.match(s.detail,/commissioning/);
+ assert.equal(s.status,'critical');assert.equal(s.alerts[0].basis,'Measured · demo threshold');
+ assert.deepEqual(A.surfaceLimits(i.snapshot.settings),{warning:50,critical:55,demo:true});
+ assert.equal(i.snapshot.settings.temperature_critical,null);
+});
+
+test('independent oil demo can alarm offline without claiming measured surface overheating',()=>{
+ const i=input();i.display.live=false;i.result.live=false;i.result.simulated_inputs=true;
+ let s=A.evaluate(A.createState(),i);assert.equal(s.title,'Oil simulation running');assert.equal(s.thermal,'unavailable');
+ i.result.level_percent=89;s=A.evaluate(s,i);assert.equal(s.status,'critical');assert.equal(s.alerts[0].id,'level');assert.equal(s.thermal,'unavailable');
+ i.replay=true;s=A.evaluate(s,i);assert.equal(s.status,'unavailable');assert.equal(s.alerts.length,0);
+});
+
+test('operator threshold alarms on real surface temperature and rearms when changed',()=>{
+ const i=input(35);i.surface_limit_c=30;
+ let s=A.evaluate(A.createState(),i);assert.equal(s.thermal,'critical');assert.equal(s.alerts[0].basis,'Measured · alarm threshold');
+ s=A.acknowledge(s);i.surface_limit_c=31;s=A.evaluate(s,i);assert(!s.alerts[0].acknowledged);
+ i.surface_limit_c=50;s=A.evaluate(s,i);assert.equal(s.thermal,'normal');assert(!s.alerts.length);
+ i.display.live=false;i.surface_limit_c=10;i.result.simulated_inputs=true;i.result.live=false;
+ s=A.evaluate(s,i);assert.equal(s.thermal,'unavailable');assert(!s.alerts.some(a=>a.id==='surface'));
 });
 test('surface thresholds retain warning and critical until 2 C recovery margin',()=>{
  let s=A.createState();for(const [temperature,status] of [[40,'normal'],[50,'warning'],[49,'warning'],[60,'critical'],[59,'critical'],[58,'warning'],[48,'recovered']]){

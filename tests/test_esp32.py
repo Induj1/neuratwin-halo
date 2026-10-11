@@ -1,5 +1,6 @@
 """Wi-Fi ESP32 integration against a mocked board. No network, port or hardware."""
 import json
+from datetime import datetime,timedelta,timezone
 import httpx
 import pytest
 from fastapi.testclient import TestClient
@@ -171,3 +172,31 @@ def test_unconfigured_integration_is_explicit(tmp_path, monkeypatch, board):
         assert not s['configured'] and s['url'] is None
         assert c.get('/api/halo/status').json()['esp32_configured'] is False
         assert c.post('/api/halo/esp32/poll', headers=OP).json()['status'] == 'not_configured'
+
+
+def test_repeated_sequence_keeps_timestamp_and_expires_even_while_http_responds(client,board):
+    first=client.get('/api/halo/esp32/readings').json()
+    again=client.get('/api/halo/esp32/readings').json()
+    assert first['readings_at']==again['readings_at']
+    worker=app.state.esp32_poller
+    key=('HALO-ESP32','abc123',board.sequence)
+    worker.acquisition_stamps[key]=(datetime.now(timezone.utc)-timedelta(seconds=100)).isoformat()
+    expired=client.get('/api/halo/esp32/readings').json()
+    assert not expired['live'] and expired['stale'] and expired['age_s']>=100
+    assert expired['reading']==board.reading()
+    board.sequence+=1
+    fresh=client.get('/api/halo/esp32/readings').json()
+    assert fresh['live'] and fresh['readings_at']!=first['readings_at']
+
+
+def test_prototype_view_uses_latest_acquisition_without_waiting_for_storage(client,board):
+    client.post('/api/halo/esp32/poll',headers=OP)
+    board.sequence+=1;board.surface=33.25
+    reading=client.get('/api/halo/esp32/readings').json()
+    response=client.get('/api/halo/twin/prototype')
+    assert response.status_code==200,response.text
+    snapshot=response.json()
+    assert snapshot['latest_acquisition_pending_storage']
+    assert snapshot['telemetry']['transformer_temperature']==33.25
+    assert snapshot['telemetry']['quality']=='unverified' and not snapshot['control_enabled']
+    assert datetime.fromisoformat(snapshot['telemetry']['timestamp'].replace('Z','+00:00'))==datetime.fromisoformat(reading['readings_at'].replace('Z','+00:00'))

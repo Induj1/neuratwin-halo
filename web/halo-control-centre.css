@@ -12,7 +12,22 @@ body.operator-workspace:has(#view-physics.active) .top #export,body.operator-wor
 #view-physics .cc-run-picker select{max-width:250px;min-width:0;font-size:16px;padding:10px;background:#eaf2ec;border:1px solid #80887e;border-radius:2px}
 #view-physics .cc-load-desk{display:block;margin-top:18px}
 #view-physics .cc-load-desk .px-control-bay{padding:18px}
-#view-physics #px-simulation{display:none!important}
+#view-physics #px-simulation[hidden]{display:none!important}
+#view-physics .px-surface-monitor{display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:24px;margin:0 0 24px;padding:20px;background:#adb6ae;border:2px solid #626a64}
+#view-physics .px-surface-monitor h3{font-size:20px;margin:0 0 10px}
+#view-physics #px-surface-value{width:210px;max-width:100%;padding:12px;color:#f8f888;margin-bottom:10px}
+#view-physics #px-surface-value svg{height:44px}
+#view-physics #px-surface-value>span{font-size:22px}
+#view-physics .px-surface-monitor[data-alarm=critical]{border-color:#981818;background:#fbe2dc}
+#view-physics .px-surface-monitor[data-alarm=critical] #px-surface-value{color:#e85848}
+#view-physics .px-surface-monitor[data-alarm=warning] #px-surface-value{color:#f8a808}
+#view-physics .px-surface-monitor :is(label,span){font-size:16px}
+#view-physics #px-surface-alarm-form{margin:0;max-width:100%}
+#view-physics .px-surface-setting{display:flex;flex-wrap:wrap;gap:10px;margin:10px 0}
+#view-physics .px-surface-setting input{width:110px;max-width:100%;padding:10px;background:#eaf2ec;border:1px solid #626a64;border-radius:2px;color:#1d252b;font:22px monospace}
+#view-physics .px-surface-setting button{font-size:17px;min-height:44px}
+#view-physics .cc-fault-panel #px-simulation{margin-top:20px}
+#view-physics .cc-fault-panel #px-simulation label,#view-physics .cc-fault-panel #px-simulation button{font-size:16px!important}
 #view-physics #op-explore{display:grid;grid-template-columns:1fr 1fr auto;gap:20px;align-items:end;margin:0;padding:0;border:0;box-shadow:none;background:transparent;border-radius:0;backdrop-filter:none}
 #view-physics #op-explore>div:first-child{display:none}
 #view-physics #op-explore label{font-size:17px;display:block}

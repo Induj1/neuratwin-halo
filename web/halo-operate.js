@@ -8,6 +8,7 @@
   let mode='industrial', run=null, current=null, busy=false, catalog=null, timer=null, ready=false, dirty=false, selectedScenario=null;
   let twin=null,initializing=false,replaySource=null,replayIndex=0,sliderTimer=null,pendingInputs=null,sliding=false,reviewSource=null,observationSource=null,observationRequest=0,pollSerial=0;
   let requestedSource=null,switchingSource=false;
+  let prototypeCache=null,prototypeFetching=null;
   // Wi-Fi ESP32 instruments (prototype mode only). Absent when the module is not loaded.
   const esp=window.HaloEsp32&&workspace?window.HaloEsp32.create(workspace.api):null;
   let scope=null,thermo=null,loadsPanel=null;
@@ -193,8 +194,16 @@
   }
   /* Analysis from /twin/prototype and, in the same tick, the live board packet from /esp32/readings. */
   async function prototypeState(){
-    const [s]=await Promise.all([workspace.api('/twin/prototype'),esp?esp.poll():null]);
-    return s;
+    // Cloud history can take longer than board acquisition. Refresh its summary
+    // separately so it cannot hold up subsequent ESP32 instrument updates.
+    if(!prototypeFetching){
+      prototypeFetching=workspace.api('/twin/prototype').then(s=>{prototypeCache=s;return s;})
+        .catch(e=>{if(!prototypeCache)throw e;return prototypeCache;}).finally(()=>{prototypeFetching=null;});
+    }
+    const pending=prototypeFetching;
+    if(!prototypeCache){const [s]=await Promise.all([pending,esp?esp.poll():null]);return s;}
+    if(esp)await esp.poll();
+    return prototypeCache;
   }
   function hardwareNote(s){
     const base=`${title(s.connection)} · ${s.control_enabled?'Automatic all-off requests armed':'Monitoring only; automatic cutoff is not enabled'}. Primary current needs its own calibrated sensor. Oil and winding temperature are unavailable.`;

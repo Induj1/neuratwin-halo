@@ -25,20 +25,24 @@
     const at = finite(stamped) ? stamped : now;
     const loads = r.loads && typeof r.loads === 'object' ? r.loads : {};
     const load1 = !!loads.load1, load2 = !!loads.load2, load4 = !!loads.load4;
-    return {
+    const packet = {
       available: true, live: !!reply.live && !stale, stale, error: reply.error || null,
       at: new Date(at).toISOString(), age_s: Math.max(0, (now - at) / 1000),
       device_id: r.device_id == null ? null : String(r.device_id), boot_id: r.boot_id == null ? null : String(r.boot_id),
       sequence: finite(r.sequence) ? r.sequence : null, uptime_ms: num(r.uptime_ms),
       mains_present: !!r.mains_present,
       primary: { v: num(r.primary_v), i: num(r.primary_current_a), i_method: r.primary_current_method === 'measured' ? 'measured' : 'calculated' },
-      secondary: { v: num(r.secondary_v), i: num(r.current_a), i_expected: num(r.expected_current_a) },
+      secondary: { v: num(r.secondary_v), i: num(r.current_a),
+        i_expected: estimateFrom(num(r.secondary_v),num(r.primary_v),finite(loads.loads_on)?loads.loads_on:[load1,load2,load4].filter(Boolean).length).secondary_i,
+        i_expected_firmware: num(r.expected_current_a) },
       surface_c: num(r.surface_c), probe_ok: !!r.temperature_probe_ok,
       current_calibrated: !!r.current_calibrated, calibration_status: typeof r.calibration_status === 'string' ? r.calibration_status : '',
       loads: { load1, load2, load4, loads_on: finite(loads.loads_on) ? loads.loads_on : [load1, load2, load4].filter(Boolean).length },
       relay_states: Array.isArray(r.relay_states) && r.relay_states.length === 4 ? r.relay_states.map(Boolean) : null,
       flags: Array.isArray(r.quality_flags) ? r.quality_flags.map(String) : [],
     };
+    packet.secondary.i_expected=deriveCurrents(packet).secondary_i;
+    return packet;
   }
 
   /* A reading older than three poll intervals is stale even if the last HTTP call succeeded. */
@@ -134,7 +138,7 @@
   function thermoPacket(packet, history, settings) {
     const p = packet && packet.available ? packet : null;
     const invalidFlag = !!p && p.flags.includes('surface_invalid');
-    const valid = !!p && p.probe_ok && finite(p.surface_c) && !invalidFlag;
+    const valid = !!p && p.live && !p.stale && p.probe_ok && finite(p.surface_c) && !invalidFlag;
     return {
       value_c: valid ? p.surface_c : null, valid,
       reason: !p ? 'No board reading.' : !p.probe_ok || !finite(p.surface_c) ? 'Probe disconnected or returned a sentinel value.' : invalidFlag ? 'Surface reading flagged invalid by the board.' : '',
@@ -150,6 +154,11 @@
     if (typeof api !== 'function') throw new TypeError('An api(path, body?) function is required.');
     const opts = options || {}, buffer = createBuffer(opts.bufferLimit), statusEvery = finite(opts.statusEveryMs) ? opts.statusEveryMs : 10000;
     let status = null, statusAt = 0, packet = empty(), displayRows=[], displayBoot=null;
+    function currentPacket(){
+      if(!packet.available)return packet;
+      const stamp=Date.parse(packet.at);
+      return freshness({...packet,age_s:finite(stamp)?Math.max(0,(Date.now()-stamp)/1000):packet.age_s},status?.poll_seconds);
+    }
     async function refreshStatus(force) {
       if (!force && status && Date.now() - statusAt < statusEvery) return status;
       try { status = await api('/esp32/status'); }
@@ -162,7 +171,12 @@
       if (!status || !status.configured) { packet = empty({ configured: false }); return packet; }
       try {
         const reply = await api('/esp32/readings');
-        packet = freshness(normalize(reply), status.poll_seconds);
+        let incoming=normalize(reply);
+        // Repeated acquisition IDs cannot reset age, including older firmware
+        // replies which don't yet carry a server acquisition timestamp.
+        if(packet.available&&packet.boot_id===incoming.boot_id&&packet.sequence===incoming.sequence)
+          incoming={...incoming,at:packet.at,age_s:Math.max(0,(Date.now()-Date.parse(packet.at))/1000)};
+        packet = freshness(incoming, status.poll_seconds);
         if (packet.available) {
           const added=buffer.push(packet);
           if(displayBoot!==packet.boot_id){displayRows=[];displayBoot=packet.boot_id;}
@@ -180,8 +194,8 @@
       packet = Object.assign({}, packet, { loads: { load1, load2, load4, loads_on: finite(loads.loads_on) ? loads.loads_on : [load1, load2, load4].filter(Boolean).length } });
       return packet;
     }
-    return { poll, refreshStatus, setLoads, applyLoads, status: () => status, packet: () => packet, history: () => buffer.rows(),
-      displaySnapshot:()=>displaySnapshot(packet,buffer.rows(),status),displayHistory:()=>structuredClone(displayRows),
+    return { poll, refreshStatus, setLoads, applyLoads, status: () => status, packet: currentPacket, history: () => buffer.rows(),
+      displaySnapshot:()=>displaySnapshot(currentPacket(),buffer.rows(),status),displayHistory:()=>structuredClone(displayRows),
       reset: () => {buffer.clear();displayRows=[];displayBoot=null;} };
   }
 

@@ -89,6 +89,36 @@ with the [ESP32 mDNS service](https://docs.espressif.com/projects/esp-protocols/
 
 ## Backend routes
 
+The control centre runs an independent oil demo when prototype inputs are
+offline or missing usable model inputs. It starts at 65% simulated loading and 35 °C,
+with the existing 60× model clock. Analysis contains its load slider, advance
+button and fault scenarios. Usable live inputs automatically replace this demo.
+Demo results and report exports identify their simulated inputs; they never
+populate measured channels, save telemetry or send relay commands. Surface
+annunciation uses 50 °C warning / 55 °C critical demo thresholds when reviewed
+limits are absent. These display defaults do not commission hardware or enable
+automatic cutoff.
+
+Above the response graphs, Surface temperature displays the fresh probe value.
+Set its alarm threshold beside that readout; the choice persists in this browser.
+The warning is 5 °C lower, and the repeating critical siren clears after 2 °C of
+recovery or acknowledgement. Offline and replay readings cannot raise a measured
+temperature alarm. Source-instrument current and loading gauges prefer a valid
+estimate and label it Estimated; the underlying measured channels remain intact.
+
+With live inputs, the oil model uses that same displayed current estimate and
+the measured surface temperature. A current-sensor disagreement remains visible
+but does not replace these inputs with the independent demo. Oil temperature,
+pressure and oil level remain conditional estimates, not measured channels.
+Expected load current uses the displayed secondary voltage and active resistor
+branches; the board's original expected-current value is retained separately.
+
+Reading age advances from the first receipt of each boot/sequence pair. Repeated
+responses cannot make a frozen acquisition fresh. Instrument polling runs
+independently of slower history requests, and the prototype snapshot can include
+the newest cached acquisition while storage catches up, without inventing a
+stored evidence ID or enabling controls.
+
 | Route | Auth | Purpose |
 | --- | --- | --- |
 | `GET /api/halo/esp32/status` | none | Poller state: reachable, last seen, forwarded count, last errors. |
@@ -129,6 +159,57 @@ means the controller answered HTTP, nothing more. Electrical review and physical
 verification remain outstanding as described in the hardware guide.
 
 ## Tests
+
+### Protection studies and oil inventory
+
+In Control centre > Analysis, Electrical protection study provides separate
+overload, short-circuit and restored-supply exercises. The event recorder shows
+current, voltage and sampled current-squared exposure. Exercises are independent
+of source instruments and send no ESP32 commands. Live RMS screening requires
+independent calibrated current; the resistor-bank estimate cannot detect a fault.
+Overload and voltage-dip/current thresholds, persistence and startup guard are
+editable study assumptions. Recovery margins are 0.05 per unit for overload and
+10% for the high-current indication. These are advisory settings, not a physical
+protective relay. Sparse RMS data cannot establish inrush or internal-fault cause.
+
+The virtual oil profile starts with 200 L at 25 C, a 30 L gas cushion and a 40 L
+conservator. Inventory is distinct from conservator fill and thermally expanded
+volume. Slow loss is 0.12 L/model minute; rapid leakage is 2 L/model minute. At
+60x, 15 real seconds of the rapid scenario represent a 30 L loss. Stop leak and
+Reset scenario retain missing oil; only Record simulated refill replenishes it,
+capped at the original inventory. Changing working source starts a new scenario.
+No evaporation rate is inferred from electrical or surface measurements.
+
+The forecast retains missing oil and continues the declared leak rate. A positive
+rate gives a conditional time to the low-inventory limit; an already exceeded
+limit gives zero even after leakage stops. Defaults of 95% warning and 90%
+critical are configurable demo assumptions, not universal industrial limits.
+Effective thermal capacity combines declared solid capacity with oil density,
+inventory and specific heat. The heat-transfer coefficient is held fixed, so oil
+loss changes response speed without inventing a higher steady-state temperature.
+Gas-cushion pressure assumes a rigid sealed tank and no gas exchange, including
+during the idealised leak; it does not model rupture or air ingress.
+
+Calculation drawers expose equations, substituted inputs, units and assumptions
+for loading/I-squared-R, sampled I-squared-t, prospective terminal fault current,
+oil mass balance, time to limit, expansion, thermal capacity, top-oil response,
+gas pressure and FEM balance. Absolute copper loss and prospective fault current
+remain unavailable until winding resistance and impedance are declared.
+The FEM field remains a separate illustrative geometry; it is not claimed as a
+calibrated internal temperature field for the bench or the 200 L oil model.
+
+Create job card freezes an abnormal study under Maintenance > Protection job
+cards. Save findings, record the corrective action, then compare a newer
+follow-up using unchanged assumptions. Simulated restored supply permits a
+model-recovery comparison after an electrical exercise. Findings and model
+recovery do not establish physical repair. Job PDFs and the main report retain
+source labels, calculations, event traces and the maintenance trail.
+
+References: [Schneider terminal fault-current approximation](https://www.electrical-installation.org/enwiki/Short-circuit_current_at_the_secondary_terminals_of_a_MV/LV_distribution_transformer),
+[Alliander thermal modelling documentation](https://alliander-opensource.github.io/transformer-thermal-model/),
+and [Eaton liquid-immersed transformer maintenance guidance](https://www.eaton.com/content/dam/eaton/products/medium-voltage-power-distribution-control-systems/iec-assemblies-mv-switchgear/ulusoy-oil-immersed-type-transformer/eaton-liquid-immersed-distribution-transformers-manual-en-us.pdf).
+
+### Verification
 
 `tests/test_esp32.py` and `tests/test_esp32_discovery.py` cover integration,
 DHCP changes, reboot recovery, stale readings, identity/authentication rejection,

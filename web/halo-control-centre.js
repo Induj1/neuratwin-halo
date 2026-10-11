@@ -27,7 +27,7 @@
  $('op-thermo').hidden=true;
  const hardware=detail('Hardware status & commissioning',$('op-prototype-controls'));
  overview.append(hardware);
- const faultPanel=make('section','cc-fault-panel');const faultHeading=make('div','cc-section-heading'),faultTitle=make('h2');faultTitle.textContent='Fault scenarios';faultHeading.append(faultTitle,$('px-tank'));faultPanel.append(faultHeading,root.querySelector('.px-faults'));
+ const faultPanel=make('section','cc-fault-panel');const faultHeading=make('div','cc-section-heading'),faultTitle=make('h2');faultTitle.textContent='Fault scenarios';faultHeading.append(faultTitle,$('px-tank'));faultPanel.append(faultHeading,root.querySelector('.px-faults'),$('px-simulation'));
  analysis.prepend(faultPanel);
  root.querySelector('.px-bottom summary').textContent='Oil model assumptions';
  append(analysis,root.querySelector('.px-bottom'),$('tf-panel'),$('op-lifetime'),$('op-engineering'));

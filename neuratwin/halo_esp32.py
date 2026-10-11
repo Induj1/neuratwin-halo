@@ -185,6 +185,23 @@ class Esp32Poller:
         state['discovery'] = DISCOVERY.snapshot(base_url())
         return state
 
+    def acquisition_time(self, reading):
+        key=(reading.get('device_id'),reading.get('boot_id'),reading.get('sequence'))
+        with self.lock:
+            if not hasattr(self, 'acquisition_stamps'):
+                self.acquisition_stamps={}
+            stamp=self.acquisition_stamps.setdefault(key,now())
+            if len(self.acquisition_stamps)>256:
+                self.acquisition_stamps.pop(next(iter(self.acquisition_stamps)))
+            return stamp
+
+    def observe(self, reading):
+        stamp=self.acquisition_time(reading)
+        with self.lock:
+            if not self.state.get('readings_at') or stamp>=self.state['readings_at']:
+                self.state.update(readings=reading,readings_at=stamp)
+        return stamp
+
     @staticmethod
     def discovery_probe(url):
         if not tcp_reachable(url):
@@ -224,9 +241,10 @@ class Esp32Poller:
             connected_url, health, reading = found
         DISCOVERY.remember(base_url(), connected_url)
         stamp = now()
+        self.observe(reading)
         with self.lock:
             self.state.update(status='connected', url=connected_url, reachable=True, last_error=None, consecutive_failures=0,
-                              last_seen_at=stamp, healthz=health, readings=reading, readings_at=stamp)
+                              last_seen_at=stamp, healthz=health)
             unchanged = (self.state['last_boot_id'], self.state['last_sequence']) == (reading.get('boot_id'), reading.get('sequence'))
         if unchanged:
             return self.snapshot()
@@ -236,7 +254,7 @@ class Esp32Poller:
     def forward(self, reading):
         from .halo_api import ingest
         try:
-            result = ingest(to_frame(reading), ACTOR)
+            result = ingest(to_frame(reading,datetime.fromisoformat(self.acquisition_time(reading).replace('Z','+00:00'))), ACTOR)
             with self.lock:
                 self.state.update(forwarded=self.state['forwarded'] + 1, last_forward_error=None,
                                   last_boot_id=reading.get('boot_id'), last_sequence=reading.get('sequence'),
@@ -318,7 +336,12 @@ def readings(request: Request):
     """Live board reading; falls back to the poller's last reply when unreachable."""
     worker = poller(request)
     try:
-        return {'live': True, 'stale': False, 'reading': board_call(lambda b: b.readings())}
+        reading=board_call(lambda b: b.readings())
+        stamp=worker.observe(reading) if worker else now()
+        age=max(0,(datetime.now(timezone.utc)-datetime.fromisoformat(stamp.replace('Z','+00:00'))).total_seconds())
+        stale=age>max(5,3*poll_seconds())
+        return {'live':not stale,'stale':stale,'reading':reading,'readings_at':stamp,
+                'age_s':age,'error':'ESP32 acquisition has not advanced.' if stale else None}
     except HTTPException as error:
         cached = worker.snapshot() if worker else {}
         if error.status_code == 503 and cached.get('readings'):

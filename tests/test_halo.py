@@ -229,6 +229,11 @@ def test_laya_choices_and_invalid_response_fallback(client,monkeypatch):
     assert a['provider']=='laya' and a['model_confidence'] is None and a['distributions']
     stale=engine.snapshot([]);a=ai.assess(stale,[],True)
     assert a['hypothesis']=='insufficient_evidence' and a['policy_override']
+    assert a['evidence_ids']==[] and a['provider']=='laya'
+    pending=engine.demonstration('overload')
+    for row in pending:row.pop('evidence_id',None)
+    a=ai.assess(engine.snapshot(pending,'measured','TEST'),[],True)
+    assert a['evidence_ids']==[] and a['provider']=='laya'
     monkeypatch.setattr(ai.httpx,'post',lambda *a,**k:httpx.Response(200,request=httpx.Request('POST','http://local'),json={}))
     assert ai.assess(stale,[],True)['provider']=='rules'
 

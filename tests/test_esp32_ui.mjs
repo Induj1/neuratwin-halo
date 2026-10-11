@@ -116,6 +116,26 @@ test('client never throws from poll: unconfigured, unreachable and live paths', 
   assert.deepEqual(client.applyLoads(r.loads).loads, { load1: false, load2: true, load4: false, loads_on: 1 });
 });
 
+test('age advances between requests and repeated sequence IDs cannot revive frozen samples', async()=>{
+ const original=Date.now;let clock=Date.parse('2026-10-11T00:00:00Z'),sequence=1;
+ Date.now=()=>clock;
+ try{
+  const c=create(async path=>path==='/esp32/status'?{configured:true,poll_seconds:2}:{live:true,reading:reading({sequence})});
+  await c.poll();const stamp=c.displaySnapshot().timestamp;
+  clock+=3000;assert.equal(c.displaySnapshot().age_s,3);assert(c.displaySnapshot().live);
+  await c.poll();assert.equal(c.displaySnapshot().timestamp,stamp);
+  clock+=4000;assert.equal(c.displaySnapshot().age_s,7);assert(!c.displaySnapshot().live);assert.equal(c.displaySnapshot().channels.surface_temperature.value,null);
+  await c.poll();assert(!c.displaySnapshot().live);
+  sequence++;await c.poll();assert(c.displaySnapshot().live);assert.equal(c.displaySnapshot().age_s,0);
+ }finally{Date.now=original;}
+});
+
+test('expected current shares displayed voltage basis while retaining firmware expectation separately',()=>{
+ const p=math.normalize({live:true,reading:reading({secondary_v:14.3,expected_current_a:.8,loads:{load1:true,load2:true,load4:false,loads_on:2}})});
+ assert.equal(p.secondary.i_expected,14.3/19.5);assert.equal(p.secondary.i_expected_firmware,.8);
+ assert.equal(p.secondary.i_expected,math.deriveCurrents(p).secondary_i);
+});
+
 test('report snapshots separate observed zero or missing from estimates and hold conflicted screening', () => {
   for (const raw of [0, null]) {
     const b=createBuffer();let p;

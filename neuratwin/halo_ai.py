@@ -31,7 +31,7 @@ STUDY_INSPECTIONS = {
 class Decision(Contract):
     hypothesis: Literal['expected_load_response','possible_thermal_deviation','possible_sensor_discrepancy','insufficient_evidence']
     inspection: Literal['independent_temperature','check_load','check_connection','visual_inspection']
-    evidence_ids: list[str] = Field(min_length=1,max_length=12)
+    evidence_ids: list[str] = Field(max_length=12)
 
 
 def evidence_bundle(snap,observations):
@@ -55,8 +55,8 @@ def baseline(bundle):
     elif 'overcurrent' in codes or 'load_mismatch' in codes or 'loading' in codes:
         h,step='expected_load_response','check_load'
     else: h,step='insufficient_evidence','independent_temperature'
-    refs=[e['id'] for e in bundle['evidence'] if e.get('available')][:8]
-    return {'hypothesis':h,'inspection':step,'evidence_ids':refs or [bundle['evidence'][0]['id']]}
+    refs=[e['id'] for e in bundle['evidence'] if e.get('available') and e.get('id')][:8]
+    return {'hypothesis':h,'inspection':step,'evidence_ids':refs}
 
 
 def assess(snap,observations,force=False):

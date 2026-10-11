@@ -124,7 +124,7 @@ def snapshot(rows, source='measured', asset_id='BENCH-001', c=None):
     if not fresh: warn('telemetry','Waiting for fresh telemetry','No recent measurement is available. Last values are historical.','warning','controller')
     for key,unit in CHANNELS.items():
         value=latest.get(key) if latest else None
-        evidence.append({'id':f'{latest["evidence_id"]}:{key}' if latest else f'NO-DATA:{key}',
+        evidence.append({'id':f'{latest["evidence_id"]}:{key}' if latest and latest.get('evidence_id') else None,
                          'channel':key,'value':value,'unit':unit,'timestamp':latest.get('timestamp') if latest else None,
                          'source':source if key!='ambient_c' or not latest else ('manual observation' if latest.get('ambient_source')=='manual' else source),
                          'calibrated':channel_calibration[key],

@@ -277,7 +277,25 @@ def process_prototype(frame,*,allow_control=True):
 
 
 @router.get('/twin/prototype')
-def prototype():return prototype_view()
+def prototype(request:Request):
+    # Show the latest acquired frame while durable cloud ingestion catches up.
+    # It retains the same measured values and unverified provenance; this does
+    # not write telemetry, invent calibration or enable physical control.
+    from .halo_esp32 import poller, to_frame
+    cfg=bench.config();rows=store.frames(cfg.device_id)
+    worker=poller(request);cached=worker.snapshot() if worker else {}
+    reading=cached.get('readings')
+    appended=False
+    if reading and reading.get('device_id')==cfg.device_id and cached.get('readings_at'):
+        stamp=datetime.fromisoformat(cached['readings_at'].replace('Z','+00:00'))
+        latest=datetime.fromisoformat(rows[-1]['timestamp'].replace('Z','+00:00')) if rows else None
+        seen=any((r.get('boot_id'),r.get('sequence'))==(reading.get('boot_id'),reading.get('sequence')) for r in rows)
+        if not seen and (latest is None or stamp>latest):
+            rows=[*rows,to_frame(reading,stamp).model_dump(mode='json')]
+            appended=True
+    result=prototype_view(rows)
+    result['latest_acquisition_pending_storage']=appended
+    return result
 
 
 class Recovery(Contract):

@@ -1,6 +1,6 @@
 """Industrial studies and complete, source-labelled PDF snapshots."""
 from copy import deepcopy
-from datetime import datetime, timezone
+from datetime import datetime, timezone, timedelta
 import hashlib
 import json
 import math
@@ -14,6 +14,7 @@ from . import halo_store as store, halo_engine as bench, twin_core as core, twin
 from . import electrical_diagnostics as diagnostics
 from . import lifetime_scenario as lifetime
 from . import prototype_physics as physics
+from . import protection_study
 from .twin_api import run_or_404, prototype_view
 from .storage import now
 
@@ -100,14 +101,73 @@ class DisplaySample(Contract):
         return self
 
 
+class DemoLoadStep(Contract):
+    seconds: float = Field(ge=0, le=86400)
+    load_percent: float = Field(ge=0, le=180)
+
+
+class PhysicsDemo(Contract):
+    started_at: datetime
+    elapsed_seconds: float = Field(ge=0, le=86400)
+    initial_temperature_c: float = Field(35, ge=-20, le=100)
+    steps: list[DemoLoadStep] = Field(min_length=1, max_length=2048)
+
+    @model_validator(mode='after')
+    def ordered(self):
+        if self.started_at.utcoffset() is None:
+            raise ValueError('Demo clock requires a timezone.')
+        times = [s.seconds for s in self.steps]
+        if times[0] != 0 or times != sorted(set(times)) or times[-1] > self.elapsed_seconds:
+            raise ValueError('Demo load steps must start at zero and increase within the demo clock.')
+        return self
+
+    def rows(self):
+        times = sorted({0., self.elapsed_seconds, *range(0, int(self.elapsed_seconds)+1, 10),
+                        *(s.seconds for s in self.steps)})
+        index = 0
+        for seconds in times:
+            while index+1 < len(self.steps) and self.steps[index+1].seconds <= seconds:
+                index += 1
+            yield dict(timestamp=(self.started_at+timedelta(seconds=seconds)).isoformat(),
+                       sample_key=f'oil-demo:{seconds}', boot_id='oil-demo',
+                       current_a=self.steps[index].load_percent/100, voltage_v=12.,
+                       temperature_c=self.initial_temperature_c, current_source='demo simulation',
+                       source='Independent virtual oil demo; not an ESP32 acquisition')
+
+
+class OilAction(Contract):
+    at:datetime
+    operation:Literal['leak','stop','refill']
+    rate_l_min:float=Field(0,ge=0,le=100)
+    litres:float=Field(0,ge=0,le=5000)
+
+    @model_validator(mode='after')
+    def valid_action(self):
+        if self.at.utcoffset() is None:raise ValueError('Oil action requires a timezone.')
+        if self.operation=='leak' and self.rate_l_min<=0:raise ValueError('A leak requires a positive rate.')
+        if self.operation=='refill' and self.litres<=0:raise ValueError('Refill must be positive.')
+        return self
+
+
+class ElectricalExercise(Contract):
+    kind:Literal['none','overload','short','recovery']='none'
+    elapsed_seconds:float=Field(0,ge=0,le=120)
+    current_pu:float=Field(8,ge=2,le=10)
+
+
 class PhysicsOptions(Contract):
     settings:physics.Settings=Field(default_factory=physics.Settings)
     fault:Literal['none','leak','gas','surge']='none'
     fault_at:datetime|None=None
     reset_at:datetime|None=None
+    demo:PhysicsDemo|None=None
+    oil_actions:list[OilAction]=Field(default_factory=list,max_length=100)
+    electrical:ElectricalExercise=Field(default_factory=ElectricalExercise)
 
     @model_validator(mode='after')
     def timezones(self):
+        times=[a.at for a in self.oil_actions]
+        if times!=sorted(times):raise ValueError('Oil actions must be chronological.')
         if any(t and t.utcoffset() is None for t in (self.fault_at,self.reset_at)):
             raise ValueError('Scenario times require a timezone.')
         if self.fault!='none' and self.fault_at is None:raise ValueError('Fault start time is required.')
@@ -149,14 +209,34 @@ class PhysicsRequest(LifetimeRequest):
     options:PhysicsOptions=Field(default_factory=PhysicsOptions)
 
 
+def physics_display_row(sample):
+    """Use the gauge's chosen current without replacing the observed channel."""
+    row=lifetime.from_display(sample)
+    estimate=sample.get('estimates',{}).get('secondary_current',{}).get('value')
+    observed=sample['channels']['secondary_current']['value']
+    row['current_a']=estimate if estimate is not None else observed
+    row['current_source']='frontend_estimated' if estimate is not None else sample['channels']['secondary_current']['source']
+    row['observed_current_a']=observed
+    row['estimated_current_a']=estimate
+    row['calibrated']=sample.get('calibrated',False)
+    row['measurement_disagreement']=sample.get('disagreement',False)
+    row['observed_current_source']=sample['channels']['secondary_current']['source']
+    return row
+
+
 def physics_result(asset,payload,state=None):
     physical=asset=='BENCH-001'
+    demo=physical and payload.options.demo is not None
     if physical:
         samples=[v.model_dump(mode='json') for v in payload.display_history]
         current=payload.display_current.model_dump(mode='json') if payload.display_current else None
         if current:samples.append(current)
-        rows=[lifetime.from_display(v) for v in samples if v.get('timestamp')]
+        rows=[physics_display_row(v) for v in samples if v.get('timestamp')]
         rated=1;live=bool(current and current['live']);branches=(current or {}).get('active_branches') or 0
+        if demo:
+            rows=list(payload.options.demo.rows())
+            live=False
+            branches=0
     else:
         state=state or deepcopy(run_or_404(asset))
         if payload.revision is not None and payload.revision!=state['revision']:raise HTTPException(409,'Run changed. Refresh the physics study.')
@@ -164,13 +244,25 @@ def physics_result(asset,payload,state=None):
         rated=lifetime.defaults('industrial',state['settings']).rated_current_a;live=True;branches=0
     o=payload.options
     result=physics.assess(rows,o.settings,rated_current=rated,live=live,fault=o.fault,
-        fault_at=o.fault_at.timestamp() if o.fault_at else None,reset_at=o.reset_at.timestamp() if o.reset_at else None,branches=branches)
-    if physical and current and current.get('version')=='prototype-display-2' and current.get('disagreement'):
-        result['reason']='Measured current disagrees with the load-bank estimate. Resolve the readings before forecasting.'
+        fault_at=o.fault_at.timestamp() if o.fault_at else None,reset_at=o.reset_at.timestamp() if o.reset_at else None,branches=branches,
+        oil_actions=[dict(time=a.at.timestamp(),operation=a.operation,rate_l_min=a.rate_l_min,litres=a.litres) for a in o.oil_actions])
+    if physical and not demo and current:
+        result['measurement_disagreement']=bool(current.get('disagreement'))
+        result['current_basis']='Displayed load-bank estimate' if current.get('estimates',{}).get('secondary_current',{}).get('value') is not None else 'Displayed measured current'
+        result['input_note']='Measured current is uncalibrated or disagrees with the estimate; the oil study uses the displayed current basis, not proof of actual load current.' if current.get('disagreement') or not current.get('calibrated') else ''
     result.update(asset_id=asset,mode='prototype' if physical else 'industrial',revision=None if physical else state['revision'])
+    result['simulated_inputs']=demo
+    if demo:
+        result['temperature_basis']='Demo seed temperature; no measured surface or oil temperature is substituted.'
+        result['scope']='Independent virtual oil demo. Inputs are simulated; measured readings and physical controls are unchanged.'
     if not physical:result['temperature_basis']='Initial industrial top-oil is modelled, then independently projected with this study profile.'
     if result['available']:result['fem']=physics.fem(result['loading_pu'],o.settings.ambient_c,energized=result['energized'])
-    result['input_sha256']=studies.digest({'rows':rows,'options':o.model_dump(mode='json'),'version':result['version']})
+    electrical_rows=[physics_display_row(v) for v in samples if v.get('timestamp')] if physical else rows
+    result['electrical']=protection_study.electrical(electrical_rows,o.settings,rated_current=rated,
+        nominal_voltage=12 if physical else state['settings']['secondary_v'],live=bool(current and current['live']) if physical else live,
+        scenario=o.electrical.model_dump())
+    result['calculations']=protection_study.calculations(result,o.settings,result['electrical'])
+    result['input_sha256']=studies.digest({'rows':rows,'electrical_rows':electrical_rows,'options':o.model_dump(mode='json'),'version':result['version']})
     return result
 
 
@@ -182,6 +274,89 @@ def physics_assessment(asset:str,payload:PhysicsRequest,actor=Depends(operator))
 @router.get('/physics-sensor-study')
 def physics_sensor_study(actor=Depends(operator)):
     return physics.sensor_study()
+
+
+class ProtectionJobRequest(PhysicsRequest):
+    request_id:str=Field(min_length=8,max_length=80,pattern=r'^[\w-]+$')
+
+
+class ProtectionJobUpdate(PhysicsRequest):
+    job_revision:int=Field(ge=0)
+    operation:Literal['finding','action','verify']
+    note:str=Field(min_length=3,max_length=2000)
+
+
+@router.get('/protection-jobs/{asset}')
+def protection_jobs(asset:str,actor=Depends(operator)):
+    if asset!='BENCH-001':run_or_404(asset)
+    return [v for v in store.records('protection_job') if v['asset_id']==asset]
+
+
+def compact_study(study):
+    frozen=deepcopy(study)
+    if frozen.get('fem'):frozen['fem']={k:v for k,v in frozen['fem'].items() if k not in ('nodes','triangles','materials','temperature_c')}
+    return frozen
+
+
+@router.post('/protection-jobs/{asset}')
+def create_protection_job(asset:str,payload:ProtectionJobRequest,actor=Depends(operator)):
+    from uuid import uuid4
+    with WRITE_LOCK,store.transaction():
+        prior=next((j for j in store.records('protection_job') if j['asset_id']==asset and j['request_id']==payload.request_id),None)
+        if prior:return prior
+        study=compact_study(physics_result(asset,payload))
+        e=study['electrical'];oil=study.get('oil_balance',{})
+        if e['severity'] not in ('warning','critical') and study.get('stage') not in ('warning','trip') and not oil.get('missing_l') and not oil.get('loss_rate_l_min'):
+            raise HTTPException(422,'Run or capture an abnormal condition before creating a protection job.')
+        title=e['label'] if e['severity'] in ('warning','critical') else 'Oil loss inspection' if oil.get('missing_l') or oil.get('loss_rate_l_min') else 'Thermal and oil protection inspection'
+        record=dict(id=str(uuid4()),asset_id=asset,request_id=payload.request_id,title=title,status='open',revision=0,created_at=now(),
+            study=study,options=payload.options.model_dump(mode='json'),
+            display_current=payload.display_current.model_dump(mode='json') if payload.display_current else None,
+            display_history=[v.model_dump(mode='json') for v in payload.display_history],
+            trail=[dict(at=now(),operation='created',note='Frozen source readings, limits and calculations retained.')],verification=None)
+        store.create_unique('protection_job',record['id'],record)
+        return record
+
+
+@router.post('/protection-jobs/{asset}/{job}')
+def update_protection_job(asset:str,job:str,payload:ProtectionJobUpdate,actor=Depends(operator)):
+    with WRITE_LOCK,store.transaction():
+        record=store.get('protection_job',job)
+        if not record or record['asset_id']!=asset:raise HTTPException(404,'Protection job not found.')
+        if record['revision']!=payload.job_revision:raise HTTPException(409,'Job changed; refresh before saving.')
+        entry=dict(at=now(),operation=payload.operation,note=payload.note)
+        if payload.operation=='action':record['status']='awaiting_verification'
+        if payload.operation=='verify':
+            if not any(v['operation']=='action' for v in record['trail']):raise HTTPException(422,'Record the corrective action before verification.')
+            after=compact_study(physics_result(asset,payload));before=record['study']
+            same=before['settings']==after['settings'] and before['simulated_inputs']==after['simulated_inputs']
+            electrical_job=before['electrical']['severity'] in ('warning','critical')
+            # Resetting a synthetic exercise is not evidence that an actual electrical fault was repaired.
+            electrical_clear=after['electrical']['stage']=='normal' and after['electrical']['source']==before['electrical']['source']
+            oil_clear=after.get('available') and after.get('stage')=='normal' and after.get('loss_rate_l_min')==0 and after.get('inventory_percent',0)>=after['settings']['oil_warning_percent']
+            fresh=after.get('timestamp') and before.get('timestamp') and after['timestamp']>before['timestamp']
+            passed=bool(same and fresh and (electrical_clear if electrical_job else oil_clear))
+            verification=dict(outcome='model_recovered' if passed else 'not_verified',verified_at=now(),
+                note='Conditional model comparison only; technician findings do not prove physical isolation or repair.',
+                before_oil_l=before.get('inventory_l'),after_oil_l=after.get('inventory_l'),before_peak_c=max((v['oil_c'] for v in before.get('curves',[])),default=None),
+                after_peak_c=max((v['oil_c'] for v in after.get('curves',[])),default=None),same_assumptions=same,newer_source=bool(fresh),study=after)
+            record['verification']=verification;entry['outcome']=verification['outcome'];record['status']=verification['outcome']
+        record['trail'].append(entry);record['revision']+=1;store.put('protection_job',job,record)
+        return record
+
+
+@router.get('/protection-jobs/{asset}/{job}/report.pdf')
+def protection_job_report(asset:str,job:str,actor=Depends(operator)):
+    from .pdf_report import render
+    record=store.get('protection_job',job)
+    if not record or record['asset_id']!=asset:raise HTTPException(404,'Protection job not found.')
+    snap=dict(mode=record['study']['mode'],asset_id=asset,generated_at=now(),requested_interval=dict(start=None,end=None),
+        coverage=dict(first=record['study'].get('timestamp'),last=record['study'].get('timestamp'),records=0),readings=[],display_history=record.get('display_history',[]),display_current=record.get('display_current'),
+        configuration=record['study']['settings'],assessment={'physics_and_protection':record['study']},events=record['trail'],
+        decisions=[{k:v for k,v in record.items() if k not in ('study','display_current','display_history')}],
+        notes=['Frozen protection job. Oil inventory and injected electrical events are simulated; raw acquisition channels are unchanged.','Model recovery does not establish physical repair or protection performance.'])
+    snap['sha256']=studies.digest(snap)
+    return Response(render(snap),media_type='application/pdf',headers={'Content-Disposition':'attachment; filename="neuratwin-protection-job.pdf"'})
 
 
 def lifetime_result(asset, assumptions, display_current=None, display_history=None, state=None):
@@ -254,6 +429,7 @@ def report_snapshot(asset,payload):
             for kind in ('twin_proof','twin_plan','twin_work','twin_thermal_pair','twin_electrical_review'):
                 decisions.extend({'record_type':kind,**r} for r in store.records(kind) if r.get('run_id')==asset)
     decisions.extend({'record_type':'maintenance_job',**r} for r in store.records('maintenance_job') if r.get('asset_id')==asset and selected(r.get('created_at'),payload))
+    decisions.extend({'record_type':'protection_job',**r} for r in store.records('protection_job') if r.get('asset_id')==asset and selected(r.get('created_at'),payload))
     profile=store.get('maintenance_profile',asset)
     if profile:configuration['maintenance_profile']=profile
     display_history=[r.model_dump(mode='json') for r in payload.display_history if physical and selected(r.timestamp.isoformat() if r.timestamp else None,payload)]
