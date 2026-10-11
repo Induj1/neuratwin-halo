@@ -4,7 +4,7 @@ from io import BytesIO
 import pytest
 from fastapi.testclient import TestClient
 from pypdf import PdfReader
-from neuratwin import fleet_model as f, halo_store as store
+from neuratwin import portfolio_model as f, halo_store as store
 from neuratwin.app import app
 from neuratwin.halo_api import LOCAL_TOKEN
 from neuratwin.twin_studies import digest
@@ -107,10 +107,10 @@ def client(tmp_path,monkeypatch):
 
 def test_persistent_recording_case_revision_and_export(client,portfolio):
     payload=portfolio.model_copy(update={'assets':portfolio.assets[:2]})
-    response=client.post('/api/halo/fleet/recordings',json=payload.model_dump(mode='json'),headers=OP)
+    response=client.post('/api/halo/portfolio/recordings',json=payload.model_dump(mode='json'),headers=OP)
     assert response.status_code==200,response.text
-    saved=response.json();path='/api/halo/fleet/recordings/'+saved['id'];sha=saved['sha256']
-    catalog=client.get('/api/halo/fleet/recordings',headers=OP).json()['recordings']
+    saved=response.json();path='/api/halo/portfolio/recordings/'+saved['id'];sha=saved['sha256']
+    catalog=client.get('/api/halo/portfolio/recordings',headers=OP).json()['recordings']
     assert catalog[0]['id']==saved['id'] and 'portfolio' not in catalog[0]
     assert len(saved['report']['implementation_sha256'])==64
     assert client.get(path,headers=OP).json()['sha256']==sha
@@ -125,7 +125,7 @@ def test_persistent_recording_case_revision_and_export(client,portfolio):
     assert transfer.status_code==200,transfer.text
     assert transfer.json()['study_id'].startswith('STUDY-')
     option={'hardware':100,'installation':50,'commissioning':20,'annual_connectivity':12,'annual_service':10,'replacement_allowance':30}
-    cost=client.post('/api/halo/fleet/costs',json={'recording_id':saved['id'],'asset_count':10,'years':5,'halo':option,'comparison':option},headers=OP)
+    cost=client.post('/api/halo/portfolio/costs',json={'recording_id':saved['id'],'asset_count':10,'years':5,'halo':option,'comparison':option},headers=OP)
     assert cost.status_code==200,cost.text
     export=client.get(path+'/export',headers=OP).json()
     assert export['sha256']==sha and len(export['cases'])==1
@@ -139,18 +139,18 @@ def test_persistent_recording_case_revision_and_export(client,portfolio):
 
 
 def test_csv_validation_lab_append_and_asset_isolation(client):
-    text=client.get('/api/halo/fleet/template.csv',headers=OP).text
-    r=client.post('/api/halo/fleet/import',json={'name':'Test recording','source_note':'Lab reference, not verified','csv_text':text},headers=OP)
+    text=client.get('/api/halo/portfolio/template.csv',headers=OP).text
+    r=client.post('/api/halo/portfolio/import',json={'name':'Test recording','source_note':'Lab reference, not verified','csv_text':text},headers=OP)
     assert r.status_code==200,r.text
     body=r.json();assert body['source']=='imported' and body['report']['summary']['withheld']==1
-    path='/api/halo/fleet/recordings/'+body['id']+'/assets/'
+    path='/api/halo/portfolio/recordings/'+body['id']+'/assets/'
     lab={'timestamp':'2026-10-10T12:00:00Z','hydrogen':1,'methane':2,'ethane':3,'ethylene':4,'acetylene':5,'carbon_monoxide':6,'lab_reference':'LAB-01'}
     assert client.post(path+'UNKNOWN/lab',json=lab,headers=OP).status_code==404
     assert client.post(path+'DT-01/lab',json=lab,headers=OP).status_code==200
     assert client.post(path+'DT-01/lab',json=lab,headers=OP).status_code==409
     assert client.get(path+'DT-01',headers=OP).json()['lab_trend']['points'][0]['total_combustible_ppm']==21
     bad=text.replace('2026-10-08T00:05:00+05:30','2026-10-08T00:00:00+05:30')
-    assert client.post('/api/halo/fleet/import',json={'name':'Bad recording','source_note':'Duplicate timestamps','csv_text':bad},headers=OP).status_code==422
+    assert client.post('/api/halo/portfolio/import',json={'name':'Bad recording','source_note':'Duplicate timestamps','csv_text':bad},headers=OP).status_code==422
 
 
 def test_physical_lifetime_defaults_inherit_saved_maintenance_profile(client):

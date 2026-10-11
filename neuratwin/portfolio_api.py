@@ -14,11 +14,11 @@ from reportlab.lib.styles import getSampleStyleSheet
 from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer, Table, TableStyle, KeepTogether
 from .halo_contracts import Contract
 from .halo_api import operator, WRITE_LOCK
-from . import halo_store as store, fleet_model as model
+from . import halo_store as store, portfolio_model as model
 from .storage import now
 from .twin_studies import digest
 
-router = APIRouter(prefix='/api/halo/fleet', dependencies=[Depends(operator)])
+router = APIRouter(prefix='/api/halo/portfolio', dependencies=[Depends(operator)])
 
 
 def record(key):

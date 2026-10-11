@@ -1,6 +1,6 @@
 # Fleet decisions and model evidence
 
-Open `/app#fleet`. This extension uses Halo's existing glass theme and authenticated API/record store. It does not change GPIOs, relay handlers, physical acquisition or commissioning gates.
+Open `/app#portfolio`. This extension uses Halo's existing glass theme and authenticated API/record store. It does not change GPIOs, relay handlers, physical acquisition or commissioning gates.
 
 ## Operator workflow
 
@@ -43,7 +43,7 @@ Combustible gas total = H2 + CH4 + C2H6 + C2H4 + C2H2 + CO in ppm; CO2 excluded.
 
 ## API and storage
 
-`/api/halo/fleet` uses the existing operator session. Immutable recordings, append-only lab history and revision-checked cases use SQLite/Supabase's existing record abstraction. No schema migration is required. Calculations are persisted with their inputs, result, actor, timestamp and content hash. A small catalog avoids loading every time series when listing recordings.
+`/api/halo/portfolio` uses the existing operator session. Immutable recordings, append-only lab history and revision-checked cases use SQLite/Supabase's existing record abstraction. No schema migration is required. Calculations are persisted with their inputs, result, actor, timestamp and content hash. A small catalog avoids loading every time series when listing recordings.
 
 Limits: 25 assets, 20,000 total samples, 2,016 samples per asset, 4 MB CSV and 100 lab records per asset recording. This is a bounded prototype portfolio workflow, not a streaming million-asset platform. Existing live bench/industrial sources remain separate.
 

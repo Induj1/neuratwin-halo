@@ -11,7 +11,7 @@
   }
   function paint(){
     document.body.dataset.twinSource=source;
-    if(document.getElementById('view-fleet')?.classList.contains('active')){
+    if(document.getElementById('view-portfolio')?.classList.contains('active')){
       const status=document.getElementById('connection');if(status)status.textContent='Fleet · frozen recordings';return;
     }
     if(document.getElementById('view-lab')?.classList.contains('active')){

@@ -5,7 +5,7 @@ A distribution-transformer maintenance prototype combining available measurement
 
 Start with [the submission dossier](web/submission-guide.html), [the current hardware handoff](web/hardware-guide.html) and [the model specification](docs/DUAL_MODE_TWIN.md).
 
-**Fleet decisions** at `/app#fleet` adds a persistent 25-asset simulation/CSV workspace, explainable priorities, chronological per-asset qualification, empirical forecast bands, constrained tie-transfer studies, laboratory gas trends, deployment economics and frozen triage cases shared with Maintenance. See [fleet methods and limits](docs/FLEET_EVIDENCE.md). The physical bench stays separate; forecasts with insufficient evidence are withheld.
+**Fleet decisions** at `/app#portfolio` adds a persistent 25-asset simulation/CSV workspace, explainable priorities, chronological per-asset qualification, empirical forecast bands, constrained tie-transfer studies, laboratory gas trends, deployment economics and frozen triage cases shared with Maintenance. See [fleet methods and limits](docs/FLEET_EVIDENCE.md). The physical bench stays separate; forecasts with insufficient evidence are withheld.
 
 The [synchronized operations workspace](docs/SYNCHRONIZED_OPERATIONS.md) adds a condition dial, illustrative phase waveforms, continuous simulation controls, an inline intervention comparison and recorded-state replay at `/app#operate`. Hardware remains single-phase and RMS-only; unavailable measurements stay unavailable.
 

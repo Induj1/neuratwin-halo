@@ -69,8 +69,8 @@ from .briefing_api import router as briefing_router
 app.include_router(briefing_router)
 from .maintenance_api import router as maintenance_router
 app.include_router(maintenance_router)
-from .fleet_api import router as fleet_router
-app.include_router(fleet_router)
+from .portfolio_api import router as portfolio_router
+app.include_router(portfolio_router)
 from .evidence_workflow import router as observation_workflow_router
 app.include_router(observation_workflow_router)
 from .bench_lab import router as bench_lab_router
@@ -274,7 +274,7 @@ def operations_console():
     page=page.replace('<!-- HALO_LAB -->',(ROOT/'web/halo-lab.html').read_text(encoding='utf-8'))
     page=page.replace('<!-- HALO_PHYSICS -->',(ROOT/'web/halo-physics.html').read_text(encoding='utf-8'))
     page=page.replace('<!-- HALO_MAINTENANCE -->',(ROOT/'web/halo-maintenance.html').read_text(encoding='utf-8'))
-    page=page.replace('<!-- HALO_FLEET -->',(ROOT/'web/halo-fleet.html').read_text(encoding='utf-8'))
+    page=page.replace('<!-- HALO_PORTFOLIO -->',(ROOT/'web/halo-portfolio.html').read_text(encoding='utf-8'))
     return Response(page,media_type='text/html')
 
 
